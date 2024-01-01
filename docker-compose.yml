@@ -1,0 +1,95 @@
+###############################################################################
+#                          Generated on phpdocker.io                          #
+###############################################################################
+version: "3.1"
+services:
+
+  mysql:
+    image: mysql:5.7
+    container_name: mysqldb
+    restart: always
+    working_dir: /application
+    volumes:
+      - ./var/docker/mysql/dump.sql:/docker-entrypoint-initdb.d/dump.sql
+    env_file:
+      - .env
+    ports:
+      - "3306:3306"
+
+  postgres:
+    container_name: pg_container
+    image: postgres:11.6-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+      POSTGRES_DB: test
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./var/docker/mysql/pg.sql:/docker-entrypoint-initdb.d/pg.sql
+
+  mssql-server-linux:
+    image: tchughesiv/mssql-server-linux:latest
+    restart: always
+    volumes:
+      - ./var/docker/mysql/sqlsrv.sql:/docker-entrypoint-initdb.d/sqlsrv.sql
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Administrador1
+    ports:
+      - "1433:1433"
+
+  oracle:
+    image: galam/oracle-xe-12c:latest
+    restart: always
+    ports:
+      - "1521:1521"
+      - "5500:5500"
+      - "8080:8080"
+    volumes:
+      - ./var/docker/mysql/oracle.sql:/docker-entrypoint-initdb.d/oracle.sql
+    environment:
+      - ORACLE_SDB=SYSTEM
+      - ORACLE_SID=SYSTEM
+      - ORACLE_PWD=Contrasena1
+
+  ibmdb2:
+    image: ibmcom/db2:latest
+    restart: always
+    ports:
+      - "50000:50000"
+    environment:
+      - LICENSE=accept
+      - DB2INSTANCE=db2inst1
+      - DB2INST1_PASSWORD=password
+      - DBNAME=test
+      - BLU=false
+      - ENABLE_ORACLE_COMPATIBILITY=false
+      - UPDATEAVAIL=NO
+      - TO_CREATE_SAMPLEDB=true
+      - REPODB=true
+      - IS_OSXFS=false
+      - PERSISTENT_HOME=false
+      - HADR_ENABLED=false
+      - ETCD_ENDPOINT=
+      - ETCD_USERNAME=
+      - ETCD_PASSWORD=
+
+  php:
+    build:
+      context: .
+      dockerfile: ./var/docker/php/Dockerfile
+    container_name: phpdb
+    #      working_dir: /application
+    environment:
+      - MYSQL_DRIVER=mysql
+      - MYSQL_HOST=mysqldb
+      - MYSQL_DATABASE=test
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+    volumes:
+      - .:/application
+      - ./var/docker/php/conf.d/php.ini:/usr/local/etc/php/php.ini
+      - ./var/docker/php/conf.d/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+      - ./var/docker/php/conf.d/xhprof.ini:/usr/local/etc/php/conf.d/xhprof.ini

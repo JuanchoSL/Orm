@@ -1,0 +1,6 @@
+-- Active: 1701384186186@@127.0.0.1@5432@test@public
+CREATE TABLE test(  
+    id int NOT NULL PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
+    test VARCHAR(16),
+    dato VARCHAR(16)
+);
