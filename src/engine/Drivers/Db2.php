@@ -6,6 +6,7 @@ use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\Db2Cursor;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
 /**
  * Esta clase permite conectar e interactuar con una tabla específica
@@ -22,7 +23,7 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
  */
 class Db2 extends RDBMS implements DbInterface
 {
-
+    use SQLBuilderTrait;
     protected $requiredModule = 'ibm_db2';
 
     public function connect(): void
@@ -62,6 +63,7 @@ class Db2 extends RDBMS implements DbInterface
         if (empty($tabla)) {
             $tabla = $this->tabla;
         }
+        $describe = [];
         if (!empty($tabla)) {
             $result = $this->execute("DESCRIBE " . $tabla);
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {

@@ -16,7 +16,7 @@ abstract class AbstractFunctionalTest extends TestCase
     public function testInsert()
     {
         for ($i = 1; $i <= $this->loops; $i++) {
-            $id = TestDb::insert(array('test' => 'valor', 'dato' => $i))->save();
+            $id = TestDb::make(array('test' => 'valor', 'dato' => $i))->save();
             $this->assertTrue(!empty($id), "Recuperación del id de un insert");
         }
     }

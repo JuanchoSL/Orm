@@ -195,7 +195,7 @@ class Oracle extends RDBMS implements DbInterface
     public function truncate(): bool
     {
         parent::truncate();
-        $seq = str_replace('."NEXTVAL"', '', $this->describe[$this->tabla][strtolower(current($this->keys[$this->tabla]))]->getDefault());
+        $seq = (string) str_replace('."NEXTVAL"', '', $this->describe[$this->tabla][strtolower(current($this->keys[$this->tabla]))]->getDefault());
         $this->execute("ALTER SEQUENCE {$seq} RESTART START WITH 1");
         return true;
     }
@@ -205,7 +205,6 @@ class Oracle extends RDBMS implements DbInterface
         parent::drop();
         //print_r(sprintf('DROP SEQUENCE %s', $seq));
         return $this->execute(sprintf('DROP SEQUENCE %s', $seq));
-        return true;
     }
 
     public function createTable(string $table_name, FieldDescription ...$fields)

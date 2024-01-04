@@ -28,37 +28,7 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
  */
 class DatabaseFactory
 {
-/*
-    const PHP_MIN_VERSION = "5.0.0";
-    const TYPE_MYSQL = 'MYSQL';
-    const TYPE_MARIADB = 'MARIADB';
-    const TYPE_MYSQLI = 'MYSQLI';
-    const TYPE_MYSQLE = 'MYSQLE';
-    const TYPE_SQLITE = 'SQLITE';
-    const TYPE_SQLSRV = 'SQLSRV';
-    const TYPE_MSSQL = 'MSSQL';
-    const TYPE_MSQL = 'MSQL';
-    const TYPE_POSTGRE = 'POSTGRE';
-    const TYPE_MONGO = 'MONGO';
-    const TYPE_MONGOCLIENT = 'MONGOCLIENT';
-    const TYPE_ORACLE = 'ORACLE';
-    const TYPE_ELASTICSEARCH = 'ELASTICSEARCH';
-    const TYPE_ODBC = 'ODBC';
-    const TYPE_DB2 = 'DB2';
-*/
-    /**
-     * Abstraer la conexión a un servidor de datos.
-     * Podemos pasar un string con el nombre de la conexión a utilizar dentro
-     * del fichero de configuraciones o un array asociativo con los valores
-     * @internal Si usamos array asociativo para $server, debe tener la keys 'host','username',
-     * 'password','database'.
-     * @param string $type Nombre del sistema gestor a instanciar: mysql, mysqli, mssql, oracle
-     * @param mixed $server Nombre del servidor en el fichero o array de parámetros
-     * @param string $tabla Nombre de la tabla a utilizar
-     * @param string $typeReturn Formato de retorno de los valores de las tablas,
-     * array asociativo (assoc) u objeto (object)
-     * @return object Recurso del objeto instanciado
-     */
+
     public static function init(DbCredentials $credentials, Engines $type, $response = RDBMS::RESPONSE_OBJECT)
     {
         switch ($type) {

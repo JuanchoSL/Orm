@@ -78,7 +78,7 @@ class Odbc extends RDBMS implements DbInterface
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['COLUMN_NAME'])
-                    ->setType(str_replace(" identity", "", $keys['TYPE_NAME']))
+                    ->setType((string)str_replace(" identity", "", $keys['TYPE_NAME']))
                     ->setLength($keys['COLUMN_SIZE'])
                     ->setNullable($keys['NULLABLE'] == 0)
                     ->setDefault($keys['COLUMN_DEF'])

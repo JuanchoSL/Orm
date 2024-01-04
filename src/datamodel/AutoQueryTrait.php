@@ -23,7 +23,7 @@ trait AutoQueryTrait
 
     public static function where(array ...$where)
     {
-        $instance = (isset($this)) ? $this : self::getInstance();
+        $instance = self::getInstance();
         if ($instance->lazyLoad) {
             $distinct = array();
             $keys = $instance->keys();

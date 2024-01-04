@@ -40,6 +40,8 @@ abstract class RDBMS implements DbInterface
         }
         */
     }
+    abstract protected function mountComparation(string $comparation): string;
+    abstract protected function getQuery(QueryBuilder $queryBuilder): string;
 
     public function getTypeReturn()
     {
@@ -240,7 +242,6 @@ public function insert(array $values): int
         $builder = DatabaseFactory::queryBuilder()->truncate()->table($this->tabla);
         $this->execute($builder);
         return true;
-        return $this->affectedRows();
     }
 
     public function drop()
