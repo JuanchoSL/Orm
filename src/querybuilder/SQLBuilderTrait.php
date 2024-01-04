@@ -92,7 +92,7 @@ trait SQLBuilderTrait
                                 //$comparator = ($comparator) ? 'IS NULL' : 'IS NOT NULL';
                                 $where .= $field . " " . $value . " " . $comparator;
                             } elseif ($value instanceof QueryBuilder) {
-                                $where .= $field . " " . $comparator . " (" . $this->getQuery($value) . ")";
+                                //$where .= $field . " " . $comparator . " (" . $this->getQuery($value) . ")";
                             } else {
                                 if (isset($comparation[2]) && is_bool($comparation[2])) {
                                     $comparator = ($comparation[2]) ? '=' : '!=';

@@ -33,6 +33,6 @@ trait RelationsTrait
 
     protected function BelongsToMany(DataModelInterface $model, string $foreing_field = null, string $owner_field = null): AbstractRelation
     {
-        return new BelongsToMany($model, 'id', $this->dato);
+        return new BelongsToMany($model, 'id', 'id');
     }
 }

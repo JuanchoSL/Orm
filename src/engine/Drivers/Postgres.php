@@ -1,6 +1,6 @@
 <?php
 
-namespace JuanchoSL\Orm\Engine\Drivers;
+namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\DatabaseFactory;
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -115,7 +115,7 @@ class Postgres extends RDBMS implements DbInterface
 
     protected function mountLimit(int $limit, int $page): string
     {
-        return (isset($limit) && (is_int($limit))) ? " LIMIT " . $limit . " OFFSET " . (intval($page) * $limit) : null;
+        return " LIMIT " . $limit . " OFFSET " . (intval($page) * $limit);
     }
     public function createTable(string $table_name, FieldDescription ...$fields)
     {

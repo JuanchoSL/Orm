@@ -39,6 +39,6 @@
     },
     "scripts": {
         "tests": "vendor/bin/phpunit --configuration phpunit.xml tests",
-        "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon --xdebug"
+        "phpstan": "vendor/bin/phpstan analyse -c phpstan.neon"
     }
 }

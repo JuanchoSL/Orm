@@ -1,9 +1,8 @@
 <?php
 
-namespace JuanchoSL\Orm\Engine\Drivers;
+namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
-use JuanchoSL\Orm\engine\Cursors\MysqlCursor;
 use JuanchoSL\Orm\engine\Cursors\OdbcCursor;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
@@ -71,6 +70,7 @@ class Odbc extends RDBMS implements DbInterface
         if (empty($tabla)) {
             $tabla = $this->tabla;
         }
+        $describe = [];
         if (!empty($tabla)) {
             $columns = odbc_columns($this->linkIdentifier, $this->credentials->getDataBase(), '', $tabla);
             $cursor = new OdbcCursor($columns);

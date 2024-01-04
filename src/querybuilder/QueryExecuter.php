@@ -33,7 +33,7 @@ class QueryExecuter
         $this->cursor();
         return $this->conn->affectedRows();
     }
-    
+
     public function truncate(): bool
     {
         $this->conn->setTable($this->query_builder->table);
@@ -74,7 +74,11 @@ class QueryExecuter
         $response = new Collection();
         $cursor = $this->cursor();
         while (!empty($element = $cursor->next())) {
-            $response->insert($this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()}));
+            if (count(get_object_vars($element)) > 1) {
+                $response->insert($this->response_model->make((array)$element));
+            } else {
+                $response->insert($this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()}));
+            }
         }
         return $response;
     }

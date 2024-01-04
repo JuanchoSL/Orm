@@ -1,6 +1,6 @@
 <?php
 
-namespace JuanchoSL\Orm\Engine\Drivers;
+namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\Db2Cursor;
@@ -102,7 +102,7 @@ class Db2 extends RDBMS implements DbInterface
 
     public function escape(string $value): string
     {
-        return db2_escape_string($this->linkIdentifier, stripslashes($value));
+        return db2_escape_string(stripslashes($value));
     }
 
     public function affectedRows(): int

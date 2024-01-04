@@ -1,6 +1,6 @@
 <?php
 
-namespace JuanchoSL\Orm\Engine\Drivers;
+namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\MysqlCursor;

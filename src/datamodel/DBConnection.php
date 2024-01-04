@@ -21,6 +21,8 @@ abstract class DBConnection
 
     static $conn = [];
 
+    protected $connection_name = 'default';
+
     public static function setConnection(DbInterface $connection, string $conection_name = 'default')
     {
         return self::$conn[$conection_name] = $connection;
@@ -30,9 +32,7 @@ abstract class DBConnection
 
     public function __call($method, $parameters)
     {
-        $instance = (isset($this)) ? $this : self::getInstance();
-//        self::$conn = $instance->getConnection();
-        self::$conn[$this->connection_name]->setTable($instance->getTableName());
+        self::$conn[$this->connection_name]->setTable($this->getTableName());
         return call_user_func_array(array(self::$conn[$this->connection_name], $method), $parameters);
     }
 

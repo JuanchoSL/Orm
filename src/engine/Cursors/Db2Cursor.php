@@ -22,12 +22,12 @@ class Db2Cursor extends AbstractCursor implements CursorInterface
         }
     }
 
-    public function count()
+    public function count():int
     {
         return db2_num_rows($this->cursor);
     }
 
-    public function free()
+    public function free():bool
     {
         return db2_free_result($this->cursor);
     }

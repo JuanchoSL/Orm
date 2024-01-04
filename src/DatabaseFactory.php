@@ -2,24 +2,16 @@
 
 namespace JuanchoSL\Orm;
 
+use JuanchoSL\Exceptions\ServiceUnavailableException;
 use JuanchoSL\Orm\datamodel\DBConnection;
 use JuanchoSL\Orm\engine\DbCredentials;
-use JuanchoSL\Orm\engine\Drivers\Mysql;
 use JuanchoSL\Orm\engine\Drivers\Mysqli;
-use JuanchoSL\Orm\engine\Drivers\Mysqle;
 use JuanchoSL\Orm\engine\Drivers\RDBMS;
 use JuanchoSL\Orm\engine\Drivers\Sqlite;
-use JuanchoSL\Orm\Engine\Drivers\Sqlserver;
-use JuanchoSL\Orm\engine\Drivers\Sqlsrv;
+use JuanchoSL\Orm\engine\Drivers\Sqlserver;
 use JuanchoSL\Orm\engine\Drivers\Postgres;
-use JuanchoSL\Orm\engine\Drivers\Mssql;
-use JuanchoSL\Orm\engine\Drivers\Msql;
 use JuanchoSL\Orm\engine\Drivers\Oracle;
-use JuanchoSL\Orm\engine\Drivers\Mongo;
-use JuanchoSL\Orm\engine\Drivers\MongoClient;
-use JuanchoSL\Orm\engine\Drivers\Elasticsearch;
 use JuanchoSL\Orm\engine\Drivers\Odbc;
-use JuanchoSL\Orm\engine\Drivers\Db2;
 use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 
@@ -89,6 +81,8 @@ class DatabaseFactory
             case Engines::TYPE_ODBC:
                 $resource = new Odbc($credentials, $response);
                 break;
+            default:
+                throw new ServiceUnavailableException("The service type {$type} is not available");
             /*
             case Engines::TYPE_MONGO:
                 $resource = new Mongo($credentials, $response);

@@ -1,9 +1,8 @@
 <?php
 
-namespace JuanchoSL\Orm\Engine\Drivers;
+namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\MssqlCursor;
-use JuanchoSL\Orm\engine\Cursors\SQLiteCursor;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -52,16 +51,14 @@ class Mssql extends RDBMS implements DbInterface
         return parent::extractTables("SELECT table_name from {$this->credentials->getDataBase()}.INFORMATION_SCHEMA.TABLES");
     }
 
-    /**
-     * Devuelve una matriz asociativa con la configuración de los campos de la 
-     * tabla, tipos, claves, valores por defecto...
-     * @return array Matrz asociativa con los parámetros de las columnas
-     */
-    public function describe()
+    public function describe(string $tabla = null): array
     {
-        if (empty($this->describe)) {
-            $this->describe = array();
-            $result = $this->execute("EXEC sp_columns " . $this->tabla);
+        if (empty($tabla)) {
+            $tabla = $this->tabla;
+        }
+        $describe = array();
+        if (!empty($tabla)) {
+            $result = $this->execute("EXEC sp_columns " . $tabla);
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {
                 $field = new FieldDescription;
                 $field
@@ -71,14 +68,14 @@ class Mssql extends RDBMS implements DbInterface
                     ->setNullable($keys['NULLABLE'] == 0)
                     ->setDefault($keys['COLUMN_DEF'])
                     ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
-                $this->describe[$keys['COLUMN_NAME']] = $field;
-
+                $describe[$keys['COLUMN_NAME']] = $field;
             }
+            $this->describe[$tabla] = $describe;
             if ($result) {
                 $result->free();
             }
         }
-        return $this->describe;
+        return $this->describe[$tabla];
     }
 
     public function execute($query)

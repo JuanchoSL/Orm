@@ -2,6 +2,7 @@
 
 namespace JuanchoSL\Orm\datamodel;
 
+use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
 use JuanchoSL\Orm\engine\Relations\AbstractRelation;
 use JuanchoSL\Orm\engine\Relations\BelongsToMany;
@@ -63,15 +64,15 @@ trait AutoCrudTrait
             }
             */
         }
+        $pk = $this->getPrimaryKeyName();
+        unset($save[$pk]);
         try {
-            $pk = $this->getPrimaryKeyName();
             $id = $this->getPrimaryKeyValue();
-            unset($save[$pk]);
             return self::where([$pk, $id])->update($save);
         } catch (UnprocessableEntityException $ex) {
             $result = self::insert($save);
             if ($result) {
-                $this->identifier = $this->$pk = $result;
+                $this->identifier = $this->{$pk} = $result;
                 $this->loaded = true;
             }
             return $result;
@@ -120,38 +121,45 @@ trait AutoCrudTrait
         return null;
     }
 
+    protected function fill(iterable $element)
+    {
+        foreach ($element as $name => $var) {
+            if (is_bool($var)) {
+                $var = (bool) $var;
+            } else if (is_double($var)) {
+                $var = (double) $var;
+            } else if (is_float($var)) {
+                $var = (float) $var;
+            } else if (is_bool($var) || is_int($var)) {
+                $var = (int) $var;
+            } else if (is_string($var)) {
+                $encoding = mb_detect_encoding($var);
+                if ($encoding !== 'utf-8') {
+                    $var = mb_convert_encoding($var, 'utf-8', $encoding);
+                }
+            }
+            $this->values[strtolower($name)] = $var;
+            if (empty($this->identifier) && $this->getPrimaryKeyName() == $name) {
+                $this->identifier = $var;
+            }
+        }
+        $this->loaded = true;
+        return $this;
+    }
     protected function load($id)
     {
         $pk = $this->getPrimaryKeyName();
         $id = $this->adapterIdentifier($id);
         $cursor = $this->execute(QueryBuilder::getInstance()->select()->from($this->getTableName())->where([$pk, $id])->limit(1));
-        // if ($cursor->count() > 0) {
         $element = $cursor->next();
-        if ($element) {
-            foreach ($element as $name => $var) {
-                if (is_bool($var)) {
-                    $var = (bool) $var;
-                } else if (is_double($var)) {
-                    $var = (double) $var;
-                } else if (is_float($var)) {
-                    $var = (float) $var;
-                } else if (is_bool($var) || is_int($var)) {
-                    $var = (int) $var;
-                } else if (is_string($var)) {
-                    $encoding = mb_detect_encoding($var);
-                    if ($encoding !== 'utf-8') {
-                        $var = mb_convert_encoding($var, 'utf-8', $encoding);
-                    }
-                }
-                $this->values[strtolower($name)] = $var;
-            }
-            $this->loaded = true;
+        $cursor->free();
+        if (!$element) {
+            throw new NotFoundException("The element with {$pk}={$id} does not exists into {$this->getTableName()}");
         }
-        $cursor->free();
+        if ($element) {
+            $this->fill((array)$element);
+        }
         return $this;
-        //}
-        $cursor->free();
-        return false;
     }
 
 }

@@ -1,20 +1,14 @@
 <?php
 
-namespace JuanchoSL\Orm\Engine\Drivers;
+namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\DatabaseFactory;
-use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\DbCredentials;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 
-abstract class RDBMS
+abstract class RDBMS implements DbInterface
 {
 
-    /**
-     * Versión mínima requerida de PHP
-     * @var string PHP_MIN_VERSION
-     */
-    const PHP_MIN_VERSION = "5.0.0";
     const RESPONSE_OBJECT = 'object';
     const RESPONSE_ASSOC = 'assoc';
     const RESPONSE_ROWS = 'rows';
@@ -35,14 +29,16 @@ abstract class RDBMS
 
     function __construct(DbCredentials $credentials, $typeReturn = 'object')
     {
+        $this->credentials = $credentials;
+        $this->typeReturn = $typeReturn;
+        $this->connect();
+        $this->sqlBuilder = new QueryBuilder();
+        /*
         if (extension_loaded($this->requiredModule)) {
-            $this->credentials = $credentials;
-            $this->typeReturn = $typeReturn;
-            $this->connect();
-            $this->sqlBuilder = new QueryBuilder();
         } else {
             throw new \Exception($this->requiredModule);
         }
+        */
     }
 
     public function getTypeReturn()
@@ -295,7 +291,7 @@ public function insert(array $values): int
         $this->cursor = null;
         return $query;
     }
-    public function lastInsertedId()
+    public function lastInsertedId():int
     {
         return $this->lastInsertedId;
     }

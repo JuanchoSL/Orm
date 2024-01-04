@@ -10,7 +10,7 @@ trait AutoQueryTrait
 
     public static function __callStatic($method, $args)
     {
-        $instance = (isset($this)) ? $this : self::getInstance();
+        $instance = self::getInstance();
         $query = new QueryExecuter(self::$conn[$instance->connection_name], $instance);
         $query = $query->from($instance->getTableName())->$method($args);
         return $query;
@@ -24,16 +24,27 @@ trait AutoQueryTrait
     public static function where(array ...$where)
     {
         $instance = (isset($this)) ? $this : self::getInstance();
-        $distinct = array();
-        $keys = $instance->keys();
-        foreach ($keys as $key) {
-            $distinct[] = "{$instance->getTableName()}.{$key}";
+        if ($instance->lazyLoad) {
+            $distinct = array();
+            $keys = $instance->keys();
+            foreach ($keys as $key) {
+                $distinct[] = "{$instance->getTableName()}.{$key}";
+            }
+            $fields = "DISTINCT " . implode(",", $distinct);
+        } else {
+            $fields = '*';
         }
-        $response = self::select("DISTINCT " . implode(",", $distinct));
+        $response = self::select($fields);
         if (!empty($where)) {
             $response = call_user_func_array([$response, 'where'], $where);
         }
         return $response;
+    }
+
+    public static function make(iterable $values)
+    {
+        $instance = self::getInstance();
+        return $instance->fill($values);
     }
 
     public static function findByPk($id)

@@ -1,8 +1,10 @@
 parameters:
-    level: 9
+    level: 1
     paths:
         - src
     excludePaths:
         - vendor/*
+        - tests/*
+        - bin/*
     fileExtensions:
         - php

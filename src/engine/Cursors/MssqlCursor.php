@@ -22,12 +22,12 @@ class MssqlCursor extends AbstractCursor implements CursorInterface
         }
     }
 
-    public function count()
+    public function count():int
     {
         return mssql_num_rows($this->cursor);
     }
 
-    public function free()
+    public function free():bool
     {
         return mssql_free_result($this->cursor);
     }
