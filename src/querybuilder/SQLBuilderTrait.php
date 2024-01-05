@@ -126,10 +126,12 @@ trait SQLBuilderTrait
         list($string, $key, $comparator, $value) = $matches;
         $value = $this->escape($value);
         $key = strtolower($key);
-        if (is_array($this->describe) && array_key_exists($key, $this->describe[$this->tabla]) && (stripos($this->describe[$this->tabla][$key]->getType(), 'char') !== false || stripos($this->describe[$this->tabla][$key]->getType(), 'text') !== false)) {
-            $value = "'{$value}'";
+        if (is_array($this->describe) && array_key_exists($key, $this->describe[$this->tabla])) {
+            if ((stripos($this->describe[$this->tabla][$key]->getType(), 'char') !== false || stripos($this->describe[$this->tabla][$key]->getType(), 'text') !== false)) {
+                $value = "'{$value}'";
+            }
+            $key = $this->describe[$this->tabla][$key]->getName();
         }
-        $key = $this->describe[$this->tabla][$key]->getName();
 
         return "{$key} {$comparator} {$value}";
     }

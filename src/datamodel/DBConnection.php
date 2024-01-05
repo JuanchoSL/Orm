@@ -2,7 +2,6 @@
 
 namespace JuanchoSL\Orm\datamodel;
 
-use JuanchoSL\Exceptions\UnprocessableEntityException;
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
 
 /**
@@ -36,23 +35,6 @@ abstract class DBConnection
         return call_user_func_array(array(self::$conn[$this->connection_name], $method), $parameters);
     }
 
-    public function getPrimaryKeyValue()
-    {
-        $pk = $this->getPrimaryKeyName();
-        if (isset($this->values[$pk])) {
-            return $this->values[$pk];
-        }elseif (!empty($this->identifier)) {
-            return $this->identifier;
-        }
-        //print_r($this);exit;
-        throw new UnprocessableEntityException($pk);
-    }
-
-    public function getPrimaryKeyName()
-    {
-        $keys = $this->keys();
-        return (count($keys) > 0) ? (string) $keys[0] : ((true /*in_array(strtolower(get_class(self::$conn)), [strtolower(\remote\database\Mongo::class), strtolower(\remote\database\MongoClient::class)])*/) ? 'id' : '_id');
-    }
 
     protected function adapterIdentifier($id)
     {
