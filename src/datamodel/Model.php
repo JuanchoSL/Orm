@@ -53,7 +53,7 @@ abstract class Model extends DBConnection implements \JsonSerializable, DataMode
         $columns = $this->columns();
         if (!empty($columns)) {
             foreach ($columns as $column) {
-                if (isset($this->values[$column])) {
+                if (array_key_exists($column, $this->values)) {
                     $response[$column] = $this->values[$column];
                 }
             }
