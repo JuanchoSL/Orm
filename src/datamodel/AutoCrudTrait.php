@@ -111,7 +111,7 @@ trait AutoCrudTrait
                         return $var->first();
                 }
             }
-        } elseif (isset($this->values[strtolower($param)])) {
+        } elseif (array_key_exists(strtolower($param), $this->values)) {
             $function = "get" . ucfirst(strtolower($param));
             if (method_exists($this, $function)) {
                 return $this->$function();
