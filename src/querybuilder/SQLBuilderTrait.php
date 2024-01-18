@@ -121,7 +121,7 @@ trait SQLBuilderTrait
         } elseif ($last_char == "'") {
             $string = str_replace("'", "", $string);
         }
-        preg_match("/(\w+)(\W+)(\w+)/", $string, $matches);
+        preg_match("/(\w+)(\W+)(.*)/", $string, $matches);
 
         list($string, $key, $comparator, $value) = $matches;
         $value = $this->escape($value);

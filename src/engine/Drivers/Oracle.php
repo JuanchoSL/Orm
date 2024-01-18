@@ -69,7 +69,6 @@ class Oracle extends RDBMS implements DbInterface
                         $keys['Length'] = $matches[2];
                     }
                 }
-                //print_r($keys);
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['Field'])
@@ -79,17 +78,7 @@ class Oracle extends RDBMS implements DbInterface
                     ->setDefault($keys['Default'])
                     ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'));
                 $this->describe[$tabla][strtolower($keys['Field'])] = $field;
-                /*
-                $this->describe[$keys['Field']] = array(
-                    'Field' => $keys['Field'],
-                    'Type' => $keys['Type'],
-                    'Null' => ($keys['Null'] != 'N'),
-                    'Default' => $keys['Default'],
-                    'Key' => (in_array($keys['Field'], $this->keys())),
-                );
-                */
             }
-            //print_r($this->describe);
             if ($result) {
                 $result->free();
             }
