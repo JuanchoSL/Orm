@@ -60,12 +60,12 @@ class Mysqli extends RDBMS implements DbInterface
         if (!empty($tabla)) {
             $result = $this->execute("DESCRIBE " . $tabla);
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                list($type, $lenght) = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
+                list($varchar[]) = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['Field'])
-                    ->setType(trim($type))
-                    ->setLength(trim($lenght))
+                    ->setType(trim($varchar[0]))
+                    ->setLength(trim($varchar[1] ?? '0'))
                     ->setNullable($keys['Null'])
                     ->setDefault($keys['Default'])
                     ->setKey(!empty($keys['Key']));
@@ -118,7 +118,7 @@ class Mysqli extends RDBMS implements DbInterface
             }
             $sql .= ",";
         }
-        $sql = rtrim($sql ,',');
+        $sql = rtrim($sql, ',');
         $sql .= ")";
         return $this->execute(sprintf($sql, $table_name));
     }
