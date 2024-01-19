@@ -67,8 +67,7 @@ class Db2 extends RDBMS implements DbInterface
         if (!empty($tabla)) {
             $result = $this->execute("DESCRIBE " . $tabla);
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                $varchar = [];
-                list($varchar[]) = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
+                $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['Field'])
