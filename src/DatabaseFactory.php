@@ -5,6 +5,7 @@ namespace JuanchoSL\Orm;
 use JuanchoSL\Exceptions\ServiceUnavailableException;
 use JuanchoSL\Orm\datamodel\DBConnection;
 use JuanchoSL\Orm\engine\DbCredentials;
+use JuanchoSL\Orm\engine\Drivers\DbInterface;
 use JuanchoSL\Orm\engine\Drivers\Mysqli;
 use JuanchoSL\Orm\engine\Drivers\RDBMS;
 use JuanchoSL\Orm\engine\Drivers\Sqlite;
@@ -29,12 +30,11 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
 class DatabaseFactory
 {
 
-    public static function init(DbCredentials $credentials, Engines $type, $response = RDBMS::RESPONSE_OBJECT)
+    public static function init(DbCredentials $credentials, Engines $type, $response = RDBMS::RESPONSE_OBJECT):DbInterface
     {
         switch ($type) {
             case Engines::TYPE_MYSQLI:
                 $resource = new Mysqli($credentials, $response);
-                $resource->execute("SET NAMES 'utf8'");
                 break;
             case Engines::TYPE_SQLITE:
                 $resource = new Sqlite($credentials, $response);

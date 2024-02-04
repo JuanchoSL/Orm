@@ -10,19 +10,6 @@ use JuanchoSL\Orm\engine\DbCredentials;
 
 class OracleTest extends AbstractFunctionalTest
 {
+    protected $db_type = Engines::TYPE_ORACLE;
 
-    protected $db;
-    private $loops = 3;
-
-    public function setUp(): void
-    {
-        $credentials = new DbCredentials('localhost', 'SYS', 'oracle', 'SYSTEM');
-        DatabaseFactory::init($credentials, Engines::TYPE_ORACLE, RDBMS::RESPONSE_OBJECT);
-        try {
-            $this->db = new TestDb();
-        } catch (\Exception $ex) {
-            echo __CLASS__ . "[{$ex->getCode()}] " . $ex->getMessage();
-            exit;
-        }
-    }
 }

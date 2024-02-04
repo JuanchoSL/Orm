@@ -10,19 +10,6 @@ use JuanchoSL\Orm\engine\DbCredentials;
 
 class PostgresTest extends AbstractFunctionalTest
 {
+    protected $db_type = Engines::TYPE_POSTGRE;
 
-    protected $db;
-    private $loops = 3;
-
-    public function setUp(): void
-    {
-        $credentials = new DbCredentials('localhost', 'root', 'root', 'test');
-        DatabaseFactory::init($credentials, Engines::TYPE_POSTGRE, RDBMS::RESPONSE_OBJECT);
-        try {
-            $this->db = new TestDb();
-        } catch (\Exception $ex) {
-            echo __CLASS__ . "[{$ex->getCode()}] " . $ex->getMessage();
-            exit;
-        }
-    }
 }

@@ -19,7 +19,16 @@ class Postgres extends RDBMS implements DbInterface
     public function connect(): void
     {
         $port = empty($this->credentials->getPort()) ? '5432' : $this->credentials->getPort();
-        $this->linkIdentifier = pg_pconnect("host={$this->credentials->getHost()} port={$port} dbname={$this->credentials->getDataBase()} user={$this->credentials->getUsername()} password={$this->credentials->getPassword()} connect_timeout=5");
+        try {
+            $this->linkIdentifier = pg_pconnect("host={$this->credentials->getHost()} port={$port} dbname={$this->credentials->getDataBase()} user={$this->credentials->getUsername()} password={$this->credentials->getPassword()} connect_timeout=5")
+            ;
+        } catch (\Exception $exception) {
+            $this->log($exception, 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
+        }
     }
 
     public function disconnect(): bool
@@ -81,13 +90,17 @@ class Postgres extends RDBMS implements DbInterface
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
-        $query = $this->parseQuery($query);
-        if (empty($this->linkIdentifier)) {
+        if (!$this->linkIdentifier) {
             $this->connect();
         }
+        $query = $this->parseQuery($query);
         $this->cursor = pg_query($this->linkIdentifier, $query);
         if (!$this->cursor) {
-            throw new \Exception($query . " -> " . pg_last_error($this->linkIdentifier));
+            $exception = new \Exception($query . " -> " . pg_last_error($this->linkIdentifier));
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
         return new PostgresCursor($this->cursor);
     }
@@ -124,15 +137,15 @@ class Postgres extends RDBMS implements DbInterface
             $sql .= "{$field->getName()} {$field->getType()}";
             if ($field->isKey()) {
                 $sql .= " PRIMARY KEY GENERATED ALWAYS AS IDENTITY";
-            }else{
-                $sql .="({$field->getLength()})";
+            } else {
+                $sql .= "({$field->getLength()})";
             }
             if (!$field->isNullable()) {
                 $sql .= " NOT NULL";
             }
             $sql .= ",";
         }
-        $sql = rtrim($sql ,',');
+        $sql = rtrim($sql, ',');
         $sql .= ")";
         return $this->execute(sprintf($sql, $table_name));
     }

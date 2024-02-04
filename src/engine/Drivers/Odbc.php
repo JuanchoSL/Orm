@@ -33,8 +33,16 @@ class Odbc extends RDBMS implements DbInterface
     {
         $this->dns = "DRIVER={SQL Server};SERVER={$this->credentials->getHost()};DATABASE={$this->credentials->getDataBase()};";
 
-        $this->linkIdentifier = odbc_connect($this->dns, $this->credentials->getUsername(), $this->credentials->getPassword()) or
-            throw new \Exception(odbc_errormsg());
+        try {
+            $this->linkIdentifier = odbc_connect($this->dns, $this->credentials->getUsername(), $this->credentials->getPassword())
+                or throw new \Exception(odbc_errormsg());
+        } catch (\Exception $exception) {
+            $this->log($exception, 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
+        }
     }
 
     /**
@@ -72,13 +80,16 @@ class Odbc extends RDBMS implements DbInterface
         }
         $describe = [];
         if (!empty($tabla)) {
+            if (!$this->linkIdentifier) {
+                $this->connect();
+            }
             $columns = odbc_columns($this->linkIdentifier, $this->credentials->getDataBase(), '', $tabla);
             $cursor = new OdbcCursor($columns);
             while ($keys = $cursor->next(self::RESPONSE_ASSOC)) {
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['COLUMN_NAME'])
-                    ->setType((string)str_replace(" identity", "", $keys['TYPE_NAME']))
+                    ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
                     ->setLength($keys['COLUMN_SIZE'])
                     ->setNullable($keys['NULLABLE'] == 0)
                     ->setDefault($keys['COLUMN_DEF'])
@@ -91,35 +102,25 @@ class Odbc extends RDBMS implements DbInterface
         }
         return $this->describe[$tabla];
     }
-    /*
-        public function keys()
-        {
-            /* $this->keys = array();
-             $pks = odbc_primarykeys($this->linkIdentifier, $this->dataBase, $this->username, $this->tabla);
-             while ($pk = $this->nextResult($pks, self::RESPONSE_ASSOC)) {
-     //                print_r($pk);exit;
-                 $this->keys[] = $pk["COLUMN_NAME"];
-             }
-            if (empty($this->keys[$this->tabla])) {
-                foreach ($this->describe[$this->tabla] as $field) {
-                    //                print_r($field);exit;
-                    if ($field->getKey'] == 1) {
-                        $this->keys[$this->tabla][] = $field['Field'];
-                    }
-                }
-            }
-            return $this->keys[$this->tabla];
-        }
-    */
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
         $query = $this->parseQuery($query);
         if (in_array(substr($query, 0, 6), [QueryBuilder::MODE_INSERT])) {
             $result_id = odbc_prepare($this->linkIdentifier, $query);
             $this->cursor = odbc_execute($result_id);
         } else {
             $this->cursor = odbc_exec($this->linkIdentifier, $query);
+        }
+        if (!$this->cursor) {
+            $exception = new \Exception($query . " -> " . odbc_errormsg($this->linkIdentifier));
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
         return new OdbcCursor($this->cursor);
     }

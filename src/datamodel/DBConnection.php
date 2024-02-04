@@ -22,7 +22,7 @@ abstract class DBConnection
 
     protected $connection_name = 'default';
 
-    public static function setConnection(DbInterface $connection, string $conection_name = 'default')
+    public static function setConnection(DbInterface $connection, string $conection_name = 'default'): DbInterface
     {
         return self::$conn[$conection_name] = $connection;
     }

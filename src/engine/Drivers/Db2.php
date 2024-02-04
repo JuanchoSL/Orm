@@ -29,11 +29,16 @@ class Db2 extends RDBMS implements DbInterface
     public function connect(): void
     {
         $port = empty($this->credentials->getPort()) ? '50000' : $this->credentials->getPort();
-
-        $this->linkIdentifier = db2_connect("DATABASE={$this->credentials->getDataBase()};HOSTNAME={$this->credentials->getHost()};PORT={$port};PROTOCOL=TCPIP;UID={$this->credentials->getUsername()};PWD={$this->credentials->getPassword()}", null, null) or throw new \Exception(db2_conn_errormsg());
-        //$this->linkIdentifier = db2_connect($this->credentials->getHost(), $this->credentials->getUsername(), $this->credentials->getPassword(), $this->credentials->getDataBase(), $this->credentials->getPort()) or throw new \Exception(db2_conn_errormsg());
-//        db2_select_db($this->linkIdentifier, $this->dataBase) or Debug::error("databaseError", "database", E_USER_ERROR);
-        // return $this->linkIdentifier;
+        try {
+            $this->linkIdentifier = db2_connect("DATABASE={$this->credentials->getDataBase()};HOSTNAME={$this->credentials->getHost()};PORT={$port};PROTOCOL=TCPIP;UID={$this->credentials->getUsername()};PWD={$this->credentials->getPassword()}", null, null)
+                or throw new \Exception(db2_conn_errormsg());
+        } catch (\Exception $exception) {
+            $this->log($exception, 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
+        }
     }
 
     /**
@@ -89,6 +94,9 @@ class Db2 extends RDBMS implements DbInterface
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
         $query = $this->parseQuery($query);
         //        $this->cursor = db2_query($this->linkIdentifier, $query);
 //        if (db2_errno($this->linkIdentifier) > 0) {
@@ -96,10 +104,14 @@ class Db2 extends RDBMS implements DbInterface
 //            return false;
 //        }
         $this->cursor = db2_prepare($this->linkIdentifier, $query);
-        if ($this->cursor && db2_execute($this->cursor)) {
-            return new Db2Cursor($this->cursor);
+        if (!$this->cursor || !db2_execute($this->cursor)) {
+            $exception = new \Exception($query . ' -> ' . db2_stmt_errormsg($this->linkIdentifier));
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
-        throw new \Exception($query . ' -> ' . db2_stmt_errormsg($this->linkIdentifier));
+        return new Db2Cursor($this->cursor);
     }
 
     public function escape(string $value): string

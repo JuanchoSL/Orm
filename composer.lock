@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ba79904c9bd320f5d74943ad85b0f85d",
+    "content-hash": "ec3167164e687a7c82ba104268519497",
     "packages": [
         {
             "name": "juanchosl/datatransfer",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "b9c5031e06694ff895116c74d2e0af85b9d56846"
+                "reference": "22b22b1398b665da1217a2ac81fa3d62222f4dae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/b9c5031e06694ff895116c74d2e0af85b9d56846",
-                "reference": "b9c5031e06694ff895116c74d2e0af85b9d56846",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/22b22b1398b665da1217a2ac81fa3d62222f4dae",
+                "reference": "22b22b1398b665da1217a2ac81fa3d62222f4dae",
                 "shasum": ""
             },
             "require": {
@@ -57,20 +57,20 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/DataTransfer/tree/1.0.4"
             },
-            "time": "2024-01-18T19:23:52+00:00"
+            "time": "2024-01-18T22:08:17+00:00"
         },
         {
             "name": "juanchosl/envvars",
-            "version": "1.0.5",
+            "version": "1.0.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/EnvVars.git",
-                "reference": "a907bb986bbb6ca62b0c324711b53a7950a55af6"
+                "reference": "66d1644bb95f683c822a570061aafb6829170be4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/EnvVars/zipball/a907bb986bbb6ca62b0c324711b53a7950a55af6",
-                "reference": "a907bb986bbb6ca62b0c324711b53a7950a55af6",
+                "url": "https://api.github.com/repos/JuanchoSL/EnvVars/zipball/66d1644bb95f683c822a570061aafb6829170be4",
+                "reference": "66d1644bb95f683c822a570061aafb6829170be4",
                 "shasum": ""
             },
             "require": {
@@ -108,9 +108,9 @@
                 "envvars"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/EnvVars/tree/1.0.5"
+                "source": "https://github.com/JuanchoSL/EnvVars/tree/1.0.6"
             },
-            "time": "2023-10-02T14:49:23+00:00"
+            "time": "2024-01-21T01:48:50+00:00"
         },
         {
             "name": "juanchosl/exceptions",
@@ -159,6 +159,56 @@
                 "source": "https://github.com/JuanchoSL/Exceptions/tree/1.0.3"
             },
             "time": "2023-07-19T21:43:23+00:00"
+        },
+        {
+            "name": "psr/log",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/log.git",
+                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/fe5ea303b0887d5caefd3d431c3e61ad47037001",
+                "reference": "fe5ea303b0887d5caefd3d431c3e61ad47037001",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Log\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for logging libraries",
+            "homepage": "https://github.com/php-fig/log",
+            "keywords": [
+                "log",
+                "psr",
+                "psr-3"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/log/tree/3.0.0"
+            },
+            "time": "2021-07-14T16:46:02+00:00"
         }
     ],
     "packages-dev": [
@@ -231,6 +281,58 @@
                 }
             ],
             "time": "2022-12-30T00:23:10+00:00"
+        },
+        {
+            "name": "juanchosl/logger",
+            "version": "dev-develop",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JuanchoSL/Logger.git",
+                "reference": "1820e3f849c1c8e2f4ad5338be4dfbfd73b16057"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/1820e3f849c1c8e2f4ad5338be4dfbfd73b16057",
+                "reference": "1820e3f849c1c8e2f4ad5338be4dfbfd73b16057",
+                "shasum": ""
+            },
+            "require": {
+                "ext-fileinfo": "*",
+                "ext-mbstring": "*",
+                "php": "^7.1 || ^8.0",
+                "psr/log": "3.0.*"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "9.5.25"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "JuanchoSL\\Logger\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Juan Sánchez Lecegui",
+                    "email": "JuanchoSL@hotmail.com",
+                    "homepage": "https://github.com/JuanchoSL/"
+                }
+            ],
+            "description": "Little logger using the PSR interfaces",
+            "homepage": "https://github.com/JuanchoSL/Logger",
+            "keywords": [
+                "debug",
+                "log"
+            ],
+            "support": {
+                "issues": "https://github.com/JuanchoSL/Logger/issues",
+                "source": "https://github.com/JuanchoSL/Logger/tree/develop"
+            },
+            "time": "2024-02-01T22:03:27+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -462,16 +564,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.56",
+            "version": "1.10.57",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "27816a01aea996191ee14d010f325434c0ee76fa"
+                "reference": "1627b1d03446904aaa77593f370c5201d2ecc34e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/27816a01aea996191ee14d010f325434c0ee76fa",
-                "reference": "27816a01aea996191ee14d010f325434c0ee76fa",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/1627b1d03446904aaa77593f370c5201d2ecc34e",
+                "reference": "1627b1d03446904aaa77593f370c5201d2ecc34e",
                 "shasum": ""
             },
             "require": {
@@ -520,7 +622,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-01-15T10:43:00+00:00"
+            "time": "2024-01-24T11:51:34+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -843,16 +945,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "9.6.15",
+            "version": "9.6.16",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "05017b80304e0eb3f31d90194a563fd53a6021f1"
+                "reference": "3767b2c56ce02d01e3491046f33466a1ae60a37f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/05017b80304e0eb3f31d90194a563fd53a6021f1",
-                "reference": "05017b80304e0eb3f31d90194a563fd53a6021f1",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/3767b2c56ce02d01e3491046f33466a1ae60a37f",
+                "reference": "3767b2c56ce02d01e3491046f33466a1ae60a37f",
                 "shasum": ""
             },
             "require": {
@@ -926,7 +1028,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.15"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/9.6.16"
             },
             "funding": [
                 {
@@ -942,7 +1044,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2023-12-01T16:55:19+00:00"
+            "time": "2024-01-19T07:03:14+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -1961,7 +2063,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": [],
+    "stability-flags": {
+        "juanchosl/logger": 20
+    },
     "prefer-stable": false,
     "prefer-lowest": false,
     "platform": {

@@ -33,7 +33,16 @@ class Oracle extends RDBMS implements DbInterface
     public function connect(): void
     {
         //$this->credentials->port = empty($this->credentials->getPort()) ? '1521' : $this->credentials->getPort();
-        $this->linkIdentifier = oci_connect($this->credentials->getUsername(), $this->credentials->getPassword(), $this->credentials->getHost() . '/' . $this->credentials->getDataBase(), 'AL32UTF8', OCI_SYSDBA) or throw new \Exception(oci_error()['message']);
+        try {
+            $this->linkIdentifier = oci_connect($this->credentials->getUsername(), $this->credentials->getPassword(), $this->credentials->getHost() . '/' . $this->credentials->getDataBase(), 'AL32UTF8', OCI_SYSDBA)
+                or throw new \Exception(oci_error()['message']);
+        } catch (\Exception $exception) {
+            $this->log($exception, 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
+        }
     }
 
     public function disconnect(): bool
@@ -85,35 +94,7 @@ class Oracle extends RDBMS implements DbInterface
         }
         return $this->describe[$tabla] ?? [];
     }
-    /*
-        public function keys(string $tabla = null): array
-        {
-            if (empty($tabla)) {
-                $tabla = $this->tabla;
-            }
-            if (!array_key_exists($tabla, $this->describe)) {
-                $this->describe($tabla);
-            }
-            /*
-            $this->sqlBuilder = new QueryBuilder;
-            $this->sqlBuilder->select(['cols.column_name'])->from('all_constraints cons')->join(['JOIN all_cons_columns cols ON cons.constraint_name = cols.constraint_name AND cons.owner = cols.owner'])->where(array(
-                'cons.constraint_type', 'P',
-                'cols.table_name', strtoupper($tabla)
-            ));
-            $cursor = $this->execute($this->sqlBuilder);
-            *
-            $sql = sprintf("SELECT cols.column_name FROM all_constraints cons JOIN all_cons_columns cols ON cons.constraint_name = cols.constraint_name AND cons.owner = cols.owner WHERE cons.constraint_type='P' AND cols.table_name = '%s'", strtoupper($tabla));
-            $cursor = $this->execute($sql);
-            while ($keys = $cursor->next(self::RESPONSE_ASSOC)) {
-                print_r($keys).PHP_EOL;
-                $this->keys[$tabla][] = $keys['COLUMN_NAME'];
-            }
-            if ($cursor) {
-                $cursor->free();
-            }
-            return $this->keys[$tabla];
-        }
-    */
+    
     public function execute(QueryBuilder|string $query): CursorInterface
     {
         //        $originalQuery = $query;
@@ -124,21 +105,19 @@ class Oracle extends RDBMS implements DbInterface
 //            oci_execute($cursor);
 //            $this->nResultsPagination = oci_fetch_all($cursor, $res, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
 //        }
-        $sql = $this->parseQuery($query);
-        //print_r($sql) . PHP_EOL;
-        $this->cursor = oci_parse($this->linkIdentifier, $sql);
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
+        $query = $this->parseQuery($query);
+        $this->cursor = oci_parse($this->linkIdentifier, $query);
         if (!oci_execute($this->cursor)) {
-            throw new \Exception($sql . ' -> ' . oci_error($this->cursor)['message']);
+            $exception = new \Exception($query . ' -> ' . oci_error($this->cursor)['message']);
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
         return new OracleCursor($this->cursor);
-        /*
-        try {
-        } catch (\Exception $e) {
-            print_r($query);
-            print_r($sql);
-            throw new \Exception($e->getMessage() . ' -> ' . $sql);
-        }
-        */
     }
 
 
@@ -170,16 +149,6 @@ class Oracle extends RDBMS implements DbInterface
             return $this->getQuery($sqlBuilder);
         }
     }
-    /*
-        public function cleanFields(array $camps = array()): array
-        {
-            $response = array();
-            foreach ($camps as $field => $camp) {
-                $response[strtoupper($field)] = $camp;
-            }
-            return parent::cleanFields($response);
-        }
-    */
 
     public function truncate(): bool
     {
@@ -202,12 +171,12 @@ class Oracle extends RDBMS implements DbInterface
         foreach ($fields as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
             if (!$field->isKey()) {
-                $sql .="({$field->getLength()})";
+                $sql .= "({$field->getLength()})";
                 if (!$field->isNullable()) {
                     $sql .= " NOT NULL";
                 }
             }
-            if(!empty($field->getDefault())){
+            if (!empty($field->getDefault())) {
                 $sql .= " DEFAULT {$field->getDefault()}";
             }
             if ($field->isKey()) {
@@ -215,7 +184,7 @@ class Oracle extends RDBMS implements DbInterface
             }
             $sql .= ", ";
         }
-        $sql = rtrim($sql ,', ');
+        $sql = rtrim($sql, ', ');
         $sql .= ")";
         //print_r(sprintf($sql, strtoupper($table_name)));
         return $this->execute(sprintf($sql, strtoupper($table_name)));
