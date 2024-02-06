@@ -2,7 +2,7 @@
 
 namespace JuanchoSL\Orm\engine\Structures;
 
-class FieldDescription
+class FieldDescription implements \JsonSerializable
 {
     const FIELD_TYPE_INTEGER = 'int';
     const FIELD_TYPE_FLOAT = 'float';
@@ -78,5 +78,17 @@ class FieldDescription
     public function isNullable()
     {
         return $this->field_nullable;
+    }
+
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'field_name' => $this->getName(),
+            'field_type' => $this->getType(),
+            'field_length' => $this->getLength(),
+            'field_nullable' => $this->getNullable(),
+            'field_default' => $this->getDefault(),
+            'field_is_key' => $this->getKey(),
+        ];
     }
 }

@@ -7,7 +7,7 @@ trait SQLBuilderTrait
 
     protected function getQuery(QueryBuilder $queryBuilder): string
     {
-        $this->describe($queryBuilder->table);
+        $this->setTable($queryBuilder->table);
         $condition = $this->mountWhere($queryBuilder->condition);
         $join = (isset($queryBuilder->join) && is_array($queryBuilder->join) && count($queryBuilder->join) > 0) ? " " . implode(" ", $queryBuilder->join) : null;
 

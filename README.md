@@ -20,6 +20,15 @@ use JuanchoSL\Orm\engine\Drivers\Mysqli;
 $resource = new Mysqli($credentials, Mysqli::RESPONSE_OBJECT);
 ```
 
+### Use a logger
+You can inject a logger in order to save queries and errors from drivers
+```
+use JuanchoSL\Logger\Logger;
+
+$logger = new Logger(FULLPATH);
+$resource->setLogger($logger);
+```
+
 ### Create a query using query builder
 ```
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
@@ -36,5 +45,9 @@ $cursor->free();
 ```
 DBConnection::setConnection($resource);
 
+//for retrieve an entity using primary key
 $my_model = MyModel::findByPk(1);
+
+//for search a collection of elements
+$my_collection = MyModel::where(['status', '1', '='])->get();
 ```

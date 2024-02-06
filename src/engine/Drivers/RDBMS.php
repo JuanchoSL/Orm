@@ -89,9 +89,9 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
     {
         $this->tabla = $tabla;
         if (!array_key_exists($tabla, $this->describe)) {
-            $this->describe();
-            $this->columns();
-            $this->keys();
+            $this->describe($tabla);
+            $this->columns($tabla);
+            $this->keys($tabla);
         }
     }
 
@@ -166,7 +166,7 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
         if (empty($tabla)) {
             $tabla = $this->tabla;
         }
-        if (!array_key_exists($tabla, $this->keys)) {
+        if (!array_key_exists($tabla, $this->describe)) {
             $this->describe($tabla);
         }
 
@@ -181,9 +181,7 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
 
     public function __destruct()
     {
-        //$this->freeCursor();
         $this->disconnect();
-        unset($this->linkIdentifier);
     }
     /*
         public function select($where_array = array(), $order = null, $page = 0, $limit = null, $inner = array()): CursorInterface
