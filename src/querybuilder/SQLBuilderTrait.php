@@ -18,7 +18,6 @@ trait SQLBuilderTrait
                 $camps = (isset($queryBuilder->camps) && is_array($queryBuilder->camps) && count($queryBuilder->camps) > 0) ? implode(',', $queryBuilder->camps) : '*';
                 $table = (!empty($queryBuilder->table)) ? "FROM " . $queryBuilder->table : '';
                 $a = "{$queryBuilder->operation} {$camps} " . $table . $join . $condition . $order . $limit . $queryBuilder->extraQuery;
-                //print_r($a) . PHP_EOL;
                 return $a;
 
             case QueryBuilder::MODE_INSERT:
@@ -38,7 +37,6 @@ trait SQLBuilderTrait
 
             default:
                 $a = $queryBuilder->operation . " " . implode(',', $queryBuilder->camps) . " " . $queryBuilder->table;
-                //print_r($a);exit;
                 return $a;
         }
     }

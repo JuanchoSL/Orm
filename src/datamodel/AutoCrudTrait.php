@@ -31,39 +31,7 @@ trait AutoCrudTrait
                     $save[$column] = $this->values[$column];
                 }
             }
-        } else {
-            /*
-            $columns = array_keys(get_object_vars($this));
-
-            $reflect = new \ReflectionClass(DatabaseFactory::class);
-            $attributes = $reflect->getProperties();
-            $attributes = array_map(function ($e) {
-                return $e->name;
-            }, $attributes);
-            $attributes = array_flip($attributes);
-
-            $reflect = new \ReflectionClass($this->linkIdentifier);
-            $attributes2 = $reflect->getProperties();
-            $attributes2 = array_map(function ($e) {
-                return $e->name;
-            }, $attributes2);
-            $attributes2 = array_flip($attributes2);
-
-            $reflect = new \ReflectionClass(get_called_class());
-            $attributes3 = $reflect->getProperties();
-            $attributes3 = array_map(function ($e) {
-                return $e->name;
-            }, $attributes3);
-            $attributes3 = array_flip($attributes3);
-
-            $attributes = array_merge($attributes, $attributes2, $attributes3);
-            foreach ($columns as $i => $col) {
-                if (!array_key_exists($col, $attributes)) {
-                    $save[$col] = $this->$col;
-                }
-            }
-            */
-        }
+       }
         $pk = $this->getPrimaryKeyName();
         unset($save[$pk]);
         try {

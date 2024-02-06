@@ -29,7 +29,6 @@ abstract class Model extends DBConnection implements \JsonSerializable, DataMode
         }elseif (!empty($this->identifier)) {
             return $this->identifier;
         }
-        //print_r($this);exit;
         throw new UnprocessableEntityException($pk);
     }
 

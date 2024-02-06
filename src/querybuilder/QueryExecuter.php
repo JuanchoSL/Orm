@@ -63,10 +63,6 @@ class QueryExecuter
     public function last(): DataModelInterface
     {
         return $this->get()->last();
-        /*
-        $collection = $this->get()->getCollection();
-        return end($collection);
-        */
     }
 
     public function get(): Collection

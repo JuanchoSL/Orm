@@ -74,7 +74,7 @@ class Mysqli extends RDBMS implements DbInterface
                     ->setLength(trim($varchar[1] ?? '0'))
                     ->setNullable($keys['Null'])
                     ->setDefault($keys['Default'])
-                    ->setKey(!empty($keys['Key']));
+                    ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
                 $describe[$keys['Field']] = $field;
             }
             $this->describe[$tabla] = $describe;
