@@ -1,11 +1,11 @@
 <?php
 
-namespace JuanchoSL\Orm\Tests\Relations;
+namespace JuanchoSL\Orm\Tests\Integration;
 
 use JuanchoSL\Orm\engine\Engines;
 
-class SqlserverTest extends AbstractRelationsTest
+class SqlserverTest extends AbstractIntegrationTest
 {
-
     protected Engines $db_type = Engines::TYPE_SQLSRV;
+
 }

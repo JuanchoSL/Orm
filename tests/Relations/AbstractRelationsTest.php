@@ -3,7 +3,11 @@
 namespace JuanchoSL\Orm\Tests\Relations;
 
 use JuanchoSL\Orm\Collection;
+use JuanchoSL\Orm\datamodel\Model;
+use JuanchoSL\Orm\engine\Drivers\DbInterface;
+use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\Other;
 use JuanchoSL\Orm\Tests\TestDb;
 use PHPUnit\Framework\TestCase;
@@ -11,10 +15,19 @@ use PHPUnit\Framework\TestCase;
 abstract class AbstractRelationsTest extends TestCase
 {
 
-    protected $db;
+    use ConnectionTrait;
+
+    protected DbInterface $db;
+
+    protected Engines $db_type;
+
 
     private $loops = 3;
-
+    public function setUp(): void
+    {
+        $this->db = self::getConnection($this->db_type);
+        Model::setConnection($this->db);
+    }
     public function testCreate()
     {
         $this->markTestSkipped();
@@ -50,25 +63,26 @@ abstract class AbstractRelationsTest extends TestCase
         $this->assertInstanceOf(Collection::class, $others);
         $this->assertTrue($others->hasElements());
         $this->assertContainsOnlyInstancesOf(Other::class, $others);
-        
+
         $count = $others->count();
         $other = $others->first();
         $this->assertEquals(1, $other->delete());
-        
+
         $others = $obj->other;
         $new_count = $others->count();
         $this->assertLessThan($count, $new_count);
     }
-    
-    public function testsParent(){
+
+    public function testsParent()
+    {
         $obj = TestDb::findByPk(1);
         $this->assertInstanceOf(TestDb::class, $obj);
-    
+
         $others = $obj->other;
         $this->assertInstanceOf(Collection::class, $others);
         $this->assertTrue($others->hasElements());
         $this->assertContainsOnlyInstancesOf(Other::class, $others);
-        
+
         /*
         print_r($others);
         $parent = $others->first();

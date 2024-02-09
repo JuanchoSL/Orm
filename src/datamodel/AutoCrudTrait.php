@@ -31,20 +31,20 @@ trait AutoCrudTrait
                     $save[$column] = $this->values[$column];
                 }
             }
-       }
+        }
         $pk = $this->getPrimaryKeyName();
         unset($save[$pk]);
         try {
             $id = $this->getPrimaryKeyValue();
-            return self::where([$pk, $id])->update($save);
+            $result = self::where([$pk, $id])->update($save);
         } catch (UnprocessableEntityException $ex) {
             $result = self::insert($save);
             if ($result) {
                 $this->identifier = $this->{$pk} = $result;
                 $this->loaded = true;
             }
-            return $result;
         }
+        return $result;
     }
 
 
@@ -125,9 +125,9 @@ trait AutoCrudTrait
             throw new NotFoundException("The element with {$pk}={$id} does not exists into {$this->getTableName()}");
         }
         if ($element) {
-            $this->fill((array)$element);
+            $this->fill((array) $element);
         }
-        return $this;
+        return $element;
     }
 
 }

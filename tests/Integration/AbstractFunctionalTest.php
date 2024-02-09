@@ -1,16 +1,18 @@
 <?php
 
-namespace JuanchoSL\Orm\Tests\Functional;
+namespace JuanchoSL\Orm\Tests\Integration;
 
 use JuanchoSL\Orm\Collection;
-use JuanchoSL\Orm\datamodel\Model;
+use JuanchoSL\Orm\datamodel\CachedModel;
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
 use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
+use JuanchoSL\SimpleCache\Adapters\SimpleCacheAdapter;
+use JuanchoSL\SimpleCache\Repositories\ProcessCache;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractFunctionalTest extends TestCase
+abstract class AbstractIntegrationTest extends TestCase
 {
 
     use ConnectionTrait;
@@ -24,7 +26,8 @@ abstract class AbstractFunctionalTest extends TestCase
     public function setUp(): void
     {
         $this->db = self::getConnection($this->db_type);
-        Model::setConnection($this->db);
+        CachedModel::setConnection($this->db);
+        CachedModel::setCache(SimpleCacheAdapter::getInstance(new ProcessCache('Orm' . (string) $this->db_type->string())));
     }
     public function testInsert()
     {

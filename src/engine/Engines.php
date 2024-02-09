@@ -23,4 +23,16 @@ enum Engines
         */
     case TYPE_MONGO; // = 'MONGO';
     case TYPE_MONGOCLIENT; // = 'MONGOCLIENT';
+
+    public function string(): string
+    {
+        return match ($this) {
+            Engines::TYPE_MYSQLI => 'MYSQLI',
+            Engines::TYPE_SQLITE => 'SQLITE',
+            Engines::TYPE_POSTGRE => 'POSTGRE',
+            Engines::TYPE_SQLSRV => 'SQLSRV',
+            Engines::TYPE_ORACLE => 'ORACLE',
+            Engines::TYPE_ODBC => 'ODBC',
+        };
+    }
 }

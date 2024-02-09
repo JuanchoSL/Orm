@@ -27,7 +27,8 @@
     "require-dev": {
         "phpunit/phpunit": "9.6.*",
         "phpstan/phpstan": "1.10.*",
-        "juanchosl/logger": "dev-develop"
+        "juanchosl/logger": "dev-develop",
+        "juanchosl/simplecache": "dev-develop"
     },
     "autoload": {
         "psr-4": {

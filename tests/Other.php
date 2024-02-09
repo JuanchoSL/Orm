@@ -3,9 +3,10 @@
 namespace JuanchoSL\Orm\Tests;
 
 use JuanchoSL\Orm\datamodel\Model;
+use JuanchoSL\Orm\datamodel\CachedModel;
 
 
-class Other extends Model
+class Other extends CachedModel
 {
 
     public function test()

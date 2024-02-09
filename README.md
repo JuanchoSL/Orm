@@ -43,7 +43,19 @@ $cursor->free();
 
 ### For use with datamodels, set the connection previously created
 ```
-DBConnection::setConnection($resource);
+Model::setConnection($resource);
+
+//for retrieve an entity using primary key
+$my_model = MyModel::findByPk(1);
+
+//for search a collection of elements
+$my_collection = MyModel::where(['status', '1', '='])->get();
+```
+
+### For use cache with datamodels, use CacheModel instead Model and set the connection previously created
+```
+CacheModel::setConnection($resource);
+CachedModel::setCache(SimpleCacheAdapter::getInstance(new SessionCache('cache_database')));
 
 //for retrieve an entity using primary key
 $my_model = MyModel::findByPk(1);

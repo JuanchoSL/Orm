@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ec3167164e687a7c82ba104268519497",
+    "content-hash": "8f0c60012d68b6a63e02836ed61c4f77",
     "packages": [
         {
             "name": "juanchosl/datatransfer",
@@ -288,12 +288,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Logger.git",
-                "reference": "1820e3f849c1c8e2f4ad5338be4dfbfd73b16057"
+                "reference": "9d67fe1096af35199ce79d5725f678a62a1a0c61"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/1820e3f849c1c8e2f4ad5338be4dfbfd73b16057",
-                "reference": "1820e3f849c1c8e2f4ad5338be4dfbfd73b16057",
+                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/9d67fe1096af35199ce79d5725f678a62a1a0c61",
+                "reference": "9d67fe1096af35199ce79d5725f678a62a1a0c61",
                 "shasum": ""
             },
             "require": {
@@ -332,7 +332,65 @@
                 "issues": "https://github.com/JuanchoSL/Logger/issues",
                 "source": "https://github.com/JuanchoSL/Logger/tree/develop"
             },
-            "time": "2024-02-01T22:03:27+00:00"
+            "time": "2024-02-05T18:00:08+00:00"
+        },
+        {
+            "name": "juanchosl/simplecache",
+            "version": "dev-develop",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JuanchoSL/SimpleCache.git",
+                "reference": "56a0ab4782bc421f4d41b25c48a5dd69befee5d1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/56a0ab4782bc421f4d41b25c48a5dd69befee5d1",
+                "reference": "56a0ab4782bc421f4d41b25c48a5dd69befee5d1",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^7.2 || ^8.0",
+                "psr/simple-cache": "3.0.*"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "1.10.*",
+                "phpunit/phpunit": "9.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "JuanchoSL\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Juan Sánchez Lecegui",
+                    "email": "JuanchoSL@hotmail.com",
+                    "homepage": "https://github.com/JuanchoSL/"
+                }
+            ],
+            "description": "A small collection of read/write for multiples cache systems using PSR-16",
+            "homepage": "https://github.com/JuanchoSL/SimpleCache",
+            "keywords": [
+                "cache",
+                "file cache",
+                "memcache cache",
+                "memcached cache",
+                "process cache",
+                "psr-16",
+                "redis cache",
+                "session cache",
+                "simple cache"
+            ],
+            "support": {
+                "issues": "https://github.com/JuanchoSL/SimpleCache/issues",
+                "source": "https://github.com/JuanchoSL/SimpleCache/tree/develop"
+            },
+            "time": "2024-02-09T20:38:23+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -1045,6 +1103,57 @@
                 }
             ],
             "time": "2024-01-19T07:03:14+00:00"
+        },
+        {
+            "name": "psr/simple-cache",
+            "version": "3.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/simple-cache.git",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/simple-cache/zipball/764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "reference": "764e0b3939f5ca87cb904f570ef9be2d78a07865",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\SimpleCache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interfaces for simple caching",
+            "keywords": [
+                "cache",
+                "caching",
+                "psr",
+                "psr-16",
+                "simple-cache"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/simple-cache/tree/3.0.0"
+            },
+            "time": "2021-10-29T13:26:27+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -2064,7 +2173,8 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "juanchosl/logger": 20
+        "juanchosl/logger": 20,
+        "juanchosl/simplecache": 20
     },
     "prefer-stable": false,
     "prefer-lowest": false,

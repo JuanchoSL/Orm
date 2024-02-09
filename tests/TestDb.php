@@ -3,9 +3,10 @@
 namespace JuanchoSL\Orm\Tests;
 
 use JuanchoSL\Orm\datamodel\Model;
+use JuanchoSL\Orm\datamodel\CachedModel;
 
 
-class TestDb extends Model
+class TestDb extends CachedModel
 {
 
     protected $table = 'test';

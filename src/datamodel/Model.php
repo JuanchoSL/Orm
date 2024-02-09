@@ -1,32 +1,63 @@
 <?php
 
 namespace JuanchoSL\Orm\datamodel;
+
 use JuanchoSL\Exceptions\UnprocessableEntityException;
+use JuanchoSL\Orm\engine\Drivers\DbInterface;
 
 /**
  * Description of Model
  *
  * @author Juancho
  */
-abstract class Model extends DBConnection implements \JsonSerializable, DataModelInterface
+abstract class Model implements \JsonSerializable, DataModelInterface
 {
     use RelationsTrait, AutoQueryTrait, InstantiatorTrait, AutoCrudTrait;
-    private $identifier = 0;
+    protected $identifier = 0;
 
-    private $loaded = false;
+    protected $loaded = false;
 
     protected $lazyLoad = true;
 
     protected $table = null;
 
+    static $conn = [];
+
+    protected $connection_name = 'default';
+
+    public static function setConnection(DbInterface $connection, string $conection_name = 'default'): DbInterface
+    {
+        return self::$conn[$conection_name] = $connection;
+    }
+
+    public function __call($method, $parameters)
+    {
+        self::$conn[$this->connection_name]->setTable($this->getTableName());
+        return call_user_func_array(array(self::$conn[$this->connection_name], $method), $parameters);
+    }
 
 
+    protected function adapterIdentifier($id)
+    {
+        /*if (is_string($id)) {
+            switch (strtolower(get_class(self::$conn))) {
+                case strtolower(\remote\database\Mongo::class):
+                    $id = new \MongoDB\BSON\ObjectId($id);
+                    break;
+
+                case strtolower(\remote\database\MongoClient::class):
+                    $id = new \MongoId($id);
+                    break;
+            }
+        }*/
+        return $id;
+    }
     public function getPrimaryKeyValue()
     {
         $pk = $this->getPrimaryKeyName();
         if (isset($this->values[$pk])) {
             return $this->values[$pk];
-        }elseif (!empty($this->identifier)) {
+        } elseif (!empty($this->identifier)) {
             return $this->identifier;
         }
         throw new UnprocessableEntityException($pk);
