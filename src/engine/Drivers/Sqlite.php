@@ -34,7 +34,7 @@ class Sqlite extends RDBMS implements DbInterface
             $fileDB = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->credentials->getHost() . DIRECTORY_SEPARATOR . $this->credentials->getDataBase());
             try {
                 $this->linkIdentifier = new \SQLite3($fileDB, SQLITE3_OPEN_READWRITE, $this->credentials->getPassword());
-            } catch (\Exception $exception) {
+                            } catch (\Exception $exception) {
                 $this->log($exception, 'error', [
                     'exception' => $exception,
                     'credentials' => $this->credentials
