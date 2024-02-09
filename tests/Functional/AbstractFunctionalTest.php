@@ -5,6 +5,7 @@ namespace JuanchoSL\Orm\Tests\Functional;
 use JuanchoSL\Orm\Collection;
 use JuanchoSL\Orm\datamodel\DBConnection;
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
+use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
 use PHPUnit\Framework\TestCase;
@@ -16,7 +17,7 @@ abstract class AbstractFunctionalTest extends TestCase
 
     protected DbInterface $db;
 
-    protected $db_type;
+    protected Engines $db_type;
 
     private $loops = 3;
 

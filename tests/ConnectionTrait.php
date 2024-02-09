@@ -3,7 +3,6 @@
 namespace JuanchoSL\Orm\Tests;
 
 use JuanchoSL\Logger\Logger;
-use JuanchoSL\Orm\DatabaseFactory;
 use JuanchoSL\Orm\engine\DbCredentials;
 use JuanchoSL\Orm\engine\Drivers\Mysqli;
 use JuanchoSL\Orm\engine\Drivers\Odbc;
