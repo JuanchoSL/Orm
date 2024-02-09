@@ -5,8 +5,10 @@ namespace JuanchoSL\Orm\engine\Drivers;
 use JuanchoSL\Orm\DatabaseFactory;
 use JuanchoSL\Orm\engine\DbCredentials;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use Psr\Log\LoggerAwareInterface;
+use Psr\Log\LoggerInterface;
 
-abstract class RDBMS implements DbInterface
+abstract class RDBMS implements DbInterface, LoggerAwareInterface
 {
 
     const RESPONSE_OBJECT = 'object';
@@ -25,13 +27,13 @@ abstract class RDBMS implements DbInterface
     protected $keys = [];
     protected $lastInsertedId;
     protected $cursor;
-    protected $credentials;
-
+    protected DbCredentials $credentials;
+    protected LoggerInterface $logger;
     function __construct(DbCredentials $credentials, $typeReturn = 'object')
     {
         $this->credentials = $credentials;
         $this->typeReturn = $typeReturn;
-        $this->connect();
+        //$this->connect();
         $this->sqlBuilder = new QueryBuilder();
         /*
         if (extension_loaded($this->requiredModule)) {
@@ -39,6 +41,20 @@ abstract class RDBMS implements DbInterface
             throw new \Exception($this->requiredModule);
         }
         */
+    }
+    abstract protected function mountComparation(string $comparation): string;
+    abstract protected function getQuery(QueryBuilder $queryBuilder): string;
+
+    public function setLogger(LoggerInterface $logger): void
+    {
+        $this->logger = $logger;
+    }
+
+    protected function log(\Stringable|string $message, $log_level, $context = [])
+    {
+        if (isset($this->logger)) {
+            $this->logger->log($log_level, $message, $context);
+        }
     }
 
     public function getTypeReturn()
@@ -72,9 +88,11 @@ abstract class RDBMS implements DbInterface
     public function setTable(string $tabla): void
     {
         $this->tabla = $tabla;
-        $this->describe();
-        $this->columns();
-        $this->keys();
+        if (!array_key_exists($tabla, $this->describe)) {
+            $this->describe($tabla);
+            $this->columns($tabla);
+            $this->keys($tabla);
+        }
     }
 
     public function cleanFields(array $camps = array(), string $table = null)
@@ -121,7 +139,7 @@ abstract class RDBMS implements DbInterface
     protected function toString(array $values, $envoltorio = null, $indices = false)
     {
         $response = [];
-       // $values = $this->cleanFields($values);
+        // $values = $this->cleanFields($values);
         foreach ($values as $key => $value) {
             $response[] = $this->mountComparation("{$key}={$value}");
         }
@@ -148,7 +166,7 @@ abstract class RDBMS implements DbInterface
         if (empty($tabla)) {
             $tabla = $this->tabla;
         }
-        if (!array_key_exists($tabla, $this->keys)) {
+        if (!array_key_exists($tabla, $this->describe)) {
             $this->describe($tabla);
         }
 
@@ -163,34 +181,32 @@ abstract class RDBMS implements DbInterface
 
     public function __destruct()
     {
-        //$this->freeCursor();
         $this->disconnect();
-        unset($this->linkIdentifier);
     }
-/*
-    public function select($where_array = array(), $order = null, $page = 0, $limit = null, $inner = array()): CursorInterface
-    {
-        //$where_array = $this->cleanFields($where_array);
-        if (is_numeric($limit)) {
-            $builder = DatabaseFactory::queryBuilder()->select(['COUNT(*) AS t'])->from($this->tabla)->join($inner)->where($where_array);
-            $response = $this->execute($builder)->next(self::RESPONSE_ASSOC); //"SELECT COUNT(*) AS total FROM " . $this->tabla . $this->mountWhere($where_array))
-            $nResultsPagination = $response['t'];
+    /*
+        public function select($where_array = array(), $order = null, $page = 0, $limit = null, $inner = array()): CursorInterface
+        {
+            //$where_array = $this->cleanFields($where_array);
+            if (is_numeric($limit)) {
+                $builder = DatabaseFactory::queryBuilder()->select(['COUNT(*) AS t'])->from($this->tabla)->join($inner)->where($where_array);
+                $response = $this->execute($builder)->next(self::RESPONSE_ASSOC); //"SELECT COUNT(*) AS total FROM " . $this->tabla . $this->mountWhere($where_array))
+                $nResultsPagination = $response['t'];
+            }
+            $builder = DatabaseFactory::queryBuilder()->select()->from($this->tabla)->join($inner)->where($where_array)->orderBy($order)->limit($limit, $page);
+            $return = $this->execute($builder);
+            $this->nResults = $return->count();
+            $this->nResultsPagination = (empty($nResultsPagination)) ? $this->nResults : $nResultsPagination;
+            return $return;
         }
-        $builder = DatabaseFactory::queryBuilder()->select()->from($this->tabla)->join($inner)->where($where_array)->orderBy($order)->limit($limit, $page);
-        $return = $this->execute($builder);
-        $this->nResults = $return->count();
-        $this->nResultsPagination = (empty($nResultsPagination)) ? $this->nResults : $nResultsPagination;
-        return $return;
-    }
-*/
-/**
- * Inserta una tupla dentro de la tabla
- * @param mixed $values Valores a insertar, puede ser un array nominal o uno
- * asociativo o una cadena con los valores en el orden de la tabla
- * @return int Código de la primary key del nuevo registro
- */
+    */
+    /**
+     * Inserta una tupla dentro de la tabla
+     * @param mixed $values Valores a insertar, puede ser un array nominal o uno
+     * asociativo o una cadena con los valores en el orden de la tabla
+     * @return int Código de la primary key del nuevo registro
+     */
 
-public function insert(array $values): int
+    public function insert(array $values): int
     {
         //$values = $this->cleanFields($values);
         $builder = DatabaseFactory::queryBuilder()->insert($values)->into($this->tabla);
@@ -240,7 +256,6 @@ public function insert(array $values): int
         $builder = DatabaseFactory::queryBuilder()->truncate()->table($this->tabla);
         $this->execute($builder);
         return true;
-        return $this->affectedRows();
     }
 
     public function drop()
@@ -291,7 +306,7 @@ public function insert(array $values): int
         $this->cursor = null;
         return $query;
     }
-    public function lastInsertedId():int
+    public function lastInsertedId(): int
     {
         return $this->lastInsertedId;
     }

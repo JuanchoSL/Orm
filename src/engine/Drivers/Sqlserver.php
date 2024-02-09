@@ -41,13 +41,21 @@ class Sqlserver extends RDBMS implements DbInterface
             $host .= ', ';
             $host .= (!empty($this->credentials->getPort())) ? $this->credentials->getPort() : '1433';
         }
-        $this->linkIdentifier = sqlsrv_connect($host, [
-            'UID' => $this->credentials->getUsername(),
-            'PWD' => $this->credentials->getPassword(),
-            'Database' => $this->credentials->getDataBase(),
-            'encrypt' => false,
-            'ReturnDatesAsStrings' => true
-        ]) or throw new \Exception(sqlsrv_errors()[0]['message']);
+        try {
+            $this->linkIdentifier = sqlsrv_connect($host, [
+                'UID' => $this->credentials->getUsername(),
+                'PWD' => $this->credentials->getPassword(),
+                'Database' => $this->credentials->getDataBase(),
+                'encrypt' => false,
+                'ReturnDatesAsStrings' => true
+            ]) or throw new \Exception(sqlsrv_errors()[0]['message']);
+        } catch (\Exception $exception) {
+            $this->log($exception, 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
+        }
     }
 
     public function disconnect(): bool
@@ -78,7 +86,7 @@ class Sqlserver extends RDBMS implements DbInterface
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['COLUMN_NAME'])
-                    ->setType(str_replace(" identity", "", $keys['TYPE_NAME']))
+                    ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
                     ->setLength($keys['LENGTH'])
                     ->setNullable($keys['NULLABLE'] == 0)
                     ->setDefault($keys['COLUMN_DEF'])
@@ -95,11 +103,18 @@ class Sqlserver extends RDBMS implements DbInterface
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
-        $query = $this->parseQuery($query); //print_r($query);
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
+        $query = $this->parseQuery($query);
         $scroll = in_array(strtoupper(substr($query, 0, strpos($query, ' '))), ['INSERT', 'UPDATE', 'DELETE']) ? SQLSRV_CURSOR_FORWARD : SQLSRV_CURSOR_CLIENT_BUFFERED;
         $this->cursor = sqlsrv_query($this->linkIdentifier, $query, array(), array("Scrollable" => $scroll));
         if (!is_null(sqlsrv_errors())) {
-            throw new \Exception($query . " -> " . implode(PHP_EOL, current(sqlsrv_errors())));
+            $exception = new \Exception($query . " -> " . implode(PHP_EOL, current(sqlsrv_errors())));
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
         return new SqlsrvCursor($this->cursor);
     }

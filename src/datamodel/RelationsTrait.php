@@ -31,7 +31,7 @@ trait RelationsTrait
         return new BelongsToOne($model, $foreing_field, $this->{$owner_field});
     }
 
-    protected function BelongsToMany(DataModelInterface $model, string $foreing_field = null, string $owner_field = null): AbstractRelation
+    protected function BelongsToMany(DataModelInterface $model, DataModelInterface $response, string $foreing_field = null, string $owner_field = null): AbstractRelation
     {
         return new BelongsToMany($model, 'id', 'id');
     }

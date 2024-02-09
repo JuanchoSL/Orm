@@ -31,9 +31,15 @@ class Mysqli extends RDBMS implements DbInterface
 
     public function connect(): void
     {
-        $this->linkIdentifier = mysqli_connect($this->credentials->getHost(), $this->credentials->getUsername(), $this->credentials->getPassword(), $this->credentials->getDataBase(), $this->credentials->getPort()) or throw new \Exception(mysqli_connect_error());
-        if (mysqli_connect_errno() > 0) {
-            throw new \Exception(mysqli_connect_error());
+        try {
+            $this->linkIdentifier = mysqli_connect($this->credentials->getHost(), $this->credentials->getUsername(), $this->credentials->getPassword(), $this->credentials->getDataBase(), $this->credentials->getPort())
+                or throw new \Exception(mysqli_connect_error(), mysqli_connect_errno());
+        } catch (\Exception $exception) {
+            $this->log(mysqli_connect_error(), 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
         }
     }
 
@@ -60,15 +66,15 @@ class Mysqli extends RDBMS implements DbInterface
         if (!empty($tabla)) {
             $result = $this->execute("DESCRIBE " . $tabla);
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                list($type, $lenght) = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
+                $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['Field'])
-                    ->setType(trim($type))
-                    ->setLength(trim($lenght))
+                    ->setType(trim($varchar[0]))
+                    ->setLength(trim($varchar[1] ?? '0'))
                     ->setNullable($keys['Null'])
                     ->setDefault($keys['Default'])
-                    ->setKey(!empty($keys['Key']));
+                    ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
                 $describe[$keys['Field']] = $field;
             }
             $this->describe[$tabla] = $describe;
@@ -81,10 +87,17 @@ class Mysqli extends RDBMS implements DbInterface
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
         $query = $this->parseQuery($query);
         $cursor = mysqli_query($this->linkIdentifier, $query);
         if ($error_number = mysqli_errno($this->linkIdentifier) > 0) {
-            throw new \Exception($query . " -> " . mysqli_error($this->linkIdentifier), $error_number);
+            $exception = new \Exception($query . " -> " . mysqli_error($this->linkIdentifier), $error_number);
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
         return new MysqlCursor($cursor);
     }
@@ -118,7 +131,7 @@ class Mysqli extends RDBMS implements DbInterface
             }
             $sql .= ",";
         }
-        $sql = rtrim($sql ,',');
+        $sql = rtrim($sql, ',');
         $sql .= ")";
         return $this->execute(sprintf($sql, $table_name));
     }

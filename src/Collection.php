@@ -1,25 +1,14 @@
 <?php
 
 namespace JuanchoSL\Orm;
+use JuanchoSL\DataTransfer\Repositories\BaseCollectionable;
 
-class Collection implements \Iterator, \JsonSerializable, \Countable
+class Collection extends BaseCollectionable implements \Iterator, \JsonSerializable, \Countable
 {
-
-    private $var = array();
 
     public function insert($object): int
     {
-        return array_push($this->var, $object);
-    }
-
-    public function rewind(): void
-    {
-        reset($this->var);
-    }
-
-    public function current(): mixed
-    {
-        return current($this->var);
+        return array_push($this->data, $object);
     }
 
     public function first(): mixed
@@ -30,31 +19,12 @@ class Collection implements \Iterator, \JsonSerializable, \Countable
 
     public function last(): mixed
     {
-        return end($this->var);
-    }
-
-    public function key(): mixed
-    {
-        return key($this->var);
+        return end($this->data);
     }
 
     public function prev(): mixed
     {
-        return prev($this->var);
-    }
-    public function next(): void
-    {
-        next($this->var);
-    }
-
-    public function valid(): bool
-    {
-        return ($this->key() !== NULL && $this->key() !== FALSE);
-    }
-
-    public function count(): int
-    {
-        return count($this->var);
+        return prev($this->data);
     }
 
     public function hasElements(): bool
@@ -65,7 +35,7 @@ class Collection implements \Iterator, \JsonSerializable, \Countable
     public function jsonSerialize(): mixed
     {
         $arr = array();
-        foreach ($this->var as $vars) {
+        foreach ($this->data as $vars) {
             $vars = get_object_vars($vars);
             foreach ($vars as &$var) {
                 if (is_bool($var)) {
@@ -90,7 +60,7 @@ class Collection implements \Iterator, \JsonSerializable, \Countable
 
     public function getCollection(): array
     {
-        return $this->var;
+        return $this->data;
     }
 
     public function get()

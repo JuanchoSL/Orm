@@ -3,20 +3,33 @@
 namespace JuanchoSL\Orm\Tests\Functional;
 
 use JuanchoSL\Orm\Collection;
+use JuanchoSL\Orm\datamodel\DBConnection;
+use JuanchoSL\Orm\engine\Drivers\DbInterface;
+use JuanchoSL\Orm\engine\Engines;
+use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
 use PHPUnit\Framework\TestCase;
 
 abstract class AbstractFunctionalTest extends TestCase
 {
 
-    protected $db;
+    use ConnectionTrait;
+
+    protected DbInterface $db;
+
+    protected Engines $db_type;
 
     private $loops = 3;
 
+    public function setUp(): void
+    {
+        $this->db = self::getConnection($this->db_type);
+        DBConnection::setConnection($this->db);
+    }
     public function testInsert()
     {
         for ($i = 1; $i <= $this->loops; $i++) {
-            $id = TestDb::insert(array('test' => 'valor', 'dato' => $i))->save();
+            $id = TestDb::make(array('test' => 'valor', 'dato' => $i))->save();
             $this->assertTrue(!empty($id), "Recuperación del id de un insert");
         }
     }

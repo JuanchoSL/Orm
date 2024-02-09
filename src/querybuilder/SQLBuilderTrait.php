@@ -7,7 +7,7 @@ trait SQLBuilderTrait
 
     protected function getQuery(QueryBuilder $queryBuilder): string
     {
-        $this->describe($queryBuilder->table);
+        $this->setTable($queryBuilder->table);
         $condition = $this->mountWhere($queryBuilder->condition);
         $join = (isset($queryBuilder->join) && is_array($queryBuilder->join) && count($queryBuilder->join) > 0) ? " " . implode(" ", $queryBuilder->join) : null;
 
@@ -18,7 +18,6 @@ trait SQLBuilderTrait
                 $camps = (isset($queryBuilder->camps) && is_array($queryBuilder->camps) && count($queryBuilder->camps) > 0) ? implode(',', $queryBuilder->camps) : '*';
                 $table = (!empty($queryBuilder->table)) ? "FROM " . $queryBuilder->table : '';
                 $a = "{$queryBuilder->operation} {$camps} " . $table . $join . $condition . $order . $limit . $queryBuilder->extraQuery;
-                //print_r($a) . PHP_EOL;
                 return $a;
 
             case QueryBuilder::MODE_INSERT:
@@ -38,7 +37,6 @@ trait SQLBuilderTrait
 
             default:
                 $a = $queryBuilder->operation . " " . implode(',', $queryBuilder->camps) . " " . $queryBuilder->table;
-                //print_r($a);exit;
                 return $a;
         }
     }
@@ -121,15 +119,17 @@ trait SQLBuilderTrait
         } elseif ($last_char == "'") {
             $string = str_replace("'", "", $string);
         }
-        preg_match("/(\w+)(\W+)(\w+)/", $string, $matches);
+        preg_match("/(\w+)(\W+)(.*)/", $string, $matches);
 
         list($string, $key, $comparator, $value) = $matches;
         $value = $this->escape($value);
         $key = strtolower($key);
-        if (is_array($this->describe) && array_key_exists($key, $this->describe[$this->tabla]) && (stripos($this->describe[$this->tabla][$key]->getType(), 'char') !== false || stripos($this->describe[$this->tabla][$key]->getType(), 'text') !== false)) {
-            $value = "'{$value}'";
+        if (is_array($this->describe) && array_key_exists($key, $this->describe[$this->tabla])) {
+            if ((stripos($this->describe[$this->tabla][$key]->getType(), 'char') !== false || stripos($this->describe[$this->tabla][$key]->getType(), 'text') !== false)) {
+                $value = "'{$value}'";
+            }
+            $key = $this->describe[$this->tabla][$key]->getName();
         }
-        $key = $this->describe[$this->tabla][$key]->getName();
 
         return "{$key} {$comparator} {$value}";
     }

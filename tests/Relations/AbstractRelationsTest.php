@@ -31,6 +31,10 @@ abstract class AbstractRelationsTest extends TestCase
     public function testInsert()
     {
         for ($i = 1; $i <= $this->loops; $i++) {
+            $id = TestDb::make(array('test' => 'valor', 'dato' => $i))->save();
+            $this->assertTrue(!empty($id), "Recuperación del id de un insert");
+        }
+        for ($i = 1; $i <= $this->loops; $i++) {
             $fk = ($i % 2 == 0) ? 2 : 1;
             $id = Other::insert(array('valor' => "valor_{$i}", 'test_id' => $fk))->save();
             $this->assertTrue(!empty($id), "Recuperación del id de un insert");
@@ -78,6 +82,8 @@ abstract class AbstractRelationsTest extends TestCase
     public function testTruncate()
     {
         $success = Other::truncate();
+        $this->assertEquals(true, $success, "Trucate table");
+        $success = TestDb::truncate();
         $this->assertEquals(true, $success, "Trucate table");
     }
 }

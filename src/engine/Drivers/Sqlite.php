@@ -32,7 +32,15 @@ class Sqlite extends RDBMS implements DbInterface
     {
         if (!$this->linkIdentifier) {
             $fileDB = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->credentials->getHost() . DIRECTORY_SEPARATOR . $this->credentials->getDataBase());
-            $this->linkIdentifier = new \SQLite3($fileDB, SQLITE3_OPEN_READWRITE, $this->credentials->getPassword());
+            try {
+                $this->linkIdentifier = new \SQLite3($fileDB, SQLITE3_OPEN_READWRITE, $this->credentials->getPassword());
+                            } catch (\Exception $exception) {
+                $this->log($exception, 'error', [
+                    'exception' => $exception,
+                    'credentials' => $this->credentials
+                ]);
+                throw $exception;
+            }
         }
     }
 
@@ -58,7 +66,6 @@ class Sqlite extends RDBMS implements DbInterface
         }
         $describe = [];
         if (!empty($tabla)) {
-            //$this->describe = array();
             $result = $this->execute("PRAGMA table_info('" . $tabla . "')");
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {
                 $field = new FieldDescription;
@@ -79,12 +86,19 @@ class Sqlite extends RDBMS implements DbInterface
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
         $query = $this->parseQuery($query);
         //Las consultas que devuelven resultados se deben hacer por query, el resto por exec
         $method = (in_array(substr($query, 0, 6), array('SELECT', 'PRAGMA'))) ? 'query' : 'exec';
         $cursor = $this->linkIdentifier->$method($query);
         if (!$cursor) {
-            throw new \Exception($query . " -> " . $this->linkIdentifier->lastErrorMsg(), $this->linkIdentifier->lastErrorCode());
+            $exception = new \Exception($query . " -> " . $this->linkIdentifier->lastErrorMsg(), $this->linkIdentifier->lastErrorCode());
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
         return new SQLiteCursor($cursor);
     }

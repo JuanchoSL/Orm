@@ -6,6 +6,7 @@ use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\Db2Cursor;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
 /**
  * Esta clase permite conectar e interactuar con una tabla específica
@@ -22,17 +23,22 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
  */
 class Db2 extends RDBMS implements DbInterface
 {
-
+    use SQLBuilderTrait;
     protected $requiredModule = 'ibm_db2';
 
     public function connect(): void
     {
         $port = empty($this->credentials->getPort()) ? '50000' : $this->credentials->getPort();
-
-        $this->linkIdentifier = db2_connect("DATABASE={$this->credentials->getDataBase()};HOSTNAME={$this->credentials->getHost()};PORT={$port};PROTOCOL=TCPIP;UID={$this->credentials->getUsername()};PWD={$this->credentials->getPassword()}", null, null) or throw new \Exception(db2_conn_errormsg());
-        //$this->linkIdentifier = db2_connect($this->credentials->getHost(), $this->credentials->getUsername(), $this->credentials->getPassword(), $this->credentials->getDataBase(), $this->credentials->getPort()) or throw new \Exception(db2_conn_errormsg());
-//        db2_select_db($this->linkIdentifier, $this->dataBase) or Debug::error("databaseError", "database", E_USER_ERROR);
-        // return $this->linkIdentifier;
+        try {
+            $this->linkIdentifier = db2_connect("DATABASE={$this->credentials->getDataBase()};HOSTNAME={$this->credentials->getHost()};PORT={$port};PROTOCOL=TCPIP;UID={$this->credentials->getUsername()};PWD={$this->credentials->getPassword()}", null, null)
+                or throw new \Exception(db2_conn_errormsg());
+        } catch (\Exception $exception) {
+            $this->log($exception, 'error', [
+                'exception' => $exception,
+                'credentials' => $this->credentials
+            ]);
+            throw $exception;
+        }
     }
 
     /**
@@ -62,15 +68,16 @@ class Db2 extends RDBMS implements DbInterface
         if (empty($tabla)) {
             $tabla = $this->tabla;
         }
+        $describe = [];
         if (!empty($tabla)) {
             $result = $this->execute("DESCRIBE " . $tabla);
             while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                list($type, $lenght) = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
+                $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
                 $field = new FieldDescription;
                 $field
                     ->setName($keys['Field'])
-                    ->setType(trim($type))
-                    ->setLength(trim($lenght))
+                    ->setType(trim($varchar[0]))
+                    ->setLength(trim($varchar[1] ?? '0'))
                     ->setNullable($keys['Null'])
                     ->setDefault($keys['Default'])
                     ->setKey(!empty($keys['Key']));
@@ -87,6 +94,9 @@ class Db2 extends RDBMS implements DbInterface
 
     public function execute(QueryBuilder|string $query): CursorInterface
     {
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
         $query = $this->parseQuery($query);
         //        $this->cursor = db2_query($this->linkIdentifier, $query);
 //        if (db2_errno($this->linkIdentifier) > 0) {
@@ -94,10 +104,14 @@ class Db2 extends RDBMS implements DbInterface
 //            return false;
 //        }
         $this->cursor = db2_prepare($this->linkIdentifier, $query);
-        if ($this->cursor && db2_execute($this->cursor)) {
-            return new Db2Cursor($this->cursor);
+        if (!$this->cursor || !db2_execute($this->cursor)) {
+            $exception = new \Exception($query . ' -> ' . db2_stmt_errormsg($this->linkIdentifier));
+            $this->log($exception, 'error');
+            throw $exception;
+        } else {
+            $this->log($query, 'info');
         }
-        throw new \Exception($query . ' -> ' . db2_stmt_errormsg($this->linkIdentifier));
+        return new Db2Cursor($this->cursor);
     }
 
     public function escape(string $value): string

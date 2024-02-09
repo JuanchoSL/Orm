@@ -2,7 +2,7 @@
 
 namespace JuanchoSL\Orm\engine;
 
-class DbCredentials
+class DbCredentials implements \JsonSerializable
 {
 
     protected $host;
@@ -45,4 +45,14 @@ class DbCredentials
         return $this->port;
     }
 
+    public function jsonSerialize(): mixed
+    {
+        return [
+            'host' => $this->host,
+            'port' => $this->port,
+            'username' => $this->username,
+            'password' => $this->password,
+            'database' => $this->database
+        ];
+    }
 }

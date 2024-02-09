@@ -14,4 +14,5 @@ interface DataModelInterface
     public static function model();
     public static function getInstance();
     public static function findByPk(int $id);
+    public static function make(iterable $values);
 }
