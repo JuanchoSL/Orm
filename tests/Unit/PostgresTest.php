@@ -5,7 +5,7 @@ namespace JuanchoSL\Orm\Tests\Unit;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\engine\Engines;
 
-class PostgresTest extends AbstractUnitTest
+class PostgresTest extends AbstractUnit
 {
     protected $db_type = Engines::TYPE_POSTGRE;
 

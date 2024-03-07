@@ -17,8 +17,26 @@
         <testsuite name="Relations Tests Suite">
             <directory>./tests/Relations</directory>
         </testsuite>
+        <testsuite name="Integration Tests Suite">
+            <directory>./tests/Integration</directory>
+        </testsuite>
     </testsuites>
     <php>
-        <env name="URL_DOMAIN" value="http://localhost" force="true" />
+        <env name="MYSQL_HOST" value="host.docker.internal" force="true" />
+        <env name="MYSQL_DATABASE" value="test" force="true" />
+        <env name="MYSQL_USERNAME" value="test" force="true" />
+        <env name="MYSQL_PASSWORD" value="test" force="true" />
+        <env name="POSTGRES_HOST" value="host.docker.internal" force="true" />
+        <env name="POSTGRES_DATABASE" value="test" force="true" />
+        <env name="POSTGRES_USERNAME" value="root" force="true" />
+        <env name="POSTGRES_PASSWORD" value="root" force="true" />
+        <env name="SQLSRV_HOST" value="host.docker.internal" force="true" />
+        <env name="SQLSRV_DATABASE" value="master" force="true" />
+        <env name="SQLSRV_USERNAME" value="sa" force="true" />
+        <env name="SQLSRV_PASSWORD" value="Administrador1" force="true" />
+        <env name="ORACLE_HOST" value="host.docker.internal" force="true" />
+        <env name="ORACLE_DATABASE" value="SYSTEM" force="true" />
+        <env name="ORACLE_USERNAME" value="SYS" force="true" />
+        <env name="ORACLE_PASSWORD" value="oracle" force="true" />
     </php>
 </phpunit>

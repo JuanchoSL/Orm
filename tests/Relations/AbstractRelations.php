@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Tests\Other;
 use JuanchoSL\Orm\Tests\TestDb;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractRelationsTest extends TestCase
+abstract class AbstractRelations extends TestCase
 {
 
     use ConnectionTrait;

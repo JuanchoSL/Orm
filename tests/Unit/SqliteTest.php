@@ -5,7 +5,7 @@ namespace JuanchoSL\Orm\Tests\Unit;
 use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 
-class SqliteTest extends AbstractUnitTest
+class SqliteTest extends AbstractUnit
 {
     protected $db_type = Engines::TYPE_SQLITE;
 

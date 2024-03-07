@@ -59,7 +59,7 @@ class Odbc extends RDBMS implements DbInterface
 
     /**
      * Devuelve el listado de nombres de las tablas del servidor y esquema seleccionado
-     * @return mixed Array cuyo contenido es el listado de nombres de las tablas del esquema
+     * @return array Array cuyo contenido es el listado de nombres de las tablas del esquema
      */
     public function getTables(): array
     {

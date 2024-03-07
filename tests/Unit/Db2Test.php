@@ -7,7 +7,7 @@ use JuanchoSL\Orm\engine\Drivers\RDBMS;
 use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\engine\DbCredentials;
 
-class Db2Test extends AbstractUnitTest
+class Db2Test extends AbstractUnit
 {
 
     public function setUp(): void

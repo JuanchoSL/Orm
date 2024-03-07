@@ -8,7 +8,7 @@ use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractUnitTest extends TestCase
+abstract class AbstractUnit extends TestCase
 {
     use ConnectionTrait;
 
@@ -128,7 +128,7 @@ abstract class AbstractUnitTest extends TestCase
             $this->assertEquals($i, count($values));
             $this->assertTrue(isset($values[$i - 1]));
             $this->assertTrue($values[$i - 1] instanceof \stdClass);
-            $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($this->db->getKeys())};
+            $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($this->db->keys())};
             $this->assertTrue(!empty($id), "Recuperación del id de un select");
         }
     }
@@ -148,7 +148,7 @@ abstract class AbstractUnitTest extends TestCase
         $this->assertEquals($this->loops, $cursor->count(), "Count counter 2");
         $this->assertTrue(isset($values[$i - 1]));
         $this->assertTrue($values[$i - 1] instanceof \stdClass);
-        $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($this->db->getKeys())};
+        $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($this->db->keys())};
         $this->assertTrue(!empty($id), "Recuperación del id de un select");
     }
     /*

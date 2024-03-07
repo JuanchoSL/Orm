@@ -17,7 +17,7 @@ abstract class Model implements \JsonSerializable, DataModelInterface
 
     protected $loaded = false;
 
-    protected $lazyLoad = true;
+    protected $lazyLoad = false;
 
     protected $table = null;
 

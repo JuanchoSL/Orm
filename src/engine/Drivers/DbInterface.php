@@ -4,6 +4,7 @@ namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use Psr\Log\LoggerAwareInterface;
 
 /**
  * Interficie para implementar clases de gestión de tablas en SGBD
@@ -11,7 +12,7 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
  * @author Juan Sánchez Lecegui
  * @version 1.2
  */
-interface DbInterface
+interface DbInterface extends LoggerAwareInterface
 {
 
     /**
@@ -58,23 +59,28 @@ interface DbInterface
 
     /**
      * Inserta una tupla dentro de la tabla
-     * @param mixed $values Valores a insertar, puede se un array asociativo o
+     * @param array $values Valores a insertar, puede se un array asociativo o
      * una cadena con los valores en el orden de la tabla
+     * @return int ID del nuevo registro creado
      */
-    //public function insert(array $values): int;
+    public function insert(array $values): int;
 
     /**
      * Actualiza los valores de una tabla con los pasados por parámetro, pudiendo
      * ser éste una cadena o un array asociativo campo = "valor".
      * @param mixed $values String o array asociativo con los campos a actualizar
-     * @param array $where_array Condición que deben cumplir las tuplas a actualizar
+     * @param mixed $where_array Matriz asociativo con las condiciones de la query.
+     * @return int Número de filas afectadas
+     * @internal Podemos pasar una matriz $where['AND|OR|LIKE'][$key]=$value.
+     * Para querys más complejas podemos pasar un string directamente
      */
     //public function update(array $values, array $where_array): int;
 
     /**
      * Elimina los registros de la tabla que cumplan la condición pasada por
      * parámetro o todo el contenido de la tabla en caso de no especificarse.
-     * @param string $where Condición de los registros a borrar
+     * @param array $where Condición de los registros a borrar
+     * @return int Número de registros eliminados
      */
     public function delete(array $where): int;
 
@@ -84,7 +90,7 @@ interface DbInterface
     
     /**
      * Extracción de los nombres de los campos de la tabla
-     * @return mixed Array con los nombres de los campos
+     * @return array Array con los nombres de los campos
      */
     public function columns(string $tabla = null): array;
     
@@ -99,13 +105,12 @@ interface DbInterface
     /**
      * Extracción de los nombres de las claves primarias de la tabla
      * @param string $tabla Nombre de la tabla
-     * @return mixed Array con los nombres de las claves
+     * @return array Array con los nombres de las claves
      */
     public function keys(string $tabla = null): array;
     
     /**
      * Ejecuta una consulta sql en el servidor conectado
-     * @param string $tabla Nombre de la tabla
      * @param string|\JuanchoSL\Orm\querybuilder\QueryBuilder $query Consulta a ejecutar
      * @return \JuanchoSL\Orm\engine\Cursors\CursorInterface Resultado de la operación
      */

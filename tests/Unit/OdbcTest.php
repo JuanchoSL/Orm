@@ -4,7 +4,7 @@ namespace JuanchoSL\Orm\Tests\Unit;
 
 use JuanchoSL\Orm\engine\Engines;
 
-class OdbcTest extends AbstractUnitTest
+class OdbcTest extends AbstractUnit
 {
     protected $db_type = Engines::TYPE_ODBC;
 

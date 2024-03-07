@@ -4,7 +4,7 @@ namespace JuanchoSL\Orm\Tests\Relations;
 
 use JuanchoSL\Orm\engine\Engines;
 
-class OracleTest extends AbstractRelationsTest
+class OracleTest extends AbstractRelations
 {
 
     protected Engines $db_type = Engines::TYPE_ORACLE;

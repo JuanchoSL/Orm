@@ -19,7 +19,7 @@ trait ConnectionTrait
     {
         switch ($connection_type) {
             case Engines::TYPE_MYSQLI:
-                $credentials = new DbCredentials('localhost', 'test', 'test', 'test');
+                $credentials = new DbCredentials(getenv('MYSQL_HOST'), getenv('MYSQL_USERNAME'), getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
                 $resource = new Mysqli($credentials, RDBMS::RESPONSE_OBJECT);
                 break;
 
@@ -30,22 +30,22 @@ trait ConnectionTrait
                 break;
 
             case Engines::TYPE_POSTGRE:
-                $credentials = new DbCredentials('localhost', 'root', 'root', 'test');
+                $credentials = new DbCredentials(getenv('POSTGRES_HOST'), getenv('POSTGRES_USERNAME'), getenv('POSTGRES_PASSWORD'), getenv('POSTGRES_DATABASE'));
                 $resource = new Postgres($credentials, RDBMS::RESPONSE_OBJECT);
                 break;
 
             case Engines::TYPE_SQLSRV:
-                $credentials = new DbCredentials('localhost', 'sa', 'Administrador1', 'master');
+                $credentials = new DbCredentials(getenv('SQLSRV_HOST'), getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
                 $resource = new Sqlserver($credentials, RDBMS::RESPONSE_OBJECT);
                 break;
 
             case Engines::TYPE_ORACLE:
-                $credentials = new DbCredentials('localhost', 'SYS', 'oracle', 'SYSTEM');
+                $credentials = new DbCredentials(getenv('ORACLE_HOST'), getenv('ORACLE_USERNAME'), getenv('ORACLE_PASSWORD'), getenv('ORACLE_DATABASE'));
                 $resource = new Oracle($credentials, RDBMS::RESPONSE_OBJECT);
                 break;
 
             case Engines::TYPE_ODBC:
-                $credentials = new DbCredentials('localhost', 'sa', 'Administrador1', 'master');
+                $credentials = new DbCredentials(getenv('SQLSRV_HOST'), getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
                 $resource = new Odbc($credentials, RDBMS::RESPONSE_OBJECT);
                 break;
         }

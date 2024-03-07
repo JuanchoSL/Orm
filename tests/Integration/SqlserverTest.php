@@ -4,7 +4,7 @@ namespace JuanchoSL\Orm\Tests\Integration;
 
 use JuanchoSL\Orm\engine\Engines;
 
-class SqlserverTest extends AbstractIntegrationTest
+class SqlserverTest extends AbstractFunctional
 {
     protected Engines $db_type = Engines::TYPE_SQLSRV;
 
