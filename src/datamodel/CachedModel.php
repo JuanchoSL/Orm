@@ -1,10 +1,13 @@
 <?php
 
 namespace JuanchoSL\Orm\datamodel;
+
 use Psr\SimpleCache\CacheInterface;
 
 abstract class CachedModel extends Model
 {
+
+    protected $lazyLoad = true;
     
     static $cache = [];
 
@@ -21,7 +24,7 @@ abstract class CachedModel extends Model
     {
         $result = parent::save();
         if ($result && array_key_exists($this->connection_name, self::$cache)) {
-            self::$cache[$this->connection_name]->set($this->createCacheKey(), $this->values, 100);
+            self::$cache[$this->connection_name]->set($this->createCacheKey(), json_decode(json_encode($this->values),true), 100);
         }
         return $result;
     }

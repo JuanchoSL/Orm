@@ -15,10 +15,10 @@ enum Engines
     case TYPE_SQLSRV; // = 'SQLSRV';
     case TYPE_ORACLE; // = 'ORACLE';
     case TYPE_ODBC; // = 'ODBC';
+    case TYPE_DB2;// = 'DB2';
     /*
     case TYPE_MSSQL = 'MSSQL';
         case TYPE_MSQL = 'MSQL';
-        case TYPE_DB2 = 'DB2';
         case TYPE_ELASTICSEARCH;// = 'ELASTICSEARCH';
         */
     case TYPE_MONGO; // = 'MONGO';
@@ -33,6 +33,7 @@ enum Engines
             Engines::TYPE_SQLSRV => 'SQLSRV',
             Engines::TYPE_ORACLE => 'ORACLE',
             Engines::TYPE_ODBC => 'ODBC',
+            Engines::TYPE_DB2 => 'DB2',
         };
     }
 }
