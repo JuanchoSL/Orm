@@ -8,7 +8,7 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use Psr\Log\LoggerAwareInterface;
 use Psr\Log\LoggerInterface;
 
-abstract class RDBMS implements DbInterface, LoggerAwareInterface
+abstract class RDBMS implements DbInterface
 {
 
     const RESPONSE_OBJECT = 'object';
@@ -130,7 +130,7 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
 
     /**
      * Comprueba si el valor pasado es un array o una cadena y lo devuelve como string
-     * @param mixed $values Parámetros a comprobar y concatenar
+     * @param array $values Parámetros a comprobar y concatenar
      * @param string $envoltorio Caracter que separará cada variable retornada, normalmente "'"
      * @param bool $indices True si se devuelve una asociación indice=valor
      * False o null si solo se devuelve una cadena de valores
@@ -157,10 +157,6 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
         return $this->columns[$tabla] = array_keys($this->describe[$tabla]);
     }
 
-    /**
-     * Extracción de los nombres de las claves primarias de la tabla
-     * @return mixed Array con los nombres de las claves
-     */
     public function keys(string $tabla = null): array
     {
         if (empty($tabla)) {
@@ -201,7 +197,7 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
     */
     /**
      * Inserta una tupla dentro de la tabla
-     * @param mixed $values Valores a insertar, puede ser un array nominal o uno
+     * @param array $values Valores a insertar, puede ser un array nominal o uno
      * asociativo o una cadena con los valores en el orden de la tabla
      * @return int Código de la primary key del nuevo registro
      */
@@ -213,16 +209,7 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
         $this->execute($builder);
         return $this->lastInsertedId();
     }
-    /**
-     * Actualiza los valores de una tabla con los pasados por parámetro, pudiendo
-     * ser éste una cadena o un array asociativo campo = "valor".
-     * @param mixed $values String o array asociativo con los campos a actualizar
-     * @param mixed $where_array Matriz asociativo con las condiciones de la query.
-     * @return int Número de filas afectadas
-     * @internal Podemos pasar una matriz $where['AND|OR|LIKE'][$key]=$value.
-     * Para querys más complejas podemos pasar un string directamente
-     * @return string Resultado de la operación
-     */
+
     /*
     public function update(array $values, array $where_array): int
     {
@@ -318,17 +305,17 @@ abstract class RDBMS implements DbInterface, LoggerAwareInterface
 
     /**
      * Escapa valores introducidos en campos de texto para incluir en consultas
-     * @param string $value Campo insertado en un input
+     * @param string $str Campo insertado en un input
      * @return string Cadena escapada para evitar SQL Injection
      */
     public function escape(string $str): string
     {
-        if (is_array($str))
-            return array_map(__METHOD__, $str);
+        /*if (is_array($str))
+            return array_map(__METHOD__, $str);*/
 
         if (!empty($str) && is_string($str)) {
             $str = stripslashes($str);
-            return str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $str);
+            return (string)str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\\'", '\\"', '\\Z'), $str);
         }
         return $str;
     }

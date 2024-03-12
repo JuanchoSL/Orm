@@ -2,6 +2,7 @@
 
 namespace JuanchoSL\Orm\datamodel;
 
+use JuanchoSL\DataTransfer\Contracts\DataTransferInterface;
 use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
 use JuanchoSL\Orm\engine\Relations\AbstractRelation;
@@ -14,7 +15,7 @@ use JuanchoSL\Orm\querybuilder\QueryBuilder;
 
 trait AutoCrudTrait
 {
-    protected $values = [];
+    protected DataTransferInterface $values;
     public function delete()
     {
         return self::where([$this->getPrimaryKeyName(), $this->getPrimaryKeyValue()])->delete();
@@ -27,9 +28,13 @@ trait AutoCrudTrait
 
         if (!empty($columns)) {
             foreach ($columns as $column) {
+                if($this->values->has($column)){
+                    $save[$column] = $this->values->get($column);
+                }
+/*
                 if (isset($this->values[$column])) {
                     $save[$column] = $this->values[$column];
-                }
+                }*/
             }
         }
         $pk = $this->getPrimaryKeyName();
@@ -55,7 +60,8 @@ trait AutoCrudTrait
             if (method_exists($this, $function)) {
                 $value = $this->$function($value);
             }
-            $this->values[$param] = $value;
+            $this->values->set($param, $value);
+            //$this->values[$param] = $value;
         }
     }
 
@@ -79,11 +85,13 @@ trait AutoCrudTrait
                         return $var->first();
                 }
             }
-        } elseif (array_key_exists(strtolower($param), $this->values)) {
+        } elseif ($this->values->has(strtolower($param))) {
+        //} elseif (array_key_exists(strtolower($param), $this->values)) {
             $function = "get" . ucfirst(strtolower($param));
             if (method_exists($this, $function)) {
                 return $this->$function();
             }
+            return $this->values->get(strtolower($param));
             return $this->values[strtolower($param)];
         }
         return null;
@@ -106,7 +114,8 @@ trait AutoCrudTrait
                     $var = mb_convert_encoding($var, 'utf-8', $encoding);
                 }
             }
-            $this->values[strtolower($name)] = $var;
+            $this->values->set(strtolower($name), $var);
+            //$this->values[strtolower($name)] = $var;
             if (empty($this->identifier) && $this->getPrimaryKeyName() == $name) {
                 $this->identifier = $var;
             }

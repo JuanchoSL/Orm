@@ -41,11 +41,6 @@ trait AutoQueryTrait
         return $response;
     }
 
-    public static function make(iterable $values)
-    {
-        $instance = self::getInstance();
-        return $instance->fill($values);
-    }
 
     public static function findByPk($id)
     {

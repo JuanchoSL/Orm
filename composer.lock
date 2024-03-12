@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8f0c60012d68b6a63e02836ed61c4f77",
+    "content-hash": "82e10c2b2a53504da5b99052eda19a71",
     "packages": [
         {
             "name": "juanchosl/datatransfer",
-            "version": "1.0.4",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "22b22b1398b665da1217a2ac81fa3d62222f4dae"
+                "reference": "0b87fae7f3c3a09698b4a5e6166f448be588b8e2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/22b22b1398b665da1217a2ac81fa3d62222f4dae",
-                "reference": "22b22b1398b665da1217a2ac81fa3d62222f4dae",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/0b87fae7f3c3a09698b4a5e6166f448be588b8e2",
+                "reference": "0b87fae7f3c3a09698b4a5e6166f448be588b8e2",
                 "shasum": ""
             },
             "require": {
@@ -55,9 +55,9 @@
                 "values"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/DataTransfer/tree/1.0.4"
+                "source": "https://github.com/JuanchoSL/DataTransfer/tree/develop"
             },
-            "time": "2024-01-18T22:08:17+00:00"
+            "time": "2024-03-12T22:01:43+00:00"
         },
         {
             "name": "juanchosl/envvars",
@@ -628,16 +628,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.59",
+            "version": "1.10.60",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "e607609388d3a6d418a50a49f7940e8086798281"
+                "reference": "95dcea7d6c628a3f2f56d091d8a0219485a86bbe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e607609388d3a6d418a50a49f7940e8086798281",
-                "reference": "e607609388d3a6d418a50a49f7940e8086798281",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/95dcea7d6c628a3f2f56d091d8a0219485a86bbe",
+                "reference": "95dcea7d6c628a3f2f56d091d8a0219485a86bbe",
                 "shasum": ""
             },
             "require": {
@@ -686,7 +686,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-02-20T13:59:13+00:00"
+            "time": "2024-03-07T13:30:19+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -2179,6 +2179,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
+        "juanchosl/datatransfer": 20,
         "juanchosl/logger": 20,
         "juanchosl/simplecache": 20
     },

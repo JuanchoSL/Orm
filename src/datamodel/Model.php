@@ -55,8 +55,11 @@ abstract class Model implements \JsonSerializable, DataModelInterface
     public function getPrimaryKeyValue()
     {
         $pk = $this->getPrimaryKeyName();
+        if($this->values->has($pk)){
+            return $this->values->get($pk);
+        /*}
         if (isset($this->values[$pk])) {
-            return $this->values[$pk];
+            return $this->values[$pk];*/
         } elseif (!empty($this->identifier)) {
             return $this->identifier;
         }
@@ -83,9 +86,12 @@ abstract class Model implements \JsonSerializable, DataModelInterface
         $columns = $this->columns();
         if (!empty($columns)) {
             foreach ($columns as $column) {
-                if (array_key_exists($column, $this->values)) {
-                    $response[$column] = $this->values[$column];
+                if($this->values->has($column)){
+                    $response[$column] = $this->values->get($column);
                 }
+                /*if (array_key_exists($column, $this->values)) {
+                    $response[$column] = $this->values[$column];
+                }*/
             }
         }
         return $response;
