@@ -1,24 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php" verbose="true" colors="true" cacheResult="false" beStrictAboutTestsThatDoNotTestAnything="true" beStrictAboutOutputDuringTests="true">
+<phpunit bootstrap="vendor/autoload.php" verbose="true" colors="true" cacheResult="false" beStrictAboutTestsThatDoNotTestAnything="true" beStrictAboutOutputDuringTests="true" processIsolation="true">
     <testsuites>
         <testsuite name="All Tests Suite">
             <directory>./tests</directory>
-            <exclude>./tests/Unit/Db2Test.php</exclude>
-            <exclude>./tests/Unit/MssqlTest.php</exclude>
+            <exclude>./tests/Integration/Cache</exclude>
         </testsuite>
         <testsuite name="Unitary Tests Suite">
             <directory>./tests/Unit</directory>
-            <exclude>./tests/Unit/Db2Test.php</exclude>
-            <exclude>./tests/Unit/MssqlTest.php</exclude>
         </testsuite>
         <testsuite name="Functional Tests Suite">
             <directory>./tests/Functional</directory>
         </testsuite>
-        <testsuite name="Relations Tests Suite">
-            <directory>./tests/Relations</directory>
-        </testsuite>
         <testsuite name="Integration Tests Suite">
             <directory>./tests/Integration</directory>
+            <exclude>./tests/Integration/Cache</exclude>
         </testsuite>
     </testsuites>
     <php>
@@ -38,5 +33,11 @@
         <env name="ORACLE_DATABASE" value="SYSTEM" force="true" />
         <env name="ORACLE_USERNAME" value="SYS" force="true" />
         <env name="ORACLE_PASSWORD" value="oracle" force="true" />
+        <env name="DB2_HOST" value="host.docker.internal" force="true" />
+        <env name="DB2_DATABASE" value="test" force="true" />
+        <env name="DB2_USERNAME" value="db2inst1" force="true" />
+        <env name="DB2_PASSWORD" value="password" force="true" />
+        <env name="LOG_FILEPATH" value="./logs/database.log" force="true" />
+        <env name="LOG_TIMEFORMAT" value="Y-m-d H:i:s T" force="true" />
     </php>
 </phpunit>

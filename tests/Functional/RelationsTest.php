@@ -20,19 +20,8 @@ class RelationsTest extends TestCase
 
     private $loops = 5;
 
-    public function providerLoginData(): array
-    {
-        return [
-            'Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)],
-            'Mysql' => [self::getConnection(Engines::TYPE_MYSQLI)],
-            'Oracle' => [self::getConnection(Engines::TYPE_ORACLE)],
-            'Postgres' => [self::getConnection(Engines::TYPE_POSTGRE)],
-            'Sqlserver' => [self::getConnection(Engines::TYPE_SQLSRV)]
-        ];
-    }
-
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testCreate($db)
     {
@@ -50,7 +39,7 @@ class RelationsTest extends TestCase
 
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testInsert($db)
     {
@@ -78,7 +67,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testChilds($db)
     {
@@ -95,7 +84,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testChildsLimited($db)
     {
@@ -121,7 +110,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testChildsUpdate($db)
     {
@@ -142,7 +131,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testsParent($db)
     {
@@ -161,7 +150,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testJoin($db)
     {
@@ -178,7 +167,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testConditionSubquery($db)
     {
@@ -195,7 +184,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testDeleteChild($db)
     {
@@ -214,7 +203,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testDeleteChilds($db)
     {
@@ -239,7 +228,7 @@ class RelationsTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testTruncate($db)
     {

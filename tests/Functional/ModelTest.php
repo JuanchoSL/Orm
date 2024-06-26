@@ -18,19 +18,8 @@ class ModelTest extends TestCase
     private $loops = 3;
 
 
-    public function providerLoginData(): array
-    {
-        return [
-            'Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)],
-            'Mysql' => [self::getConnection(Engines::TYPE_MYSQLI)],
-            'Oracle' => [self::getConnection(Engines::TYPE_ORACLE)],
-            'Postgres' => [self::getConnection(Engines::TYPE_POSTGRE)],
-            'Sqlserver' => [self::getConnection(Engines::TYPE_SQLSRV)]
-        ];
-    }
-
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testInsert($db)
     {
@@ -45,7 +34,7 @@ class ModelTest extends TestCase
     }
     
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testConditions($db)
     {
@@ -98,7 +87,7 @@ class ModelTest extends TestCase
     }
     
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSelect($db)
     {
@@ -112,7 +101,7 @@ class ModelTest extends TestCase
     }
     
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSelectPaginated($db)
     {
@@ -130,7 +119,7 @@ class ModelTest extends TestCase
     }
     
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testRestart($db)
     {
@@ -147,7 +136,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSaveInsert($db)
     {
@@ -162,7 +151,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSaveUpdate($db)
     {
@@ -183,7 +172,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSelectByPk($db)
     {
@@ -201,7 +190,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSelectFindPaginated($db)
     {
@@ -227,7 +216,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testUpdate($db)
     {
@@ -237,7 +226,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testSerialize($db)
     {
@@ -260,7 +249,7 @@ class ModelTest extends TestCase
     }
 
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testDelete($db)
     {
@@ -278,7 +267,7 @@ class ModelTest extends TestCase
     }
     
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testTruncate($db)
     {
@@ -289,7 +278,7 @@ class ModelTest extends TestCase
     }
     
     /**
-     * @dataProvider providerLoginData
+     * @dataProvider providerData
      */
     public function testDisconnect($db)
     {
