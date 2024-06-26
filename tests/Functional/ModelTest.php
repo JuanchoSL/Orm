@@ -3,9 +3,7 @@
 namespace JuanchoSL\Orm\Tests\Functional;
 
 use JuanchoSL\Orm\Collection;
-use JuanchoSL\Orm\datamodel\Model;
-use JuanchoSL\Orm\engine\Drivers\DbInterface;
-use JuanchoSL\Orm\engine\Engines;
+use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
 use PHPUnit\Framework\TestCase;

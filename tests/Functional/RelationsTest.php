@@ -3,8 +3,7 @@
 namespace JuanchoSL\Orm\Tests\Functional;
 
 use JuanchoSL\Orm\Collection;
-use JuanchoSL\Orm\datamodel\Model;
-use JuanchoSL\Orm\engine\Engines;
+use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\engine\Responses\AlterResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
