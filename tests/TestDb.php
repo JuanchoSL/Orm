@@ -2,8 +2,8 @@
 
 namespace JuanchoSL\Orm\Tests;
 
-use JuanchoSL\Orm\datamodel\Model;
-use JuanchoSL\Orm\datamodel\CachedModel;
+use JuanchoSL\Orm\Datamodel\Model;
+use JuanchoSL\Orm\Datamodel\CachedModel;
 
 
 class TestDb extends CachedModel
