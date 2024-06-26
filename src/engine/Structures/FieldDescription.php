@@ -19,7 +19,7 @@ class FieldDescription implements \JsonSerializable
     {
         return $this->field_name;
     }
-    public function setName(string $field_name)
+    public function setName(string $field_name): static
     {
         $this->field_name = $field_name;
         return $this;
@@ -28,7 +28,7 @@ class FieldDescription implements \JsonSerializable
     {
         return $this->field_type;
     }
-    public function setType(string $field_type)
+    public function setType(string $field_type): static
     {
         $this->field_type = $field_type;
         return $this;
@@ -37,7 +37,7 @@ class FieldDescription implements \JsonSerializable
     {
         return $this->field_length;
     }
-    public function setLength($field_length)
+    public function setLength($field_length): static
     {
         $this->field_length = $field_length;
         return $this;
@@ -46,7 +46,7 @@ class FieldDescription implements \JsonSerializable
     {
         return $this->field_nullable;
     }
-    public function setNullable(bool $field_nullable)
+    public function setNullable(bool $field_nullable): static
     {
         $this->field_nullable = $field_nullable;
         return $this;
@@ -55,7 +55,7 @@ class FieldDescription implements \JsonSerializable
     {
         return $this->field_default;
     }
-    public function setDefault(?string $field_default)
+    public function setDefault(?string $field_default): static
     {
         $this->field_default = $field_default;
         return $this;
@@ -64,18 +64,18 @@ class FieldDescription implements \JsonSerializable
     {
         return $this->field_is_key;
     }
-    public function setKey(?string $field_key)
+    public function setKey(?string $field_key): static
     {
         $this->field_is_key = $field_key;
         return $this;
     }
 
-    public function isKey()
+    public function isKey(): bool
     {
-        return !empty($this->field_is_key);
+        return !empty ($this->field_is_key);
     }
 
-    public function isNullable()
+    public function isNullable(): bool
     {
         return $this->field_nullable;
     }
