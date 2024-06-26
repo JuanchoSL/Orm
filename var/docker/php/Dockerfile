@@ -2,13 +2,14 @@ FROM php:8.2-fpm
 
 RUN apt-get update && apt-get install -y git zip nano zsh iputils-ping graphviz libpq-dev
 RUN docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql
-RUN docker-php-ext-install pdo_mysql pdo_pgsql pgsql
+RUN docker-php-ext-install pdo_mysql pdo_pgsql pgsql oci8 mysqli
+RUN docker-php-ext-enable pdo_mysql pdo_pgsql pgsql oci8 mysqli
 
 WORKDIR /application
 COPY ./src ./src
 COPY ./tests ./tests
 COPY composer.json .
-COPY .env .
+#COPY .env .
 COPY phpstan.neon .
 COPY phpunit.xml .
 COPY ./vendor ./vendor
