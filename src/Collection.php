@@ -1,14 +1,17 @@
 <?php
 
 namespace JuanchoSL\Orm;
-use JuanchoSL\DataTransfer\Repositories\BaseCollectionable;
 
-class Collection extends BaseCollectionable implements \Iterator, \JsonSerializable, \Countable
+use JuanchoSL\DataTransfer\Repositories\BaseCollectionable;
+use JuanchoSL\Orm\Datamodel\DataModelInterface;
+
+class Collection extends BaseCollectionable
 {
 
-    public function insert($object): int
+    public function insert(DataModelInterface $object): mixed
     {
-        return array_push($this->data, $object);
+        $key = $object->{$object->getPrimaryKeyName()};
+        return $this->data[$key] = $object;
     }
 
     public function first(): mixed
@@ -25,11 +28,6 @@ class Collection extends BaseCollectionable implements \Iterator, \JsonSerializa
     public function prev(): mixed
     {
         return prev($this->data);
-    }
-
-    public function hasElements(): bool
-    {
-        return ($this->count() > 0);
     }
 
     public function jsonSerialize(): mixed

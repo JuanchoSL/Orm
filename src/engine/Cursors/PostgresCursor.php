@@ -9,6 +9,8 @@ class PostgresCursor extends AbstractCursor implements CursorInterface
 
     public function next($typeReturn = null)
     {
+        if (is_bool($this->cursor))
+            return false;
         switch ($typeReturn) {
             case RDBMS::RESPONSE_ROWS:
                 return pg_fetch_row($this->cursor);
@@ -25,11 +27,6 @@ class PostgresCursor extends AbstractCursor implements CursorInterface
     public function count(): int
     {
         return pg_num_rows($this->cursor);
-    }
-
-    public function affected(): int
-    {
-        return pg_affected_rows($this->cursor);
     }
 
     public function free(): bool

@@ -4,7 +4,11 @@ namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\SqlsrvCursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -69,76 +73,71 @@ class Sqlserver extends RDBMS implements DbInterface
 
     public function getTables(): array
     {
-        return parent::extractTables("SELECT table_name from {$this->credentials->getDataBase()}.INFORMATION_SCHEMA.TABLES");
+        //return parent::extractTables("SELECT table_name from {$this->credentials->getDataBase()}.INFORMATION_SCHEMA.TABLES");
+        return parent::extractTables(QueryBuilder::getInstance()->select(['table_name'])->from($this->credentials->getDataBase() . ".INFORMATION_SCHEMA.TABLES"));
     }
 
-    public function describe(string $tabla = null): array
+    protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        $describe = array();
-        if (!empty($tabla)) {
-            //   $this->describe = array();
-            //$result = $this->execute(DatabaseFactory::queryBuilder()->doAction("EXEC")->setCamps(["sp_columns"])->from($this->tabla));
-            $result = $this->execute("EXEC sp_columns " . $tabla);
-            while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['COLUMN_NAME'])
-                    ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
-                    ->setLength($keys['LENGTH'])
-                    ->setNullable($keys['NULLABLE'] == 0)
-                    ->setDefault($keys['COLUMN_DEF'])
-                    ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
-                $describe[$keys['COLUMN_NAME']] = $field;
-            }
-            $this->describe[$tabla] = $describe;
-            if ($result) {
-                $result->free();
-            }
-        }
-        return $this->describe[$tabla];
+        return $this->getQuery(QueryBuilder::getInstance()->doAction(QueryActionsEnum::EXEC)->setCamps(['sp_columns'])->from($sqlBuilder->table));
     }
 
-    public function execute(QueryBuilder|string $query): CursorInterface
+    protected function getParsedField(array $keys): FieldDescription
     {
-        if (!$this->linkIdentifier) {
-            $this->connect();
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['COLUMN_NAME'])
+            ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
+            ->setLength($keys['LENGTH'])
+            ->setNullable($keys['NULLABLE'] == 0)
+            ->setDefault($keys['COLUMN_DEF'])
+            ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
+        return $field;
+    }
+
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    {
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        $scroll = $action->isIterable() ? SQLSRV_CURSOR_CLIENT_BUFFERED : SQLSRV_CURSOR_FORWARD;
+        $cursor = sqlsrv_query($this->linkIdentifier, $query, array(), array("Scrollable" => $scroll));
+        if (!$cursor || !is_null(sqlsrv_errors())) {
+            throw new \Exception(implode(PHP_EOL, current(sqlsrv_errors())));
         }
-        $query = $this->parseQuery($query);
-        $scroll = in_array(strtoupper(substr($query, 0, strpos($query, ' '))), ['INSERT', 'UPDATE', 'DELETE']) ? SQLSRV_CURSOR_FORWARD : SQLSRV_CURSOR_CLIENT_BUFFERED;
-        $this->cursor = sqlsrv_query($this->linkIdentifier, $query, array(), array("Scrollable" => $scroll));
-        if (!is_null(sqlsrv_errors())) {
-            $exception = new \Exception($query . " -> " . implode(PHP_EOL, current(sqlsrv_errors())));
-            $this->log($exception, 'error');
-            throw $exception;
+        if ($action->isIterable()) {
+            $cursor = new SqlsrvCursor($cursor);
+        } elseif ($action->isInsertable()) {
+            $cursor = new InsertResponse($this->lastInsertedId());
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse(sqlsrv_rows_affected($cursor));
         } else {
-            $this->log($query, 'info');
+            $cursor = new EmptyResponse(sqlsrv_rows_affected($cursor) !== false);
         }
-        return new SqlsrvCursor($this->cursor);
+        return $cursor;
     }
 
     public function escape(string $value): string
     {
-        return addslashes(stripslashes($value));
+        $this->log(__FUNCTION__ . __LINE__, 'debug', ['value' => $value]);
+        //$value = addslashes(stripslashes($value));
+        $value = str_replace(["'", '"'], ["''", '""'], $value);
+        $this->log(__FUNCTION__ . __LINE__, 'debug', ['value' => $value]);
+        return $value;
     }
 
-    public function lastInsertedId(): int
+    protected function lastInsertedId(): int
     {
         //        $res = $this->execute("SELECT @@IDENTITY AS id");
-        $res = $this->execute("SELECT SCOPE_IDENTITY() as id");
-        return $this->lastInsertedId = $res->next(self::RESPONSE_OBJECT)->id;
-    }
-    public function affectedRows(): int
-    {
-        return $this->nResults = sqlsrv_rows_affected($this->cursor);
+        //$res = $this->execute("SELECT SCOPE_IDENTITY() as id");
+        $res = $this->execute(QueryBuilder::getInstance()->select(["SCOPE_IDENTITY() as id"]));
+        $lastInsertedId = $res->next(static::RESPONSE_OBJECT)->id;
+        $res->free();
+        return $lastInsertedId;
     }
 
     protected function parseSelect(QueryBuilder $sqlBuilder): string
     {
         if (!empty($sqlBuilder->limit)) {
-            $where = $this->mountWhere($sqlBuilder->condition);
+            $where = $this->mountWhere($sqlBuilder->condition, $sqlBuilder->table);
             $join = (count($sqlBuilder->join ?? []) > 0) ? implode(" ", $sqlBuilder->join) : "";
             $inicio = ($sqlBuilder->limit[1] * $sqlBuilder->limit[0]);
             $limit = $sqlBuilder->limit[0];

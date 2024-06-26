@@ -2,10 +2,13 @@
 
 namespace JuanchoSL\Orm\engine\Drivers;
 
-use JuanchoSL\Orm\DatabaseFactory;
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\SQLiteCursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -34,7 +37,7 @@ class Sqlite extends RDBMS implements DbInterface
             $fileDB = str_replace(DIRECTORY_SEPARATOR . DIRECTORY_SEPARATOR, DIRECTORY_SEPARATOR, $this->credentials->getHost() . DIRECTORY_SEPARATOR . $this->credentials->getDataBase());
             try {
                 $this->linkIdentifier = new \SQLite3($fileDB, SQLITE3_OPEN_READWRITE, $this->credentials->getPassword());
-                            } catch (\Exception $exception) {
+            } catch (\Exception $exception) {
                 $this->log($exception, 'error', [
                     'exception' => $exception,
                     'credentials' => $this->credentials
@@ -55,75 +58,62 @@ class Sqlite extends RDBMS implements DbInterface
 
     public function getTables(): array
     {
-        $builder = DatabaseFactory::queryBuilder()->select(['name'])->from('sqlite_master')->where(['type', 'table']);
+        $builder = QueryBuilder::getInstance()->select(['name'])->from('sqlite_master')->where(['type', 'table']);
         return parent::extractTables($builder); //"SELECT name FROM sqlite_master WHERE type='table'"
     }
 
-    public function describe(string $tabla = null): array
+    protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        $describe = [];
-        if (!empty($tabla)) {
-            $result = $this->execute("PRAGMA table_info('" . $tabla . "')");
-            while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['name'])
-                    ->setType($keys['type'] ?? '')
-                    ->setLength($keys['length'] ?? null)
-                    ->setNullable($keys['notnull'] == 0)
-                    ->setDefault($keys['dflt_value'])
-                    ->setKey($keys['pk'] == 1);
-                $describe[$keys['name']] = $field;
-            }
-            $this->describe[$tabla] = $describe;
-            $result->free();
-        }
-        return $this->describe[$tabla];
+        return $this->getQuery(QueryBuilder::getInstance()->doAction(QueryActionsEnum::PRAGMA)->table("table_info('" . $sqlBuilder->table . "')"));
+    }
+    
+    protected function getParsedField(array $keys): FieldDescription
+    {
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['name'])
+            ->setType($keys['type'] ?? '')
+            ->setLength($keys['length'] ?? null)
+            ->setNullable($keys['notnull'] == 0)
+            ->setDefault($keys['dflt_value'])
+            ->setKey($keys['pk'] == 1);
+        return $field;
     }
 
-    public function execute(QueryBuilder|string $query): CursorInterface
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
-        if (!$this->linkIdentifier) {
-            $this->connect();
-        }
-        $query = $this->parseQuery($query);
         //Las consultas que devuelven resultados se deben hacer por query, el resto por exec
-        $method = (in_array(substr($query, 0, 6), array('SELECT', 'PRAGMA'))) ? 'query' : 'exec';
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        $method = $action->isIterable() ? 'query' : 'exec';
+        //$method = (in_array(substr($query, 0, 6), array('SELECT', 'PRAGMA'))) ? 'query' : 'exec';
         $cursor = $this->linkIdentifier->$method($query);
         if (!$cursor) {
-            $exception = new \Exception($query . " -> " . $this->linkIdentifier->lastErrorMsg(), $this->linkIdentifier->lastErrorCode());
-            $this->log($exception, 'error');
-            throw $exception;
-        } else {
-            $this->log($query, 'info');
+            throw new \Exception($this->linkIdentifier->lastErrorMsg(), $this->linkIdentifier->lastErrorCode());
         }
-        return new SQLiteCursor($cursor);
+        if ($action->isIterable()) {
+            $cursor = new SQLiteCursor($cursor);
+        } elseif ($action->isInsertable()) {
+            $cursor = new InsertResponse($this->linkIdentifier->lastInsertRowID());
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse($this->linkIdentifier->changes());
+        } else {
+            $cursor = new EmptyResponse($this->linkIdentifier->changes());
+        }
+        return $cursor;
     }
-
 
     public function escape(string $value): string
     {
         return $this->linkIdentifier->escapeString(stripslashes($value));
     }
-    public function affectedRows(): int
+
+    protected function processTruncate(QueryBuilder $builder): EmptyResponse
     {
-        return $this->nResults = $this->linkIdentifier->changes();
+        $result = $this->execute(QueryBuilder::getInstance()->delete()->from($builder->table));
+        $this->execute(QueryBuilder::getInstance()->delete()->from('sqlite_sequence')->where(['name', $builder->table]));
+        return new EmptyResponse($result->count() > 0);
     }
 
-    public function lastInsertedId(): int
-    {
-        return $this->lastInsertedId = $this->linkIdentifier->lastInsertRowID();
-    }
-
-    public function truncate(): bool
-    {
-        parent::delete(array());
-        $this->execute(DatabaseFactory::queryBuilder()->delete()->from('sqlite_sequence')->where(['name', [$this->tabla]]));
-        return true;
-    }
     public function createTable(string $table_name, FieldDescription ...$fields)
     {
         $sql = "CREATE TABLE %s (";

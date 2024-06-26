@@ -9,6 +9,8 @@ class SQLiteCursor extends AbstractCursor implements CursorInterface
 
     public function next($typeReturn = null)
     {
+        if (is_bool($this->cursor))
+            return false;
         switch ($typeReturn) {
             case RDBMS::RESPONSE_ROWS:
                 return $this->cursor->fetchArray(SQLITE3_NUM);
@@ -18,17 +20,20 @@ class SQLiteCursor extends AbstractCursor implements CursorInterface
 
             case RDBMS::RESPONSE_OBJECT:
             default:
-                return json_decode(json_encode($this->cursor->fetchArray(SQLITE3_ASSOC)), false);
+                $value = $this->cursor->fetchArray(SQLITE3_ASSOC);
+                return (empty($value)) ? false : json_decode(json_encode($value), false);
         }
     }
 
     public function count(): int
     {
         $nResults = 0;
-        while ($this->next() !== false) {
-            $nResults++;
+        if (is_object($this->cursor)) {
+            while ($this->next() !== false) {
+                $nResults++;
+            }
+            $this->cursor->reset();
         }
-        $this->cursor->reset();
         return $nResults;
     }
 

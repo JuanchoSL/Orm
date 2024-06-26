@@ -11,14 +11,20 @@ abstract class AbstractCursor
     }
 
     abstract function next();
+    abstract function free();
 
     public function get(): array
     {
         $return = array();
-        while ($row = $this->next()) {
+        while (($row = $this->next()) !== false) {
             $return[] = $row;
         }
-
+        //$this->free();
         return $return;
+    }
+
+    public function __destruct()
+    {
+        //$this->free();
     }
 }

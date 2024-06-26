@@ -4,7 +4,11 @@ namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\OracleCursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -54,89 +58,59 @@ class Oracle extends RDBMS implements DbInterface
         return $result ?? true;
     }
 
-    public function setTable(string $table = null): void
-    {
-        parent::setTable(strtoupper($table));
-    }
     public function getTables(): array
     {
-        return parent::extractTables("SELECT table_name FROM user_tables");
+        return parent::extractTables(QueryBuilder::getInstance()->select(['TABLE_NAME'])->from('user_tables'));
     }
 
-    public function describe(string $tabla = null): array
+    protected function getParsedField(array $keys): FieldDescription
     {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        if (!empty($tabla)) {
-            $result = $this->execute("SELECT column_name \"Field\", nullable \"Null\", concat(concat(concat(data_type,'('),data_length),')') \"Type\", data_default \"Default\" FROM user_tab_columns WHERE table_name='" . strtoupper($tabla) . "'");
-            while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                if (empty($keys['Length'])) {
-                    preg_match('/([a-zA-Z0-9]+)\W(\d*)/', $keys['Type'], $matches);
-                    if (count($matches) >= 2) {
-                        $keys['Type'] = $matches[1];
-                        $keys['Length'] = $matches[2];
-                    }
-                }
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['Field'])
-                    ->setType($keys['Type'])
-                    ->setLength($keys['Length'])
-                    ->setNullable($keys['Null'] != 'N')
-                    ->setDefault($keys['Default'])
-                    ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'));
-                $this->describe[$tabla][strtolower($keys['Field'])] = $field;
-            }
-            if ($result) {
-                $result->free();
+        if (empty($keys['Length'])) {
+            preg_match('/([a-zA-Z0-9]+)\W(\d*)/', $keys['Type'], $matches);
+            if (count($matches) >= 2) {
+                $keys['Type'] = $matches[1];
+                $keys['Length'] = $matches[2];
             }
         }
-        return $this->describe[$tabla] ?? [];
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['Field'])
+            ->setType($keys['Type'])
+            ->setLength($keys['Length'])
+            ->setNullable($keys['Null'] != 'N')
+            ->setDefault($keys['Default'])
+            ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'));
+        return $field;
     }
-    
-    public function execute(QueryBuilder|string $query): CursorInterface
+
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
-        //        $originalQuery = $query;
-//        if ($query instanceof SQLBuilder && $query->operation == SQLBuilder::MODE_SELECT && !empty($query->limit)) {
-//            $query->limit = null;
-//            $sql = $this->parseQuery($query);
-//            $cursor = oci_parse($this->linkIdentifier, $sql);
-//            oci_execute($cursor);
-//            $this->nResultsPagination = oci_fetch_all($cursor, $res, 0, -1, OCI_FETCHSTATEMENT_BY_ROW);
-//        }
-        if (!$this->linkIdentifier) {
-            $this->connect();
+        $cursor = oci_parse($this->linkIdentifier, $query);
+        if (!$cursor || !oci_execute($cursor)) {
+            throw new \Exception(oci_error()['message']);
         }
-        $query = $this->parseQuery($query);
-        $this->cursor = oci_parse($this->linkIdentifier, $query);
-        if (!oci_execute($this->cursor)) {
-            $exception = new \Exception($query . ' -> ' . oci_error($this->cursor)['message']);
-            $this->log($exception, 'error');
-            throw $exception;
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        if ($action->isIterable()) {
+            $cursor = new OracleCursor($cursor);
+            /* } elseif ($action->isInsertable()) {
+                 $cursor = new InsertResponse($this->lastInsertedId());*/
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse(oci_num_rows($cursor));
         } else {
-            $this->log($query, 'info');
+            $cursor = new EmptyResponse(oci_num_rows($cursor) !== false);
         }
-        return new OracleCursor($this->cursor);
+        return $cursor;
     }
 
-
-    public function affectedRows(): int
+    protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        return $this->nResults = oci_num_rows($this->cursor);
-    }
-
-    public function lastInsertedId(): int
-    {
-        $res = $this->execute(sprintf("SELECT max(%s) AS ID FROM %s", $this->keys()[0], strtoupper($this->tabla)));
-        $result = $res->next(self::RESPONSE_OBJECT);
-        return $this->lastInsertedId = $result->ID;
+        return "SELECT column_name \"Field\", nullable \"Null\", concat(concat(concat(data_type,'('),data_length),')') \"Type\", data_default \"Default\" FROM user_tab_columns WHERE table_name='" . strtoupper($sqlBuilder->table) . "'";
     }
 
     protected function parseSelect(QueryBuilder $sqlBuilder): string
     {
         if (!empty($sqlBuilder->limit)) {
-            $where = $this->mountWhere($sqlBuilder->condition);
+            $where = $this->mountWhere($sqlBuilder->condition, strtolower($sqlBuilder->table));
             $join = (count($sqlBuilder->join ?? []) > 0) ? implode(" ", $sqlBuilder->join) : "";
             $inicio = ($sqlBuilder->limit[1] * $sqlBuilder->limit[0]);
             $limit = $sqlBuilder->limit[0];
@@ -150,19 +124,34 @@ class Oracle extends RDBMS implements DbInterface
         }
     }
 
-    public function truncate(): bool
+    protected function processInsert(QueryBuilder $builder): InsertResponse
     {
-        parent::truncate();
-        $seq = (string) str_replace('."NEXTVAL"', '', $this->describe[$this->tabla][strtolower(current($this->keys[$this->tabla]))]->getDefault());
-        $this->execute("ALTER SEQUENCE {$seq} RESTART START WITH 1");
-        return true;
+        $this->execute($this->getQuery($builder));
+        $builder = QueryBuilder::getInstance()->select(['max(' . $this->keys($builder->table)[0] . ') as ID'])->from($builder->table);
+        $res = $this->execute($builder);
+        $result = $res->next(static::RESPONSE_OBJECT)->ID;
+        $res->free();
+        return new InsertResponse($result);
     }
-    public function drop(): CursorInterface
+
+    protected function processTruncate(QueryBuilder $builder): EmptyResponse
     {
-        $seq = str_replace('."NEXTVAL"', '', $this->describe[$this->tabla][strtolower(current($this->keys[$this->tabla]))]->getDefault());
-        parent::drop();
-        //print_r(sprintf('DROP SEQUENCE %s', $seq));
-        return $this->execute(sprintf('DROP SEQUENCE %s', $seq));
+        $table = $builder->table;
+        $this->keys($table);
+        $result = $this->execute($this->getQuery($builder));
+        $seq = (string) str_replace('."NEXTVAL"', '', $this->describe[$table][strtolower(current($this->keys[$table]))]->getDefault());
+        $this->execute("ALTER SEQUENCE {$seq} RESTART START WITH 1");
+        return $result;
+    }
+
+    protected function processDrop(QueryBuilder $builder): AlterResponse
+    {
+        $table = $builder->table;
+        $this->keys($table);
+        $result = $this->execute($this->getQuery($builder));
+        $seq = (string) str_replace('."NEXTVAL"', '', $this->describe[$table][strtolower(current($this->keys[$table]))]->getDefault());
+        $this->execute("DROP SEQUENCE {$seq}");
+        return $result;
     }
 
     public function createTable(string $table_name, FieldDescription ...$fields)
@@ -186,7 +175,6 @@ class Oracle extends RDBMS implements DbInterface
         }
         $sql = rtrim($sql, ', ');
         $sql .= ")";
-        //print_r(sprintf($sql, strtoupper($table_name)));
         return $this->execute(sprintf($sql, strtoupper($table_name)));
     }
 }

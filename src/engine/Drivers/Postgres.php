@@ -2,10 +2,13 @@
 
 namespace JuanchoSL\Orm\engine\Drivers;
 
-use JuanchoSL\Orm\DatabaseFactory;
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\PostgresCursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -20,8 +23,7 @@ class Postgres extends RDBMS implements DbInterface
     {
         $port = empty($this->credentials->getPort()) ? '5432' : $this->credentials->getPort();
         try {
-            $this->linkIdentifier = pg_pconnect("host={$this->credentials->getHost()} port={$port} dbname={$this->credentials->getDataBase()} user={$this->credentials->getUsername()} password={$this->credentials->getPassword()} connect_timeout=5")
-            ;
+            $this->linkIdentifier = pg_pconnect("host={$this->credentials->getHost()} port={$port} dbname={$this->credentials->getDataBase()} user={$this->credentials->getUsername()} password={$this->credentials->getPassword()} connect_timeout=5");
         } catch (\Exception $exception) {
             $this->log($exception, 'error', [
                 'exception' => $exception,
@@ -45,91 +47,83 @@ class Postgres extends RDBMS implements DbInterface
         return parent::extractTables("SELECT tablename FROM pg_catalog.pg_tables");
     }
 
-    public function insert(array $values): int
+    protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        $builder = DatabaseFactory::queryBuilder()->insert($values)->into($this->getTable())->extraQuery("RETURNING Currval('" . $this->tabla . "_id_seq')");
-        $result = $this->execute($builder);
-        return $this->lastInsertedId = $result->next(self::RESPONSE_ROWS)[0];
+        return "select is_identity as key, column_name as field, udt_name as type, character_maximum_length as length, column_default as default, is_nullable as null from INFORMATION_SCHEMA.COLUMNS where table_name = '" . $sqlBuilder->table . "'";
     }
 
-    public function describe(string $tabla = null): array
+    protected function getParsedField(array $keys): FieldDescription
     {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        $describe = [];
-        if (!empty($tabla)) {
-            //$this->describe = array();
-            //$result = $this->execute("select is_identity as key, column_name as field, data_type as type, character_maximum_length as length, column_default as default, is_nullable as null from INFORMATION_SCHEMA.COLUMNS where table_name = '" . $this->tabla . "'");
-            $result = $this->execute("select is_identity as key, column_name as field, udt_name as type, character_maximum_length as length, column_default as default, is_nullable as null from INFORMATION_SCHEMA.COLUMNS where table_name = '" . $tabla . "'");
-            while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                if (empty($keys['length'])) {
-                    preg_match('/([a-zA-Z]+)(\d?)/', $keys['type'], $matches);
-                    if (count($matches) >= 2) {
-                        $keys['type'] = $matches[1];
-                        $keys['length'] = $matches[2];
-                    }
-                }
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['field'])
-                    ->setType($keys['type'])
-                    ->setLength($keys['length'] ?? null)
-                    ->setNullable($keys['null'] == 'YES')
-                    ->setDefault($keys['default'])
-                    ->setKey($keys['key'] == 'YES');
-                $describe[$keys['field']] = $field;
-            }
-            $this->describe[$tabla] = $describe;
-            if ($result) {
-                $result->free();
+        if (empty($keys['length'])) {
+            preg_match('/([a-zA-Z]+)(\d?)/', $keys['type'], $matches);
+            if (count($matches) >= 2) {
+                $keys['type'] = $matches[1];
+                $keys['length'] = $matches[2];
             }
         }
-        return $this->describe[$tabla];
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['field'])
+            ->setType($keys['type'])
+            ->setLength($keys['length'] ?? null)
+            ->setNullable($keys['null'] == 'YES')
+            ->setDefault($keys['default'])
+            ->setKey($keys['key'] == 'YES');
+        return $field;
     }
 
-    public function execute(QueryBuilder|string $query): CursorInterface
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
-        if (!$this->linkIdentifier) {
-            $this->connect();
+        $cursor = pg_query($this->linkIdentifier, $query);
+        if (!$cursor) {
+            throw new \Exception(pg_last_error($this->linkIdentifier));
         }
-        $query = $this->parseQuery($query);
-        $this->cursor = pg_query($this->linkIdentifier, $query);
-        if (!$this->cursor) {
-            $exception = new \Exception($query . " -> " . pg_last_error($this->linkIdentifier));
-            $this->log($exception, 'error');
-            throw $exception;
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        if ($action->isIterable() || stripos($query, "RETURNING") !== false) {
+            $cursor = new PostgresCursor($cursor);
+            /*} elseif ($action->isInsertable()) {
+                $cursor = new InsertResponse($this->lastInsertedId());*/
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse(pg_affected_rows($cursor));
         } else {
-            $this->log($query, 'info');
+            $cursor = new EmptyResponse(pg_affected_rows($cursor) >= 0);
         }
-        return new PostgresCursor($this->cursor);
+        return $cursor;
     }
+
     public function escape(string $str): string
     {
         return pg_escape_string($this->linkIdentifier, stripcslashes($str));
     }
 
-    public function affectedRows(): int
+    protected function processInsert(QueryBuilder $builder): InsertResponse
     {
-        return $this->nResults = pg_affected_rows($this->cursor);
+        if (empty($builder->extraQuery)) {
+            $builder = $builder->extraQuery("RETURNING Currval('" . $builder->table . "_id_seq')");
+            $res = $this->execute($this->getQuery($builder));
+            $result = $res->next(static::RESPONSE_ROWS)[0];
+        } else {
+            $this->execute($this->getQuery($builder));
+            $res = $this->execute(QueryBuilder::getInstance()->select(["max(id) as id"])->from($builder->table));
+            $result = $res->next(static::RESPONSE_OBJECT)->id;
+        }
+        $res->free();
+        return new InsertResponse($result);
     }
 
-    public function lastInsertedId(): int
+    protected function processTruncate(QueryBuilder $builder): EmptyResponse
     {
-        return $this->lastInsertedId;
-    }
-
-    public function truncate(): bool
-    {
-        parent::truncate();
-        $this->execute("ALTER SEQUENCE {$this->tabla}_id_seq RESTART WITH 1");
-        return true;
+        $table = $builder->table;
+        $result = $this->execute($this->getQuery($builder));
+        $this->execute("ALTER SEQUENCE {$table}_id_seq RESTART WITH 1");
+        return $result;
     }
 
     protected function mountLimit(int $limit, int $page): string
     {
         return " LIMIT " . $limit . " OFFSET " . (intval($page) * $limit);
     }
+
     public function createTable(string $table_name, FieldDescription ...$fields)
     {
         $sql = "CREATE TABLE %s (";

@@ -1,19 +1,13 @@
 <?php
 
 namespace JuanchoSL\Orm\querybuilder;
+use JuanchoSL\Orm\querybuilder\Types\SelectQueryBuilder;
 
 class QueryBuilder
 {
 
-    const MODE_SELECT = "SELECT";
-    const MODE_INSERT = "INSERT";
-    const MODE_UPDATE = "UPDATE";
-    const MODE_DELETE = "DELETE";
-    const MODE_TRUNCATE = "TRUNCATE";
-    const MODE_DROP = "DROP";
-
-    public string $operation;
-    public $camps = "*";
+    public QueryActionsEnum $operation;
+    public $camps = ["*"];
     public string $table;
     public array $join = [];
     public array $condition = [];
@@ -28,9 +22,9 @@ class QueryBuilder
     {
         return new self;
     }
-    public function clear(): self
+    public function clear(): static
     {
-        $this->camps = null;
+        $this->camps = [];
         $this->table = '';
         $this->join = [];
         $this->condition = [];
@@ -42,122 +36,131 @@ class QueryBuilder
         $this->extraQuery = null;
         return $this;
     }
-    public function doAction(string $action): self
+    public function doAction(QueryActionsEnum $action): static
     {
         $this->operation = $action;
         return $this;
     }
 
-    public function setCamps(array $camps): self
+    public function setCamps(array $camps): static
     {
         $this->camps = $camps;
         return $this;
     }
 
-    public function select(array $camps = array()): self
+    public function select(array $camps = array())
     {
-        $this->doAction(self::MODE_SELECT);
+        //return SelectQueryBuilder::getInstance()->select($camps);
+
+        $this->doAction(QueryActionsEnum::SELECT);
         $this->setCamps($camps);
         return $this;
     }
 
-    public function from(string $table): self
+    public function from(string $table): static
     {
         return $this->table($table);
     }
 
-    public function into(string $table): self
+    public function into(string $table): static
     {
         return $this->table($table);
     }
 
-    public function table(string $table): self
+    public function table(string $table): static
     {
         $this->table = $table;
         return $this;
     }
 
-    public function join(array $inner): self
+    public function join(array $inner): static
     {
         $this->join = $inner;
         return $this;
     }
 
-    protected function values(array $values): self
+    protected function values(array $values): static
     {
         $this->values = $values;
         return $this;
     }
 
-    public function where(array ...$where): self
+    public function where(array ...$where): static
     {
-        $this->condition[] = ['AND' => func_get_args()];
-        return $this;
-    }
-    public function orWhere(array ...$where): self
-    {
-        $this->condition[] = ['OR' => func_get_args()];
+        $args = func_get_args();
+        if (!empty($args)) {
+            $this->condition[] = ['AND' => $args];
+        }
         return $this;
     }
 
-    public function groupBy($group): self
+    public function orWhere(array ...$where): static
+    {
+        $args = func_get_args();
+        if (!empty($args)) {
+            $this->condition[] = ['OR' => $args];
+        }
+        return $this;
+    }
+
+    public function groupBy($group): static
     {
         $this->group = $group;
         return $this;
     }
 
-    public function having($having): self
+    public function having($having): static
     {
         $this->having = $having;
         return $this;
     }
 
-    public function orderBy($order): self
+    public function orderBy($order): static
     {
         $this->order = $order;
         return $this;
     }
 
-    public function limit(int $limit, int $offset = 0): self
+    public function limit(int $limit, int $offset = 0): static
     {
         if (!empty($limit))
             $this->limit = [(int) $limit, (int) $offset];
         return $this;
     }
 
-    public function insert(array $values): self
+    public function insert(array $values): static
     {
-        $this->doAction(self::MODE_INSERT);
+        $this->doAction(QueryActionsEnum::INSERT);
         $this->values = $values;
         return $this;
     }
 
-    public function update(array $values): self
+    public function update(array $values): static
     {
-        $this->doAction(self::MODE_UPDATE);
+        $this->doAction(QueryActionsEnum::UPDATE);
         $this->values = $values;
         return $this;
     }
 
-    public function delete(): self
+    public function delete(): static
     {
-        $this->doAction(self::MODE_DELETE);
+        $this->doAction(QueryActionsEnum::DELETE);
         return $this;
     }
 
-    public function drop(): self
+    public function drop(): static
     {
-        $this->doAction(self::MODE_DROP);
+        $this->doAction(QueryActionsEnum::DROP);
         return $this;
     }
 
-    public function truncate(): self
+    public function truncate(): static
     {
-        $this->doAction(self::MODE_TRUNCATE);
+        $this->doAction(QueryActionsEnum::TRUNCATE);
         return $this;
     }
 
-    public function extraQuery($str): self
+    public function extraQuery($str): static
     {
         $this->extraQuery = " " . $str;
         return $this;

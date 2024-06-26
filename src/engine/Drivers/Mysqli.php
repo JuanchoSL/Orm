@@ -4,8 +4,11 @@ namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\MysqlCursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
-use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
 /**
@@ -27,7 +30,6 @@ class Mysqli extends RDBMS implements DbInterface
     use SQLBuilderTrait;
 
     protected $requiredModule = 'mysqli';
-
 
     public function connect(): void
     {
@@ -57,65 +59,42 @@ class Mysqli extends RDBMS implements DbInterface
         return parent::extractTables("SHOW TABLES FROM " . $this->credentials->getDataBase());
     }
 
-    public function describe(string $tabla = null): array
+    protected function getParsedField(array $keys): FieldDescription
     {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        $describe = array();
-        if (!empty($tabla)) {
-            $result = $this->execute("DESCRIBE " . $tabla);
-            while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['Field'])
-                    ->setType(trim($varchar[0]))
-                    ->setLength(trim($varchar[1] ?? '0'))
-                    ->setNullable($keys['Null'])
-                    ->setDefault($keys['Default'])
-                    ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
-                $describe[$keys['Field']] = $field;
-            }
-            $this->describe[$tabla] = $describe;
-            if ($result) {
-                $result->free();
-            }
-        }
-        return $this->describe[$tabla];
+        $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['Field'])
+            ->setType(trim($varchar[0]))
+            ->setLength(trim($varchar[1] ?? '0'))
+            ->setNullable($keys['Null'])
+            ->setDefault($keys['Default'])
+            ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
+        return $field;
     }
 
-    public function execute(QueryBuilder|string $query): CursorInterface
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
-        if (!$this->linkIdentifier) {
-            $this->connect();
-        }
-        $query = $this->parseQuery($query);
         $cursor = mysqli_query($this->linkIdentifier, $query);
-        if ($error_number = mysqli_errno($this->linkIdentifier) > 0) {
-            $exception = new \Exception($query . " -> " . mysqli_error($this->linkIdentifier), $error_number);
-            $this->log($exception, 'error');
-            throw $exception;
-        } else {
-            $this->log($query, 'info');
+        if (!$cursor) {
+            throw new \Exception(mysqli_error($this->linkIdentifier), mysqli_errno($this->linkIdentifier));
         }
-        return new MysqlCursor($cursor);
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        if ($action->isIterable()) {
+            $cursor = new MysqlCursor($cursor);
+        } elseif ($action->isInsertable()) {
+            $cursor = new InsertResponse(mysqli_insert_id($this->linkIdentifier));
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse(mysqli_affected_rows($this->linkIdentifier));
+        } else {
+            $cursor = new EmptyResponse(mysqli_affected_rows($this->linkIdentifier) >= 0);
+        }
+        return $cursor;
     }
 
     public function escape(string $value): string
     {
         return mysqli_escape_string($this->linkIdentifier, stripslashes($value));
-    }
-
-
-    public function affectedRows(): int
-    {
-        return $this->nResults = mysqli_affected_rows($this->linkIdentifier);
-    }
-
-    public function lastInsertedId(): int
-    {
-        return $this->lastInsertedId = mysqli_insert_id($this->linkIdentifier);
     }
 
     public function createTable(string $table_name, FieldDescription ...$fields)

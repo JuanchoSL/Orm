@@ -4,7 +4,11 @@ namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\Db2Cursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -41,9 +45,6 @@ class Db2 extends RDBMS implements DbInterface
         }
     }
 
-    /**
-     * Cierra la conexión mediante el puntero pasado por parámetro
-     */
     public function disconnect(): bool
     {
         if (!empty($this->linkIdentifier)) {
@@ -53,80 +54,53 @@ class Db2 extends RDBMS implements DbInterface
         return $result ?? true;
     }
 
-    /**
-     * Devuelve el listado de nombres de las tablas del servidor y esquema seleccionado
-     * @return mixed Array cuyo contenido es el listado de nombres de las tablas del esquema
-     */
     public function getTables(): array
     {
         //db2_tables($this->linkIdentifier);
         return parent::extractTables("SHOW TABLES FROM " . $this->credentials->getDataBase());
     }
 
-    public function describe(string $tabla = null): array
+    protected function getParsedField(array $keys): FieldDescription
     {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        $describe = [];
-        if (!empty($tabla)) {
-            $result = $this->execute("DESCRIBE " . $tabla);
-            while ($keys = $result->next(self::RESPONSE_ASSOC)) {
-                $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['Field'])
-                    ->setType(trim($varchar[0]))
-                    ->setLength(trim($varchar[1] ?? '0'))
-                    ->setNullable($keys['Null'])
-                    ->setDefault($keys['Default'])
-                    ->setKey(!empty($keys['Key']));
-                $describe[$keys['Field']] = $field;
-            }
-            $this->describe[$tabla] = $describe;
-            if ($result) {
-                $result->free();
-            }
-        }
-        return $this->describe[$tabla];
+        $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['Field'])
+            ->setType(trim($varchar[0]))
+            ->setLength(trim($varchar[1] ?? '0'))
+            ->setNullable($keys['Null'])
+            ->setDefault($keys['Default'])
+            ->setKey(!empty($keys['Key']));
+        return $field;
     }
 
-
-    public function execute(QueryBuilder|string $query): CursorInterface
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
-        if (!$this->linkIdentifier) {
-            $this->connect();
-        }
-        $query = $this->parseQuery($query);
-        //        $this->cursor = db2_query($this->linkIdentifier, $query);
+        //        $cursor = db2_query($this->linkIdentifier, $query);
 //        if (db2_errno($this->linkIdentifier) > 0) {
 //            Debug::error(db2_stmt_errormsg($this->linkIdentifier) . " -> " . $query);
 //            return false;
 //        }
-        $this->cursor = db2_prepare($this->linkIdentifier, $query);
-        if (!$this->cursor || !db2_execute($this->cursor)) {
-            $exception = new \Exception($query . ' -> ' . db2_stmt_errormsg($this->linkIdentifier));
-            $this->log($exception, 'error');
-            throw $exception;
-        } else {
-            $this->log($query, 'info');
+        $cursor = db2_prepare($this->linkIdentifier, $query);
+        if (!$cursor || !db2_execute($cursor)) {
+            throw new \Exception(db2_stmt_errormsg($this->linkIdentifier));
         }
-        return new Db2Cursor($this->cursor);
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        if ($action->isIterable()) {
+            $cursor = new Db2Cursor($cursor);
+        } elseif ($action->isInsertable()) {
+            $cursor = new InsertResponse(db2_last_insert_id($this->linkIdentifier));
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse(db2_num_rows($cursor));
+        } else {
+            $cursor = new EmptyResponse(db2_num_rows($cursor));
+        }
+        return $cursor;
     }
 
     public function escape(string $value): string
     {
         return db2_escape_string(stripslashes($value));
-    }
-
-    public function affectedRows(): int
-    {
-        return $this->nResults = db2_num_rows($this->cursor);
-    }
-
-    public function lastInsertedId(): int
-    {
-        return $this->lastInsertedId = (int) db2_last_insert_id($this->linkIdentifier);
     }
 
 }

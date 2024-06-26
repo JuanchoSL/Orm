@@ -4,7 +4,11 @@ namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\engine\Cursors\OdbcCursor;
+use JuanchoSL\Orm\engine\Responses\AlterResponse;
+use JuanchoSL\Orm\engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
@@ -45,9 +49,6 @@ class Odbc extends RDBMS implements DbInterface
         }
     }
 
-    /**
-     * Cierra la conexión mediante el puntero pasado por parámetro
-     */
     public function disconnect(): bool
     {
         if (!empty($this->linkIdentifier)) {
@@ -57,12 +58,11 @@ class Odbc extends RDBMS implements DbInterface
         return true;
     }
 
-    /**
-     * Devuelve el listado de nombres de las tablas del servidor y esquema seleccionado
-     * @return array Array cuyo contenido es el listado de nombres de las tablas del esquema
-     */
     public function getTables(): array
     {
+        if (!$this->linkIdentifier) {
+            $this->connect();
+        }
         $tables = array();
         $result = odbc_tables($this->linkIdentifier);
         while (odbc_fetch_row($result)) {
@@ -73,73 +73,64 @@ class Odbc extends RDBMS implements DbInterface
         return $tables;
     }
 
-    public function describe(string $tabla = null): array
-    {
-        if (empty($tabla)) {
-            $tabla = $this->tabla;
-        }
-        $describe = [];
-        if (!empty($tabla)) {
-            if (!$this->linkIdentifier) {
-                $this->connect();
-            }
-            $columns = odbc_columns($this->linkIdentifier, $this->credentials->getDataBase(), '', $tabla);
-            $cursor = new OdbcCursor($columns);
-            while ($keys = $cursor->next(self::RESPONSE_ASSOC)) {
-                $field = new FieldDescription;
-                $field
-                    ->setName($keys['COLUMN_NAME'])
-                    ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
-                    ->setLength($keys['COLUMN_SIZE'])
-                    ->setNullable($keys['NULLABLE'] == 0)
-                    ->setDefault($keys['COLUMN_DEF'])
-                    ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
-                $describe[$keys['COLUMN_NAME']] = $field;
-
-            }
-            $this->describe[$tabla] = $describe;
-            $cursor->free();
-        }
-        return $this->describe[$tabla];
-    }
-
-    public function execute(QueryBuilder|string $query): CursorInterface
+    protected function processDescribe(QueryBuilder $queryBuilder): CursorInterface
     {
         if (!$this->linkIdentifier) {
             $this->connect();
         }
-        $query = $this->parseQuery($query);
-        if (in_array(substr($query, 0, 6), [QueryBuilder::MODE_INSERT])) {
-            $result_id = odbc_prepare($this->linkIdentifier, $query);
-            $this->cursor = odbc_execute($result_id);
-        } else {
-            $this->cursor = odbc_exec($this->linkIdentifier, $query);
-        }
-        if (!$this->cursor) {
-            $exception = new \Exception($query . " -> " . odbc_errormsg($this->linkIdentifier));
-            $this->log($exception, 'error');
-            throw $exception;
-        } else {
-            $this->log($query, 'info');
-        }
-        return new OdbcCursor($this->cursor);
+        $columns = odbc_columns($this->linkIdentifier, $this->credentials->getDataBase(), '', $queryBuilder->table);
+        return new OdbcCursor($columns);
     }
 
-    public function affectedRows(): int
+    protected function getParsedField(array $keys): FieldDescription
     {
-        return $this->nResults = odbc_num_rows($this->cursor);
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['COLUMN_NAME'])
+            ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
+            ->setLength($keys['COLUMN_SIZE'])
+            ->setNullable($keys['NULLABLE'] == 0)
+            ->setDefault($keys['COLUMN_DEF'])
+            ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
+        return $field;
     }
 
-    public function lastInsertedId(): int
+    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    {
+        $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
+        if ($action->isInsertable()) {
+            $result_id = odbc_prepare($this->linkIdentifier, $query);
+            $cursor = odbc_execute($result_id);
+        } else {
+            $cursor = odbc_exec($this->linkIdentifier, $query);
+        }
+        if (!$cursor) {
+            throw new \Exception(odbc_errormsg($this->linkIdentifier));
+        }
+        if ($action->isIterable()) {
+            $cursor = new OdbcCursor($cursor);
+        } elseif ($action->isInsertable()) {
+            $cursor = new InsertResponse($this->lastInsertedId());
+        } elseif ($action->isAlterable()) {
+            $cursor = new AlterResponse(odbc_num_rows($cursor));
+        } else {
+            $cursor = new EmptyResponse(odbc_num_rows($cursor) !== false);
+        }
+        return $cursor;
+    }
+
+    protected function lastInsertedId(): int
     {
         $c = $this->execute('SELECT @@IDENTITY AS ID');
-        return $c->next(self::RESPONSE_OBJECT)->ID;
+        $lastInsertedId = $c->next(static::RESPONSE_OBJECT)->ID;
+        $c->free();
+        return $lastInsertedId;
     }
 
     protected function parseSelect(QueryBuilder $sqlBuilder): string
     {
         if (!empty($sqlBuilder->limit) && stripos($this->dns, 'SQL Server') !== false) {
-            $where = $this->mountWhere($sqlBuilder->condition);
+            $where = $this->mountWhere($sqlBuilder->condition, $sqlBuilder->table);
             $join = (count($sqlBuilder->join ?? []) > 0) ? implode(" ", $sqlBuilder->join) : "";
             $inicio = ($sqlBuilder->limit[1] * $sqlBuilder->limit[0]);
             $limit = $sqlBuilder->limit[0];

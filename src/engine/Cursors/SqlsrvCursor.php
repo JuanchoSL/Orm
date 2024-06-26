@@ -11,14 +11,14 @@ class SqlsrvCursor extends AbstractCursor implements CursorInterface
     {
         switch ($typeReturn) {
             case RDBMS::RESPONSE_ROWS:
-                return sqlsrv_fetch_array($this->cursor, SQLSRV_FETCH_NUMERIC);
+                return sqlsrv_fetch_array($this->cursor, SQLSRV_FETCH_NUMERIC) ?? false;
 
             case RDBMS::RESPONSE_ASSOC:
-                return sqlsrv_fetch_array($this->cursor, SQLSRV_FETCH_ASSOC);
+                return sqlsrv_fetch_array($this->cursor, SQLSRV_FETCH_ASSOC) ?? false;
 
             case RDBMS::RESPONSE_OBJECT:
             default:
-                return sqlsrv_fetch_object($this->cursor);
+                return sqlsrv_fetch_object($this->cursor) ?? false;
         }
     }
 

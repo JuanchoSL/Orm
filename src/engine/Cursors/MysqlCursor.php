@@ -11,14 +11,14 @@ class MysqlCursor extends AbstractCursor implements CursorInterface
     {
         switch ($typeReturn) {
             case RDBMS::RESPONSE_ROWS:
-                return mysqli_fetch_row($this->cursor);
+                return mysqli_fetch_row($this->cursor) ?? false;
 
             case RDBMS::RESPONSE_ASSOC:
-                return mysqli_fetch_assoc($this->cursor);
+                return mysqli_fetch_assoc($this->cursor) ?? false;
 
             case RDBMS::RESPONSE_OBJECT:
             default:
-                return mysqli_fetch_object($this->cursor);
+                return mysqli_fetch_object($this->cursor) ?? false;
         }
     }
 
