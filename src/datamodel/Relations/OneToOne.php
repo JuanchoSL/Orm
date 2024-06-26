@@ -1,10 +1,12 @@
 <?php
 
-namespace JuanchoSL\Orm\engine\Relations;
+declare(strict_types=1);
 
-use JuanchoSL\Orm\datamodel\DataModelInterface;
+namespace JuanchoSL\Orm\Datamodel\Relations;
 
-class OneToOne extends AbstractRelation
+use JuanchoSL\Orm\Datamodel\DataModelInterface;
+
+class OneToOne extends AbstractSingleRetriever
 {
     public function __construct(DataModelInterface $model, string $foreign_key, string $id)
     {

@@ -1,18 +1,27 @@
 <?php
 
-namespace JuanchoSL\Orm\datamodel;
+declare(strict_types=1);
 
+namespace JuanchoSL\Orm\Datamodel;
+
+use JuanchoSL\Orm\querybuilder\QueryExecuter;
+
+/**
+ * @property string $connection_name
+ * @property bool $lazyLoad
+ * @property string $identifier
+ * @property bool $loaded
+ */
 interface DataModelInterface
 {
-    public function getTableName();
-    public function getPrimaryKeyValue();
-    public function getPrimaryKeyName();
-    public function delete();
-    public function save();
-    public static function all();
-    public static function where(array ...$array_where);
-    public static function model();
-    public static function getInstance();
-    public static function findByPk(int $id);
-    public static function make(iterable $values);
+    public function getTableName(): string;
+    public function getPrimaryKeyValue(): mixed;
+    public function getPrimaryKeyName(): string;
+    public function delete(): bool;
+    public function save(): bool;
+    public static function where(array ...$array_where): QueryExecuter;
+    public static function model(): string;
+    public static function getInstance(): DataModelInterface;
+    public static function findByPk(int $id): DataModelInterface;
+    public static function make(iterable $values): DataModelInterface;
 }

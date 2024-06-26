@@ -1,6 +1,9 @@
 <?php
 
-namespace JuanchoSL\Orm\datamodel;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Datamodel;
+
 use JuanchoSL\DataTransfer\Repositories\ArrayDataTransfer;
 
 trait InstantiatorTrait
@@ -10,20 +13,27 @@ trait InstantiatorTrait
     {
         $this->values = new ArrayDataTransfer([]);
     }
-    public static function model()
+    public static function model(): string
     {
         return get_called_class();
     }
 
-    public static function getInstance()
+    public static function getInstance(): DataModelInterface
     {
         $class = static::model();
         return new $class;
     }
-    
-    public static function make(iterable $values)
+
+    public static function make(iterable $values): DataModelInterface
     {
         $instance = self::getInstance();
         return $instance->fill($values);
     }
+
+    public function __sleep(): array
+    {
+        $this->save();
+        return ['identifier', 'values', 'loaded'];
+    }
+
 }

@@ -1,74 +1,79 @@
 <?php
 
-namespace JuanchoSL\Orm\datamodel;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\DataTransfer\Contracts\DataTransferInterface;
 use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
-use JuanchoSL\Orm\engine\Relations\AbstractRelation;
-use JuanchoSL\Orm\engine\Relations\BelongsToMany;
-use JuanchoSL\Orm\engine\Relations\BelongsToOne;
-use JuanchoSL\Orm\engine\Relations\OneToMany;
-use JuanchoSL\Orm\engine\Relations\OneToOne;
+use JuanchoSL\Orm\Datamodel\Relations\AbstractRelation;
+use JuanchoSL\Orm\Datamodel\Relations\BelongsToMany;
+use JuanchoSL\Orm\Datamodel\Relations\BelongsToOne;
+use JuanchoSL\Orm\Datamodel\Relations\OneToMany;
+use JuanchoSL\Orm\Datamodel\Relations\OneToOne;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 
 
 trait AutoCrudTrait
 {
     protected DataTransferInterface $values;
-    public function delete()
+    public function delete(): bool
     {
-        return self::where([$this->getPrimaryKeyName(), $this->getPrimaryKeyValue()])->delete();
+        return static::where([$this->getPrimaryKeyName(), $this->getPrimaryKeyValue()])->delete()->count() > 0;
     }
 
-    public function save()
+    public function save(): bool
     {
+        if (!$this->values->hasElements()) {
+            return false;
+        }
         $save = [];
-        $columns = $this->columns();
+        $columns = $this->getConnection()->columns($this->getTableName());
 
         if (!empty($columns)) {
             foreach ($columns as $column) {
-                if($this->values->has($column)){
+                if ($this->values->has($column)) {
                     $save[$column] = $this->values->get($column);
                 }
-/*
-                if (isset($this->values[$column])) {
-                    $save[$column] = $this->values[$column];
-                }*/
             }
         }
         $pk = $this->getPrimaryKeyName();
         unset($save[$pk]);
         try {
             $id = $this->getPrimaryKeyValue();
-            $result = self::where([$pk, $id])->update($save);
+            $result = static::where([$pk, $id])->update($save)->count() == 1;
         } catch (UnprocessableEntityException $ex) {
-            $result = self::insert($save);
-            if ($result) {
+            $result = static::where()->insert($save);
+            if ($result->count() == 1) {
+                $result = $result->__toString();
                 $this->identifier = $this->{$pk} = $result;
                 $this->loaded = true;
+                $result = true;
+            } else {
+                $result = false;
             }
         }
         return $result;
     }
 
-
     public function __set($param, $value)
     {
-        if (in_array($param, $this->columns())) {
-            $function = "set" . ucfirst(strtolower($param));
+        if (!$this->loaded && !empty($this->identifier)) {
+            $this->load($this->identifier);
+        }
+        if (in_array($param, $this->getConnection()->columns($this->getTableName()))) {
+            $function = "set" . str_replace(" ", "", ucwords(strtolower(str_replace("_", " ", $param))));
             if (method_exists($this, $function)) {
                 $value = $this->$function($value);
             }
             $this->values->set($param, $value);
-            //$this->values[$param] = $value;
         }
     }
 
     public function __get($param)
     {
-
-        if ($this->loaded === false) {
+        if (!$this->loaded && !empty($this->identifier)) {
             $this->load($this->identifier);
         }
         if (method_exists($this, $param)) {
@@ -86,13 +91,11 @@ trait AutoCrudTrait
                 }
             }
         } elseif ($this->values->has(strtolower($param))) {
-        //} elseif (array_key_exists(strtolower($param), $this->values)) {
-            $function = "get" . ucfirst(strtolower($param));
+            $function = "get" . str_replace(" ", "", ucwords(strtolower(str_replace("_", " ", $param))));
             if (method_exists($this, $function)) {
                 return $this->$function();
             }
             return $this->values->get(strtolower($param));
-            return $this->values[strtolower($param)];
         }
         return null;
     }
@@ -115,7 +118,6 @@ trait AutoCrudTrait
                 }
             }
             $this->values->set(strtolower($name), $var);
-            //$this->values[strtolower($name)] = $var;
             if (empty($this->identifier) && $this->getPrimaryKeyName() == $name) {
                 $this->identifier = $var;
             }
@@ -127,13 +129,12 @@ trait AutoCrudTrait
     {
         $pk = $this->getPrimaryKeyName();
         $id = $this->adapterIdentifier($id);
-        $cursor = $this->execute(QueryBuilder::getInstance()->select()->from($this->getTableName())->where([$pk, $id])->limit(1));
+        $cursor = $this->getConnection()->execute(QueryBuilder::getInstance()->select()->from($this->getTableName())->where([$pk, $id])->limit(1));
         $element = $cursor->next();
         $cursor->free();
         if (!$element) {
             throw new NotFoundException("The element with {$pk}={$id} does not exists into {$this->getTableName()}");
-        }
-        if ($element) {
+        } else {
             $this->fill((array) $element);
         }
         return $element;

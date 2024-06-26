@@ -1,6 +1,8 @@
 <?php
 
-namespace JuanchoSL\Orm\datamodel;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\Exceptions\UnprocessableEntityException;
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
@@ -30,12 +32,10 @@ abstract class Model implements \JsonSerializable, DataModelInterface
         return self::$conn[$conection_name] = $connection;
     }
 
-    public function __call($method, $parameters)
+    protected function getConnection(): DbInterface
     {
-        self::$conn[$this->connection_name]->setTable($this->getTableName());
-        return call_user_func_array(array(self::$conn[$this->connection_name], $method), $parameters);
+        return static::$conn[$this->connection_name];
     }
-
 
     protected function adapterIdentifier($id)
     {
@@ -52,46 +52,40 @@ abstract class Model implements \JsonSerializable, DataModelInterface
         }*/
         return $id;
     }
-    public function getPrimaryKeyValue()
+    public function getPrimaryKeyValue():mixed
     {
         $pk = $this->getPrimaryKeyName();
-        if($this->values->has($pk)){
+        if ($this->values->has($pk)) {
             return $this->values->get($pk);
-        /*}
-        if (isset($this->values[$pk])) {
-            return $this->values[$pk];*/
-        } elseif (!empty($this->identifier)) {
+        } elseif (!empty ($this->identifier)) {
             return $this->identifier;
         }
         throw new UnprocessableEntityException($pk);
     }
 
-    public function getPrimaryKeyName()
+    public function getPrimaryKeyName():string
     {
-        $keys = $this->keys();
+        $keys = $this->getConnection()->keys($this->getTableName());
         return (count($keys) > 0) ? (string) $keys[0] : ((true /*in_array(strtolower(get_class(self::$conn)), [strtolower(\remote\database\Mongo::class), strtolower(\remote\database\MongoClient::class)])*/) ? 'id' : '_id');
     }
 
-    public function getTableName()
+    public function getTableName():string
     {
         return $this->table ?? $this->table = strtolower(substr(get_called_class(), strrpos(get_called_class(), '\\') + 1));
     }
 
     public function jsonSerialize(): mixed
     {
-        if (!$this->loaded) {
+        if (!$this->loaded && !empty($this->identifier)) {
             $this->load($this->identifier);
         }
         $response = [];
-        $columns = $this->columns();
-        if (!empty($columns)) {
+        $columns = $this->getConnection()->columns($this->getTableName());
+        if (!empty ($columns)) {
             foreach ($columns as $column) {
-                if($this->values->has($column)){
+                if ($this->values->has($column)) {
                     $response[$column] = $this->values->get($column);
                 }
-                /*if (array_key_exists($column, $this->values)) {
-                    $response[$column] = $this->values[$column];
-                }*/
             }
         }
         return $response;

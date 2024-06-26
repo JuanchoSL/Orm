@@ -1,9 +1,10 @@
 <?php
 
-namespace JuanchoSL\Orm\datamodel;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\Orm\querybuilder\QueryExecuter;
-
 
 trait AutoQueryTrait
 {
@@ -12,21 +13,16 @@ trait AutoQueryTrait
     {
         $instance = self::getInstance();
         $query = new QueryExecuter(self::$conn[$instance->connection_name], $instance);
-        $query = $query->from($instance->getTableName())->$method($args);
+        $query = $query->$method($args);
         return $query;
     }
 
-    public static function all()
-    {
-        return self::where()->get();
-    }
-
-    public static function where(array ...$where)
+    public static function where(array ...$where): QueryExecuter
     {
         $instance = self::getInstance();
         if ($instance->lazyLoad) {
             $distinct = array();
-            $keys = $instance->keys();
+            $keys = $instance->getConnection()->keys($instance->getTableName());
             foreach ($keys as $key) {
                 $distinct[] = "{$instance->getTableName()}.{$key}";
             }
@@ -34,15 +30,14 @@ trait AutoQueryTrait
         } else {
             $fields = '*';
         }
-        $response = self::select($fields);
+        $response = static::select($fields)->from($instance->getTableName());
         if (!empty($where)) {
             $response = call_user_func_array([$response, 'where'], $where);
         }
         return $response;
     }
 
-
-    public static function findByPk($id)
+    public static function findByPk($id): DataModelInterface
     {
         $instance = self::getInstance();
         $instance->identifier = $id;
@@ -51,10 +46,5 @@ trait AutoQueryTrait
         } else {
             return $instance->load($id);
         }
-    }
-
-    public static function findOne(array $where = array(), array $inner = array())
-    {
-        return self::select()->where($where)->join($inner)->limit(1)->get()->first();
     }
 }
