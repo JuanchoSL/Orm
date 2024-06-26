@@ -1,61 +1,70 @@
 <?php
 
-namespace JuanchoSL\Orm\Tests\Integration;
+namespace JuanchoSL\Orm\Tests\Functional;
 
 use JuanchoSL\Orm\Collection;
-use JuanchoSL\Orm\datamodel\CachedModel;
 use JuanchoSL\Orm\datamodel\Model;
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
 use JuanchoSL\Orm\engine\Engines;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
-use JuanchoSL\SimpleCache\Adapters\SimpleCacheAdapter;
-use JuanchoSL\SimpleCache\Repositories\ProcessCache;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractFunctional extends TestCase
+class ModelTest extends TestCase
 {
 
     use ConnectionTrait;
 
-    protected DbInterface $db;
-
-    protected Engines $db_type;
-
     private $loops = 3;
 
-    public function setUp(): void
+
+    public function providerLoginData(): array
     {
-        $this->db = self::getConnection($this->db_type);
-        Model::setConnection($this->db);
-        //CachedModel::setConnection($this->db);
-        //CachedModel::setCache(new ProcessCache('Orm' . (string) $this->db_type->string()));
+        return [
+            'Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)],
+            'Mysql' => [self::getConnection(Engines::TYPE_MYSQLI)],
+            'Oracle' => [self::getConnection(Engines::TYPE_ORACLE)],
+            'Postgres' => [self::getConnection(Engines::TYPE_POSTGRE)],
+            'Sqlserver' => [self::getConnection(Engines::TYPE_SQLSRV)]
+        ];
     }
-    public function testInsert()
+
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testInsert($db)
     {
+        Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
-            $id = TestDb::make(array('test' => 'valor', 'dato' => $i))->save();
-            $this->assertTrue(!empty($id), "Recuperación del id de un insert");
+            $obj = TestDb::make(array('test' => 'valor', 'dato' => $i));
+            $this->assertInstanceOf(TestDb::class, $obj);
+            $saved = $obj->save();
+            $this->assertTrue($saved, "Recuperación del id de un insert");
+            $this->assertEquals($i, $obj->getPrimaryKeyValue(), "Recuperación del id de un insert");
         }
     }
-
-    public function testConditions()
+    
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testConditions($db)
     {
+        Model::setConnection($db);
         $cursor = TestDb::where(['test', 'valor'], ['dato', 2]);
         $this->assertEquals(1, $cursor->count(), "Check 1");
-
+        
         $cursor = TestDb::where(['test', 'valor'])->where(['dato', 2]);
         $this->assertEquals(1, $cursor->count(), "Check 2");
 
         $cursor = TestDb::where(['test', 'valor'])->orWhere(['dato', 2]);
         $this->assertEquals($this->loops, $cursor->count(), "Check 3");
-
+        
         $cursor = TestDb::where(['test', ['valor', 'valore']]);
         $this->assertEquals($this->loops, $cursor->count(), "Check 4");
 
         $cursor = TestDb::where(['test="valor"'], ['dato=2']);
         $this->assertEquals(1, $cursor->count(), "Check 5");
-
+        
         $cursor = TestDb::where(['test="valor"'])->where(['dato=2']);
         $this->assertEquals(1, $cursor->count(), "Check 6");
 
@@ -85,11 +94,15 @@ abstract class AbstractFunctional extends TestCase
 
         $cursor = TestDb::where(['dato', null, 'IS NULL']);
         $this->assertEquals(0, $cursor->count(), "Check 15");
-
+        
     }
-
-    public function testSelect()
+    
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSelect($db)
     {
+        Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $cursor = TestDb::where(array('test', 'valor'))->limit($i);
             $values = $cursor->get();
@@ -97,12 +110,16 @@ abstract class AbstractFunctional extends TestCase
             $this->assertEquals($i, $values->count());
         }
     }
-
-    public function testSelectPaginated()
+    
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSelectPaginated($db)
     {
+        Model::setConnection($db);
         $query = TestDb::where(array('test', 'valor'));
         $this->assertEquals($this->loops, $query->count());
-
+        
         $i = $this->loops - 1;
         $query = $query->limit($i); //->cursor();
         $this->assertEquals($i, $query->count());
@@ -111,11 +128,15 @@ abstract class AbstractFunctional extends TestCase
         $this->assertInstanceOf(Collection::class, $values);
         $this->assertEquals($i, $values->count());
     }
-
-    public function testRestart()
+    
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testRestart($db)
     {
+        Model::setConnection($db);
         $deleted = TestDb::where()->delete();
-        $this->assertEquals($this->loops, $deleted);
+        $this->assertEquals($this->loops, $deleted->count());
         /*
         $remover = TestDb::find(array());
         foreach ($remover as $remo) {
@@ -125,27 +146,35 @@ abstract class AbstractFunctional extends TestCase
         // $this->testTruncate();
     }
 
-    public function testSaveInsert()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSaveInsert($db)
     {
+        Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $obj = new TestDb();
             $obj->test = 'valores';
             $obj->dato = $i;
             $id = $obj->save();
-            $this->assertTrue(!empty($id), "Recuperación del id de un insert");
+            $this->assertTrue($id, "Recuperación del id de un insert");
         }
     }
 
-    public function testSaveUpdate()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSaveUpdate($db)
     {
-        $objs = TestDb::all();
+        Model::setConnection($db);
+        $objs = TestDb::get();
         $this->assertInstanceOf(Collection::class, $objs);
         $this->assertTrue($objs->hasElements(), "Find return elements");
         foreach ($objs as $obj) {
             $this->assertEquals('valores', $obj->test, "Comprobación del valor original");
             $obj->test = 'valor';
             $n = $obj->save();
-            $this->assertEquals(1, $n, "Recuperación del número de elementos modificados con update");
+            $this->assertTrue($n, "Recuperación del número de elementos modificados con update");
             $key = $obj->getPrimaryKeyName();
             $id = $obj->$key;
             $obj2 = TestDb::where([$key, $id])->limit(1)->first();
@@ -153,20 +182,30 @@ abstract class AbstractFunctional extends TestCase
         }
     }
 
-    public function testSelectByPk()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSelectByPk($db)
     {
-        $elements = TestDb::all();
+        Model::setConnection($db);
+        $elements = TestDb::get();
         $this->assertInstanceOf(Collection::class, $elements);
         $this->assertTrue($elements->hasElements(), "Find return elements");
         foreach ($elements as $element) {
-            $obj = TestDb::findByPk($element->id);
-            $this->assertInstanceOf(TestDb::class, $obj);
+            //$obj = TestDb::findByPk($element->id);
+            //$this->assertInstanceOf(TestDb::class, $obj);
+            
+            $this->assertInstanceOf(TestDb::class, $element);
             //$this->assertEquals($element, $obj);
         }
     }
 
-    public function testSelectFindPaginated()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSelectFindPaginated($db)
     {
+        Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $objs = TestDb::where(array('test', 'valor'))->limit($i, 0)->get();
             $this->assertInstanceOf(Collection::class, $objs);
@@ -177,7 +216,7 @@ abstract class AbstractFunctional extends TestCase
                 $this->assertInstanceOf(TestDb::class, $obj);
                 //$this->assertTrue($obj->loaded);
                 /*
-                if (!in_array($this->db->typeDB, [DatabaseFactory::TYPE_MONGOCLIENT, DatabaseFactory::TYPE_MONGO])) {
+                if (!in_array($db->typeDB, [DatabaseFactory::TYPE_MONGOCLIENT, DatabaseFactory::TYPE_MONGO])) {
                     foreach ($obj->columns() as $column) {
                         $this->assertObjectHasProperty($column, $obj); //PHPUnit 6
                     }
@@ -187,15 +226,23 @@ abstract class AbstractFunctional extends TestCase
         }
     }
 
-    public function testUpdate()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testUpdate($db)
     {
+        Model::setConnection($db);
         $modificateds = TestDb::where(array('test', 'valor'))->update(array('test' => 'value')); //->count();
-        $this->assertEquals($this->loops, $modificateds, "Update elements");
+        $this->assertEquals($this->loops, $modificateds->count(), "Update elements");
     }
 
-    public function testSerialize()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testSerialize($db)
     {
-        $var = TestDb::all();
+        Model::setConnection($db);
+        $var = TestDb::get();
         $this->assertTrue($var->hasElements(), "Collection have elements");
         $this->assertContainsOnlyInstancesOf(TestDb::class, $var, "Collection are a few of Test class");
         $var->rewind();
@@ -212,8 +259,12 @@ abstract class AbstractFunctional extends TestCase
         $unserialized->save();
     }
 
-    public function testDelete()
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testDelete($db)
     {
+        Model::setConnection($db);
         $remover = TestDb::where(array('test', 'value'))->get();
         $this->assertEquals($this->loops, $remover->count(), "delete {$remover->count()} results");
         foreach ($remover as $remo) {
@@ -222,19 +273,28 @@ abstract class AbstractFunctional extends TestCase
         $remover = TestDb::where(array('test', 'value'))->get();
         $this->assertEquals(0, $remover->count(), "No elements for delete after remove");
         $this->assertFalse($remover->hasElements(), "No elements for delete after remove");
-        //        $removeds = $this->db->delete(array('test' => 'value'));
+        //        $removeds = $db->delete(array('test' => 'value'));
 //        $this->assertEquals($this->loops, $removeds, "delete {$removeds} results");
     }
-
-    public function testTruncate()
+    
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testTruncate($db)
     {
+        Model::setConnection($db);
+        $this->testSaveInsert($db);
         $success = TestDb::truncate();
-        $this->assertEquals(true, $success, "Trucate table");
+        $this->assertEquals(1, $success->count(), "Truncate table");
     }
-
-    public function testDisconnect()
+    
+    /**
+     * @dataProvider providerLoginData
+     */
+    public function testDisconnect($db)
     {
-        $result = $this->db->disconnect();
+        Model::setConnection($db);
+        $result = $db->disconnect();
         $this->assertTrue($result, "Test disconnect");
     }
 

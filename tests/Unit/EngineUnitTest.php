@@ -3,12 +3,14 @@
 namespace JuanchoSL\Orm\Tests\Unit;
 
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
+use JuanchoSL\Orm\engine\Responses\InsertResponse;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\engine\Engines;
+use JuanchoSL\Orm\querybuilder\Types\InsertQueryBuilder;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use PHPUnit\Framework\TestCase;
 
-abstract class AbstractUnit extends TestCase
+class EngineUnitTest extends TestCase
 {
     use ConnectionTrait;
 
@@ -20,136 +22,238 @@ abstract class AbstractUnit extends TestCase
 
     private $table = 'test';
 
-    public function setUp(): void
+
+    /**
+     * @dataProvider providerData
+     */
+    /*
+  public function testCreate($db)
+  {
+      $this->markTestSkipped();
+      $query_table = $this->queryCreateTable();
+      if (is_string($query_table)) {
+          $db->execute($query_table);
+      } else {
+          call_user_func_array([$this->db, 'createTable'], array_merge([$this->table], $query_table));
+      }
+
+      $this->assertTrue(true, "Create table");
+  }
+*/
+
+    /**
+     * @dataProvider providerData
+     */
+    public function testTableExists($db)
     {
-        $this->db = self::getConnection($this->db_type);
+        $tables = $db->getTables();
+        $this->assertIsIterable($tables, "Tables is an iterable element");
+        $this->assertContains($this->table, $tables, "Table exists into list");
     }
 
-    public function tearDown(): void
+    /**
+     * @dataProvider providerData
+     */
+    public function testInsert($db)
     {
-        //$this->db->disconnect();
-    }
-
-    public function testCreate()
-    {
-        $this->markTestSkipped();
-        $query_table = $this->queryCreateTable();
-        if (is_string($query_table)) {
-            $this->db->execute($query_table);
-        } else {
-            call_user_func_array([$this->db, 'createTable'], array_merge([$this->table], $query_table));
-        }
-
-        $this->assertTrue(true, "Create table");
-    }
-
-    public function testInsert()
-    {
-        $this->db->setTable($this->table);
+        //$db->setTable($this->table);
         for ($i = 1; $i <= $this->loops; $i++) {
-            $id = $this->db->insert(array('test' => 'valor', 'dato' => $i));
+            $builder = QueryBuilder::getInstance()->insert(array('test' => 'valor', 'dato' => $i))->into($this->table);
+            //$builder = InsertQueryBuilder::getInstance()->into($this->table)->values(array('test' => 'valor', 'dato' => $i));
+            $id = $db->execute($builder);
             $this->assertTrue(!empty($id), "Recuperación del id de un insert");
+            $this->assertInstanceOf(InsertResponse::class, $id);
+            $id = $id->__toString();
             $this->assertIsNumeric($id, "ID is numeric");
             $this->assertEquals($i, $id, "ID equals than loop");
         }
     }
 
-    public function testConditions()
+    /**
+     * @dataProvider providerData
+     */
+    public function testSqlInjection($db)
     {
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', 'valor'], ['dato', 2]);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals(1, $cursor->count(), "Check 1");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', 'valor'])->where(['dato', 2]);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals(1, $cursor->count(), "Check 2");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', 'valor'])->orWhere(['dato', 2]);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops, $cursor->count(), "Check 3");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', ['valor', 'valore']]);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops, $cursor->count(), "Check 4");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'], ['dato=2']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals(1, $cursor->count(), "Check 5");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'])->where(['dato=2']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals(1, $cursor->count(), "Check 6");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'])->orWhere(['dato=2']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops, $cursor->count(), "Check 7");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'], ['test<>"otro"']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops, $cursor->count(), "Check 8");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'])->orWhere(['test="valore"']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops, $cursor->count(), "Check 9");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', [2, 3], true]);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 10");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', [1], false]);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 11");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', 1, '>']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 12");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', 2, '>=']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 13");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', null, 'IS NOT NULL']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals($this->loops, $cursor->count(), "Check 14");
-
-        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', null, 'IS NULL']);
-        $cursor = $this->db->execute($builder);
-        $this->assertEquals(0, $cursor->count(), "Check 15");
-
+        //$this->markTestSkipped();
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', "valor'"]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(0, $cursor->count(), "Check SQL Injection");
+        $cursor->free();
     }
 
-    public function testSelect()
+    /**
+     * @dataProvider providerData
+     */
+    public function testConditions($db)
+    {
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', 'valor'], ['dato', 2]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(1, $cursor->count(), "Check 1");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', 'valor'])->where(['dato', 2]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(1, $cursor->count(), "Check 2");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', 'valor'])->orWhere(['dato', 2]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 3");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test', ['valor', 'valore']]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 4");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'], ['dato=2']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(1, $cursor->count(), "Check 5");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'])->where(['dato=2']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(1, $cursor->count(), "Check 6");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'])->orWhere(['dato=2']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 7");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'], ['test<>"otro"']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 8");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['test="valor"'])->orWhere(['test="valore"']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 9");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', [2, 3], true]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 10");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', [1], false]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 11");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', [2, 3], 'IN']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 10");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', [1], 'NOT IN']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 11");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', 1, '>']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 12");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', 2, '>=']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops - 1, $cursor->count(), "Check 13");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', null, 'IS NOT NULL']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 14");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', null, 'IS NULL']);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(0, $cursor->count(), "Check 15");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', null, false]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals($this->loops, $cursor->count(), "Check 14");
+        $cursor->free();
+
+        $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(['dato', null, true]);
+        $cursor = $db->execute($builder);
+        $this->assertEquals(0, $cursor->count(), "Check 15");
+        $cursor->free();
+    }
+
+    /**
+     * @dataProvider providerData
+     */
+    public function testSelect($db)
     {
         for ($i = 1; $i <= $this->loops; $i++) {
             $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(array('test', 'valor'))->limit($i);
-            $cursor = $this->db->execute($builder);
+            $cursor = $db->execute($builder);
             $values = $cursor->get();
+            $cursor->free();
             $this->assertTrue(is_array($values));
             $this->assertEquals($i, count($values));
             $this->assertTrue(isset($values[$i - 1]));
             $this->assertTrue($values[$i - 1] instanceof \stdClass);
-            $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($this->db->keys())};
+            $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($db->keys($this->table))};
             $this->assertTrue(!empty($id), "Recuperación del id de un select");
         }
     }
 
-    public function testSelectPaginated()
+    /**
+     * @dataProvider providerData
+     */
+    public function testSelectPaginated($db)
     {
         $i = $this->loops - 1;
         $builder = QueryBuilder::getInstance()->select()->from($this->table)->where(array('test', 'valor'))->limit($i);
-        $cursor = $this->db->execute($builder);
+        $cursor = $db->execute($builder);
         $this->assertEquals($i, $cursor->count(), "Count counter");
         $values = $cursor->get();
+        $cursor->free();
         //print_r($cursor);
         $this->assertTrue(is_array($values));
         $this->assertEquals($i, count($values), "Count function");
         $builder = QueryBuilder::getInstance()->clear()->select()->from($this->table)->where(array('test', 'valor'));
-        $cursor = $this->db->execute($builder);
+        $cursor = $db->execute($builder);
         $this->assertEquals($this->loops, $cursor->count(), "Count counter 2");
+        $cursor->free();
         $this->assertTrue(isset($values[$i - 1]));
         $this->assertTrue($values[$i - 1] instanceof \stdClass);
-        $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($this->db->keys())};
+        $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($db->keys($this->table))};
         $this->assertTrue(!empty($id), "Recuperación del id de un select");
+    }
+
+    /**
+     * @dataProvider providerData
+     */
+    public function testJoin($db)
+    {
+        $this->markTestSkipped();
+        $builder = QueryBuilder::getInstance()->select(['test.*'])->from('test')->join(['inner join other on test_id=test.id'])->where(['test.id', 1]);
+        $results = $db->execute($builder);
+        $this->assertEquals(2, $results->count());
+        while ($res = $results->next()) {
+            $this->assertEquals(1, $res->id);
+        }
+        $results->free();
+    }
+
+    /**
+     * @dataProvider providerData
+     */
+    public function testConditionSubquery($db)
+    {
+        $this->markTestSkipped();
+        $builder = QueryBuilder::getInstance()->select()->from('test')->where(['id', QueryBuilder::getInstance()->select(['id'])->from('other')->where(['test_id', 1]), 'IN']);
+        $results = $db->execute($builder);
+        $this->assertEquals(2, $results->count());
+        while ($res = $results->next()) {
+            $this->assertEquals(1, $res->id);
+        }
+        $results->free();
+
     }
     /*
         public function testRestart()
@@ -260,27 +364,41 @@ abstract class AbstractUnit extends TestCase
     //        $this->assertEquals($this->loops, $removeds, "delete {$removeds} results");
         }
     */
-    public function testTruncate()
+
+    /**
+     * @dataProvider providerData
+     */
+    public function testTruncate($db)
     {
         $builder = QueryBuilder::getInstance()->select()->from($this->table);
-        $cursor = $this->db->execute($builder);
+        $cursor = $db->execute($builder);
         $number = $cursor->count();
-        $this->db->setTable($this->table);
-        $success = $this->db->truncate();
-        $this->assertEquals($number, $success, "Trucate table");
+        $cursor->free();
+        $builder = QueryBuilder::getInstance()->truncate()->table($this->table);
+        $success = $db->execute($builder);
+        $this->assertEquals(1, $success->count(), "Truncate table");
+        //$db->setTable($this->table);
+        //$success = $db->truncate();
+        //$this->assertEquals($number, $success, "Truncate table");
     }
 
-    public function testDrop()
+    /**
+     * @dataProvider providerData
+     */
+    public function testDrop($db)
     {
         $this->markTestSkipped();
-        $this->db->setTable($this->table);
-        $result = $this->db->drop();
-        $this->assertTrue(true, "Drop table");
+        $builder = QueryBuilder::getInstance()->drop()->table($this->table);
+        $success = $db->execute($builder);
+        $this->assertEquals(1, $success->count(), "Drop table");
     }
 
-    public function testDisconnect()
+    /**
+     * @dataProvider providerData
+     */
+    public function testDisconnect($db)
     {
-        $result = $this->db->disconnect();
+        $result = $db->disconnect();
         $this->assertTrue($result, "Test disconnect");
     }
 
