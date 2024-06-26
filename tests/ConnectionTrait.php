@@ -22,6 +22,8 @@ trait ConnectionTrait
 {
     private static array $connections = [];
 
+    private static bool $git_mode = true;
+
     public static function setConnection(Engines $connection_type)
     {
         Model::setConnection(static::getConnection($connection_type));
@@ -32,9 +34,11 @@ trait ConnectionTrait
         if (array_key_exists($connection_type->value, self::$connections)) {
             return self::$connections[$connection_type->value];
         }
-        //$logger = new Logger((new FileRepository(dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . 'database.log'))->setComposer((new PlainText)->setTimeFormat("Y-m-d H:i:s T")));
-        $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new PlainText)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
-        $logger->log('debug', "Creating {type}", ['function' => __FUNCTION__, 'memory' => memory_get_usage(), 'type' => $connection_type->value]);
+
+        if (!static::$git_mode) {
+            $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new PlainText)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
+            $logger->log('debug', "Creating {type}", ['function' => __FUNCTION__, 'memory' => memory_get_usage(), 'type' => $connection_type->value]);
+        }
         switch ($connection_type) {
             case Engines::TYPE_MYSQLI:
                 $credentials = new DbCredentials(getenv('MYSQL_HOST'), getenv('MYSQL_USERNAME'), getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
@@ -77,11 +81,13 @@ trait ConnectionTrait
         return $resource;
     }
 
-    
+
     public function providerData(): array
     {
-        return ['Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)]];
-        
+        if (static::$git_mode) {
+            return ['Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)]];
+        }
+
         return [
             'Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)],
             'Mysql' => [self::getConnection(Engines::TYPE_MYSQLI)],
