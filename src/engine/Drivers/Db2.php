@@ -132,7 +132,7 @@ if (!$cursor || !db2_execute($cursor)) {
 }*/
         $cursor = db2_exec($this->linkIdentifier, $query);
         if (!$cursor) {
-            throw new \Exception(db2_stmt_errormsg($this->linkIdentifier));
+            throw new \Exception(db2_stmt_errormsg($this->linkIdentifier), db2_stmt_error($this->linkIdentifier));
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         if ($action->isIterable()) {
