@@ -78,7 +78,6 @@ class Db2 extends RDBMS implements DbInterface
         while ($key = $result->next(static::RESPONSE_ASSOC)) {
             $this->keys[$tabla][$key['COLUMN_NAME']] = $key['PK_NAME'];
         }
-        $this->log(__FUNCTION__, 'debug', ['keys' => $this->keys]);
         $result->free();
         return array_keys($this->keys[$tabla]);
     }
@@ -95,7 +94,6 @@ class Db2 extends RDBMS implements DbInterface
             $tables[] = strtolower($item['TABLE_NAME']);
         }
         $result->free();
-        $this->log(__FUNCTION__, 'debug', ['tables' => $tables]);
         return $tables;
     }
 
@@ -109,7 +107,6 @@ class Db2 extends RDBMS implements DbInterface
 
     protected function getParsedField(array $keys): FieldDescription
     {
-        $this->log(__FUNCTION__, 'debug', ['parse' => $keys]);
         $field = new FieldDescription;
         $field
             ->setName($keys['COLUMN_NAME'])
@@ -135,7 +132,7 @@ if (!$cursor || !db2_execute($cursor)) {
 }*/
         $cursor = db2_exec($this->linkIdentifier, $query);
         if (!$cursor) {
-            //throw new \Exception(db2_stmt_errormsg($this->linkIdentifier));
+            throw new \Exception(db2_stmt_errormsg($this->linkIdentifier));
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         if ($action->isIterable()) {
@@ -159,9 +156,9 @@ if (!$cursor || !db2_execute($cursor)) {
     {
         $table = $builder->table;
         $this->setTable($table);
-        $result = $this->query($this->getQuery($builder) . " IMMEDIATE");
+        $result = $this->execute($this->getQuery($builder) . " IMMEDIATE");
         $pk = (string) $this->describe[$table][strtolower(current($this->keys($table)))]->getName();
-        $this->query("ALTER TABLE {$table} ALTER COLUMN $pk RESTART WITH 1");
+        $this->execute("ALTER TABLE {$table} ALTER COLUMN $pk RESTART WITH 1");
         //$seq = (string) $this->describe[$table][strtolower(current($this->keys($table)))]->getKey();
         //$this->execute("ALTER SEQUENCE {$seq} RESTART WITH 1");
         return $result;

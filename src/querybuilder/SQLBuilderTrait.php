@@ -100,12 +100,12 @@ trait SQLBuilderTrait
                                 continue;
                             }
                             $new_field = $this->describe[$sub_table][strtolower($sub_field)]->getName();
-                            $new_field = ($sub_field != $field) ? $sub_table . '.' . $new_field : $field;
+                            $new_field = ($sub_field != $field) ? $sub_table . '.' . $new_field : $new_field;
                             if (is_array($value)) {
                                 if (isset($comparation[2]) && is_bool($comparation[2])) {
-                                    $comparator = ($comparation[2]) ? ' IN ' : ' NOT IN ';
+                                    $comparator = ($comparation[2]) ? 'IN' : 'NOT IN';
                                 } else {
-                                    $comparator = (empty($comparation[2])) ? ' IN ' : $comparation[2];
+                                    $comparator = (empty($comparation[2])) ? 'IN' : $comparation[2];
                                 }
                                 //$comparator = ($comparator) ? 'IN' : 'NOT IN';
                                 foreach ($value as $index => $val) {
@@ -114,17 +114,17 @@ trait SQLBuilderTrait
                                 $where .= $new_field . " " . $comparator . " ('" . implode("','", $value) . "')";
                             } elseif (is_null($value)) {
                                 if (isset($comparation[2]) && is_bool($comparation[2])) {
-                                    $comparator = ($comparation[2]) ? ' IS NULL ' : ' IS NOT NULL ';
+                                    $comparator = ($comparation[2]) ? 'IS NULL ' : 'IS NOT NULL ';
                                 } else {
-                                    $comparator = (empty($comparation[2])) ? ' IS NULL ' : $comparation[2];
+                                    $comparator = (empty($comparation[2])) ? 'IS NULL ' : $comparation[2];
                                 }
                                 //$comparator = ($comparator) ? 'IS NULL' : 'IS NOT NULL';
                                 $where .= $new_field . " " . $value . " " . $comparator;
                             } elseif ($value instanceof QueryBuilder) {
                                 if (isset($comparation[2]) && is_bool($comparation[2])) {
-                                    $comparator = ($comparation[2]) ? ' IN ' : ' NOT IN ';
+                                    $comparator = ($comparation[2]) ? 'IN' : 'NOT IN';
                                 } else {
-                                    $comparator = (empty($comparation[2])) ? ' IN ' : $comparation[2];
+                                    $comparator = (empty($comparation[2])) ? 'IN' : $comparation[2];
                                 }
                                 $where .= $new_field . " " . $comparator . " (" . $this->getQuery($value) . ")";
                             } else {

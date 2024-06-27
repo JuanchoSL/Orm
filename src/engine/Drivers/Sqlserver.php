@@ -117,11 +117,7 @@ class Sqlserver extends RDBMS implements DbInterface
 
     public function escape(string $value): string
     {
-        $this->log(__FUNCTION__ . __LINE__, 'debug', ['value' => $value]);
-        //$value = addslashes(stripslashes($value));
-        $value = str_replace(["'", '"'], ["''", '""'], $value);
-        $this->log(__FUNCTION__ . __LINE__, 'debug', ['value' => $value]);
-        return $value;
+        return str_replace(["'", '"'], ["''", '""'], $value);
     }
 
     protected function lastInsertedId(): int

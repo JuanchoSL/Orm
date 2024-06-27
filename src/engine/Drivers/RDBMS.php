@@ -138,7 +138,7 @@ abstract class RDBMS implements DbInterface
     public function escape(string $str): string
     {
         return str_replace(["'", '"'], ["''", '""'], $str);
-        
+
         if (!empty($str) && is_string($str)) {
             $str = stripslashes($str);
             return (string) str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\'", '\\"', '\\Z'), $str);
@@ -164,14 +164,13 @@ abstract class RDBMS implements DbInterface
                 $query = $this->getQuery($query);
             }
         }
-        $this->log('{query}', 'debug', ['query' => $query]);
         try {
             $cursor = $this->query($query);
+            $this->log('{query}', 'debug', ['query' => $query, 'results' => $cursor->count()]);
         } catch (\Exception $exception) {
             $this->log($exception, 'error', ['exception' => $exception, "query" => $query]);
             throw $exception;
         }
-        $this->log('{query}', 'debug', ['query' => $query, 'results' => $cursor->count()]);
         return $cursor;
     }
 
@@ -187,7 +186,6 @@ abstract class RDBMS implements DbInterface
                 $field = $this->describe[$table][strtolower($key)]->getName();
                 unset($camps[$key]);
                 $camps[$field] = $value;
-                //$camps[$key] = $this->escape($value);
             }
         }
         return $camps;

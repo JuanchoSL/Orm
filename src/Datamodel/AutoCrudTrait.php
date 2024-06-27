@@ -29,17 +29,17 @@ trait AutoCrudTrait
             return false;
         }
         $save = [];
-        $columns = $this->getConnection()->columns($this->getTableName());
+        $columns = $this->getConnection()->describe($this->getTableName());
 
         if (!empty($columns)) {
-            foreach ($columns as $column) {
-                if ($this->values->has($column)) {
+            foreach ($columns as $column => $description) {
+                if ($this->values->has($column) && !$description->isKey()) {
                     $save[$column] = $this->values->get($column);
                 }
             }
         }
         $pk = $this->getPrimaryKeyName();
-        unset($save[$pk]);
+        //unset($save[$pk]);
         try {
             $id = $this->getPrimaryKeyValue();
             $result = static::where([$pk, $id])->update($save)->count() == 1;
