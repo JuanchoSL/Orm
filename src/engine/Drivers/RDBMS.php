@@ -19,11 +19,7 @@ abstract class RDBMS implements DbInterface
     const RESPONSE_OBJECT = 'object';
     const RESPONSE_ASSOC = 'assoc';
     const RESPONSE_ROWS = 'rows';
-    /*
-        protected $sqlBuilder;
-        protected $typeReturn;
-        protected $variables;
-        protected $tabla;*/
+
     protected $linkIdentifier;
     protected $describe = [];
     protected $columns = [];
@@ -70,7 +66,6 @@ abstract class RDBMS implements DbInterface
 
     protected function setTable(string $tabla): static
     {
-        //$this->tabla = $tabla;
         if (!array_key_exists($tabla, $this->describe)) {
             $this->describe($tabla);
             $this->columns($tabla);
@@ -84,8 +79,6 @@ abstract class RDBMS implements DbInterface
         $describe = [];
         $fields = [];
         $result = $this->execute(QueryBuilder::getInstance()->doAction(QueryActionsEnum::DESCRIBE)->table($tabla));
-        //$result = $this->execute(QueryBuilder::getInstance()->doAction(QueryActionsEnum::DESCRIBE)->table($tabla));
-        //$result = $this->getDescribeIterator($tabla);
         while ($keys = $result->next(static::RESPONSE_ASSOC)) {
             $fields[] = $keys;
             $field = $this->getParsedField($keys);
@@ -144,9 +137,8 @@ abstract class RDBMS implements DbInterface
 
     public function escape(string $str): string
     {
-        /*if (is_array($str))
-            return array_map(__METHOD__, $str);*/
         return str_replace(["'", '"'], ["''", '""'], $str);
+        
         if (!empty($str) && is_string($str)) {
             $str = stripslashes($str);
             return (string) str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\'", '\\"', '\\Z'), $str);

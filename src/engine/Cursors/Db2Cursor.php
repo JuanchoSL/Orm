@@ -7,11 +7,12 @@ use JuanchoSL\Orm\engine\Drivers\RDBMS;
 class Db2Cursor extends AbstractCursor implements CursorInterface
 {
 
+    protected $data = [];
     public function next($typeReturn = null)
     {
         switch ($typeReturn) {
             case RDBMS::RESPONSE_ROWS:
-                return db2_fetch_row($this->cursor);
+                return db2_fetch_array($this->cursor);
 
             case RDBMS::RESPONSE_ASSOC:
                 return db2_fetch_assoc($this->cursor);
@@ -22,9 +23,20 @@ class Db2Cursor extends AbstractCursor implements CursorInterface
         }
     }
 
+    public function get(): array
+    {
+        if (empty ($this->data)) {
+            $this->data = parent::get();
+            reset($this->data);
+        }
+        return $this->data;
+    }
     public function count(): int
     {
-        return db2_num_rows($this->cursor);
+        if (empty ($this->data)) {
+            $this->get();
+        }
+        return count($this->data);
     }
 
     public function free(): bool
