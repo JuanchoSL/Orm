@@ -3,7 +3,6 @@
 namespace JuanchoSL\Orm\Tests;
 
 use JuanchoSL\Logger\Composers\PlainText;
-use JuanchoSL\Logger\Handlers\FileHandler;
 use JuanchoSL\Logger\Logger;
 use JuanchoSL\Logger\Repositories\FileRepository;
 use JuanchoSL\Orm\Datamodel\Model;
@@ -13,7 +12,6 @@ use JuanchoSL\Orm\engine\Drivers\Mysqli;
 use JuanchoSL\Orm\engine\Drivers\Odbc;
 use JuanchoSL\Orm\engine\Drivers\Oracle;
 use JuanchoSL\Orm\engine\Drivers\Postgres;
-use JuanchoSL\Orm\Engine\Drivers\RDBMS;
 use JuanchoSL\Orm\engine\Drivers\Sqlite;
 use JuanchoSL\Orm\engine\Drivers\Sqlserver;
 use JuanchoSL\Orm\engine\Engines;
@@ -72,7 +70,7 @@ trait ConnectionTrait
                 $resource = new Db2($credentials);
                 break;
         }
-        
+
         if (!static::$git_mode) {
             $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new PlainText)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
             $logger->log('debug', "Creating {type}", ['function' => __FUNCTION__, 'memory' => memory_get_usage(), 'type' => $connection_type->value]);
@@ -93,7 +91,8 @@ trait ConnectionTrait
             'Mysql' => [self::getConnection(Engines::TYPE_MYSQLI)],
             'Oracle' => [self::getConnection(Engines::TYPE_ORACLE)],
             'Postgres' => [self::getConnection(Engines::TYPE_POSTGRE)],
-            'Sqlserver' => [self::getConnection(Engines::TYPE_SQLSRV)]
+            'Sqlserver' => [self::getConnection(Engines::TYPE_SQLSRV)],
+            'Db2' => [self::getConnection(Engines::TYPE_DB2)]
         ];
     }
 }

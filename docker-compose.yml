@@ -9,16 +9,23 @@ services:
     container_name: mysqldb
     restart: always
     working_dir: /application
+    privileged: true
     volumes:
       - ./var/docker/mysql/dump.sql:/docker-entrypoint-initdb.d/dump.sql
-    env_file:
-      - .env
+    environment:
+      - MYSQL_DRIVER=mysql
+      - MYSQL_HOST=mysqldb
+      - MYSQL_DATABASE=test
+      - MYSQL_USER=test
+      - MYSQL_PASSWORD=test
+      - MYSQL_ROOT_PASSWORD=root
     ports:
       - "3306:3306"
-
+          
   postgres:
     container_name: pg_container
     image: postgres:11.6-alpine
+    privileged: true
     restart: always
     environment:
       POSTGRES_USER: root
@@ -32,6 +39,7 @@ services:
   mssql-server-linux:
     image: tchughesiv/mssql-server-linux:latest
     restart: always
+    privileged: true
     volumes:
       - ./var/docker/mysql/sqlsrv.sql:/docker-entrypoint-initdb.d/sqlsrv.sql
     environment:
@@ -43,6 +51,7 @@ services:
   oracle:
     image: galam/oracle-xe-12c:latest
     restart: always
+    privileged: true
     ports:
       - "1521:1521"
       - "5500:5500"
@@ -57,13 +66,18 @@ services:
   ibmdb2:
     image: ibmcom/db2:latest
     restart: always
+    privileged: true
     ports:
       - "50000:50000"
+      - "55000:55000"
     environment:
       - LICENSE=accept
       - DB2INSTANCE=db2inst1
-      - DB2INST1_PASSWORD=password
+      - DB2INST1_PASSWORD=Password123.
       - DBNAME=test
+      - DB_USER=db2inst1
+      - DB_PASSWORD=Password123.
+      - DB_NAME=test
       - BLU=false
       - ENABLE_ORACLE_COMPATIBILITY=false
       - UPDATEAVAIL=NO
@@ -81,6 +95,7 @@ services:
       context: .
       dockerfile: ./var/docker/php/Dockerfile
     container_name: phpdb
+    privileged: true
     #      working_dir: /application
     environment:
       - MYSQL_DRIVER=mysql
