@@ -173,6 +173,7 @@ if (!$cursor || !db2_execute($cursor)) {
     PRIMARY KEY(ID)
 );
 */
+        $pk = '';
         $sql = "CREATE TABLE %s (";
         foreach ($fields as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
@@ -183,11 +184,15 @@ if (!$cursor || !db2_execute($cursor)) {
                 $sql .= " NOT NULL";
             }
             if ($field->isKey()) {
+                $pk = "PRIMARY KEY ({$field->getName()}), ";
                 $sql .= " GENERATED ALWAYS AS IDENTITY (START WITH 1 INCREMENT BY 1)";
             } elseif (!empty($field->getDefault())) {
                 $sql .= " DEFAULT {$field->getDefault()}";
             }
             $sql .= ", ";
+        }
+        if (!empty($pk)) {
+            $sql .= $pk;
         }
         $sql = rtrim($sql, ', ');
         $sql .= ")";

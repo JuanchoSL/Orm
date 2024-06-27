@@ -156,6 +156,7 @@ class Oracle extends RDBMS implements DbInterface
 
     public function createTable(string $table_name, FieldDescription ...$fields)
     {
+        $sequence = '';
         $sql = "CREATE TABLE %s (";
         foreach ($fields as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
@@ -164,17 +165,18 @@ class Oracle extends RDBMS implements DbInterface
                 if (!$field->isNullable()) {
                     $sql .= " NOT NULL";
                 }
-            }
-            if (!empty($field->getDefault())) {
-                $sql .= " DEFAULT {$field->getDefault()}";
-            }
-            if ($field->isKey()) {
-                $sql .= " PRIMARY KEY";
+                if (!empty($field->getDefault())) {
+                    $sql .= " DEFAULT {$field->getDefault()}";
+                }
+            } else {
+                $sequence = "{$table_name}_" . strtolower($field->getName()) . "_seq";
+                $sql .= " DEFAULT {$sequence}.NEXTVAL PRIMARY KEY";
             }
             $sql .= ", ";
         }
         $sql = rtrim($sql, ', ');
         $sql .= ")";
+        $this->execute(sprintf("CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1", $sequence));
         return $this->execute(sprintf($sql, strtoupper($table_name)));
     }
 }
