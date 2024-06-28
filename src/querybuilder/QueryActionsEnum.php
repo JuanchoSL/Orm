@@ -29,7 +29,7 @@ enum QueryActionsEnum: string
     public function isAlterable()
     {
         return match ($this) {
-            static::UPDATE, static::DELETE, static::DROP => true,
+            static::UPDATE, static::DELETE => true,
             default => false
         };
     }
@@ -43,7 +43,7 @@ enum QueryActionsEnum: string
     public function isEmpty()
     {
         return match ($this) {
-            static::TRUNCATE, static::CREATE => true,
+            static::TRUNCATE, static::CREATE, static::DROP => true,
             default => false
         };
     }

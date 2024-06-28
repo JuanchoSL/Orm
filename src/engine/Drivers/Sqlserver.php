@@ -11,6 +11,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
 /**
  * Esta clase permite conectar e interactuar con una tabla específica
@@ -146,10 +147,11 @@ class Sqlserver extends RDBMS implements DbInterface
             return $this->getQuery($sqlBuilder);
         }
     }
-    public function createTable(string $table_name, FieldDescription ...$fields)
+
+    protected function parseCreate(QueryBuilder $builder)
     {
         $sql = "CREATE TABLE %s (";
-        foreach ($fields as $field) {
+        foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} {$field->getType()}";
             if ($field->isKey()) {
                 $sql .= " IDENTITY(1,1) PRIMARY KEY";
@@ -163,6 +165,6 @@ class Sqlserver extends RDBMS implements DbInterface
         }
         $sql = rtrim($sql, ',');
         $sql .= ")";
-        return $this->execute(sprintf($sql, $table_name));
+        return sprintf($sql, $builder->table);
     }
 }

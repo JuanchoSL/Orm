@@ -11,6 +11,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
 /**
  * Esta clase permite conectar e interactuar con una tabla específica
@@ -164,18 +165,11 @@ if (!$cursor || !db2_execute($cursor)) {
         return $result;
     }
 
-    public function createTable(string $table_name, FieldDescription ...$fields)
+    protected function parseCreate(QueryBuilder $builder)
     {
-        /*CREATE TABLE DB2INST1.TEST (
-    ID INTEGER NOT NULL GENERATED ALWAYS AS IDENTITY(START WITH 1 INCREMENT BY 1),
-    TEST VARCHAR(16) NOT NULL,
-    DATO VARCHAR(16) NOT NULL,
-    PRIMARY KEY(ID)
-);
-*/
         $pk = '';
         $sql = "CREATE TABLE %s (";
-        foreach ($fields as $field) {
+        foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
             if (!$field->isKey()) {
                 $sql .= "({$field->getLength()})";
@@ -196,6 +190,6 @@ if (!$cursor || !db2_execute($cursor)) {
         }
         $sql = rtrim($sql, ', ');
         $sql .= ")";
-        return $this->execute(sprintf($sql, strtoupper($table_name)));
+        return sprintf($sql, strtoupper($builder->table));
     }
 }

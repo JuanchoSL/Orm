@@ -1,6 +1,7 @@
 <?php
 
 namespace JuanchoSL\Orm\querybuilder;
+use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\Types\SelectQueryBuilder;
 
 class QueryBuilder
@@ -151,6 +152,13 @@ class QueryBuilder
     public function drop(): static
     {
         $this->doAction(QueryActionsEnum::DROP);
+        return $this;
+    }
+
+    public function create(FieldDescription ...$fields): static
+    {
+        $this->doAction(QueryActionsEnum::CREATE);
+        $this->values($fields);
         return $this;
     }
 

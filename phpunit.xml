@@ -36,7 +36,7 @@
         <env name="DB2_HOST" value="host.docker.internal" force="true" />
         <env name="DB2_DATABASE" value="test" force="true" />
         <env name="DB2_USERNAME" value="db2inst1" force="true" />
-        <env name="DB2_PASSWORD" value="password" force="true" />
+        <env name="DB2_PASSWORD" value="Password123." force="true" />
         <env name="LOG_FILEPATH" value="./logs/database.log" force="true" />
         <env name="LOG_TIMEFORMAT" value="Y-m-d H:i:s T" force="true" />
     </php>

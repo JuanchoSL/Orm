@@ -11,6 +11,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
 /**
  * Esta clase permite connect e interactuar con una tabla específica
@@ -144,7 +145,7 @@ class Oracle extends RDBMS implements DbInterface
         return $result;
     }
 
-    protected function processDrop(QueryBuilder $builder): AlterResponse
+    protected function processDrop(QueryBuilder $builder): EmptyResponse
     {
         $table = $builder->table;
         $this->keys($table);
@@ -154,11 +155,11 @@ class Oracle extends RDBMS implements DbInterface
         return $result;
     }
 
-    public function createTable(string $table_name, FieldDescription ...$fields)
+    protected function processCreate(QueryBuilder $builder)
     {
         $sequence = '';
         $sql = "CREATE TABLE %s (";
-        foreach ($fields as $field) {
+        foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
             if (!$field->isKey()) {
                 $sql .= "({$field->getLength()})";
@@ -169,7 +170,7 @@ class Oracle extends RDBMS implements DbInterface
                     $sql .= " DEFAULT {$field->getDefault()}";
                 }
             } else {
-                $sequence = "{$table_name}_" . strtolower($field->getName()) . "_seq";
+                $sequence = "{$builder->table}_" . strtolower($field->getName()) . "_seq";
                 $sql .= " DEFAULT {$sequence}.NEXTVAL PRIMARY KEY";
             }
             $sql .= ", ";
@@ -177,6 +178,6 @@ class Oracle extends RDBMS implements DbInterface
         $sql = rtrim($sql, ', ');
         $sql .= ")";
         $this->execute(sprintf("CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1", $sequence));
-        return $this->execute(sprintf($sql, strtoupper($table_name)));
+        return $this->execute(sprintf($sql, strtoupper($builder->table)));
     }
 }

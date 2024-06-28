@@ -11,6 +11,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
 class Postgres extends RDBMS implements DbInterface
 {
@@ -124,10 +125,10 @@ class Postgres extends RDBMS implements DbInterface
         return " LIMIT " . $limit . " OFFSET " . (intval($page) * $limit);
     }
 
-    public function createTable(string $table_name, FieldDescription ...$fields)
+    protected function parseCreate(QueryBuilder $builder)
     {
         $sql = "CREATE TABLE %s (";
-        foreach ($fields as $field) {
+        foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} {$field->getType()}";
             if ($field->isKey()) {
                 $sql .= " PRIMARY KEY GENERATED ALWAYS AS IDENTITY";
@@ -141,6 +142,6 @@ class Postgres extends RDBMS implements DbInterface
         }
         $sql = rtrim($sql, ',');
         $sql .= ")";
-        return $this->execute(sprintf($sql, $table_name));
+        return sprintf($sql, $builder->table);
     }
 }
