@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Structures;
 
 class FieldDescription implements \JsonSerializable
@@ -60,11 +62,11 @@ class FieldDescription implements \JsonSerializable
         $this->field_default = $field_default;
         return $this;
     }
-    public function getKey(): ?string
+    public function getKey(): bool
     {
         return $this->field_is_key;
     }
-    public function setKey(?string $field_key): static
+    public function setKey(bool $field_key): static
     {
         $this->field_is_key = $field_key;
         return $this;

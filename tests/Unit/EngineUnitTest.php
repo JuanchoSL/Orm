@@ -2,10 +2,13 @@
 
 namespace JuanchoSL\Orm\Tests\Unit;
 
+use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\engine\Drivers\DbInterface;
 use JuanchoSL\Orm\engine\Responses\InsertResponse;
+use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\engine\Engines;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 use JuanchoSL\Orm\querybuilder\Types\InsertQueryBuilder;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use PHPUnit\Framework\TestCase;
@@ -26,20 +29,18 @@ class EngineUnitTest extends TestCase
     /**
      * @dataProvider providerData
      */
-    /*
-  public function testCreate($db)
-  {
-      $this->markTestSkipped();
-      $query_table = $this->queryCreateTable();
-      if (is_string($query_table)) {
-          $db->execute($query_table);
-      } else {
-          call_user_func_array([$this->db, 'createTable'], array_merge([$this->table], $query_table));
-      }
-
-      $this->assertTrue(true, "Create table");
-  }
-*/
+    public function testCreate($db)
+    {
+        $this->markTestSkipped();
+        $query_table = [
+            (new FieldDescription)->setName('id')->setType('integer')->setLength(6)->setNullable(false)->setKey(true),
+            (new FieldDescription)->setName('test')->setType('varchar')->setLength(16)->setNullable(false),
+            (new FieldDescription)->setName('dato')->setType('varchar')->setLength(16)->setNullable(false),
+        ];
+        $b = QueryBuilder::getInstance()->create(...$query_table)->table($this->table);
+        $db->execute($b);
+        $this->assertTrue(true, "Create table");
+    }
 
     /**
      * @dataProvider providerData
@@ -212,7 +213,6 @@ class EngineUnitTest extends TestCase
         $this->assertEquals($i, $cursor->count(), "Count counter");
         $values = $cursor->get();
         $cursor->free();
-        //print_r($cursor);
         $this->assertTrue(is_array($values));
         $this->assertEquals($i, count($values), "Count function");
         $builder = QueryBuilder::getInstance()->clear()->select()->from($this->table)->where(array('test', 'valor'));

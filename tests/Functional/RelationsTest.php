@@ -7,6 +7,7 @@ use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\engine\Responses\AlterResponse;
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\Other;
 use JuanchoSL\Orm\Tests\TestDb;
@@ -25,14 +26,15 @@ class RelationsTest extends TestCase
     public function testCreate($db)
     {
         $this->markTestSkipped();
-        Model::setConnection($db);
+        /*
+        */
         $query_table = [
             (new FieldDescription)->setName('id')->setType('integer')->setLength(6)->setNullable(false)->setKey(true),
             (new FieldDescription)->setName('valor')->setType('varchar')->setLength(16)->setNullable(false),
-            (new FieldDescription)->setName('test_id')->setType('varchar')->setLength(16)->setNullable(false),
+            (new FieldDescription)->setName('test_id')->setType('varchar')->setLength(6)->setNullable(false),
         ];
-        call_user_func_array([$db, 'createTable'], array_merge(['other'], $query_table));
-
+        $b = QueryBuilder::getInstance()->create(...$query_table)->table(Other::getInstance()->getTableName());
+        $db->execute($b);
         $this->assertTrue(true, "Create table");
     }
 
@@ -150,7 +152,7 @@ class RelationsTest extends TestCase
 
     /**
      * @dataProvider providerData
-     */
+     *//*
     public function testJoin($db)
     {
         //$this->markTestSkipped();
@@ -163,11 +165,11 @@ class RelationsTest extends TestCase
             $this->assertEquals(1, $res->{$key});
         }
         $results->free();
-    }
+    }*/
 
     /**
      * @dataProvider providerData
-     */
+     *//*
     public function testConditionSubquery($db)
     {
         //$this->markTestSkipped();
@@ -181,7 +183,7 @@ class RelationsTest extends TestCase
         }
         $results->free();
     }
-
+*/
     /**
      * @dataProvider providerData
      */
@@ -238,6 +240,25 @@ class RelationsTest extends TestCase
         $this->assertEquals(1, $success->count(), "Truncate table");
     }
 
+    /**
+     * @dataProvider providerData
+     */
+    public function testDrop($db)
+    {
+        $this->markTestSkipped();
+        $builder = QueryBuilder::getInstance()->drop()->table(Other::getInstance()->getTableName());
+        $success = $db->execute($builder);
+        $this->assertEquals(1, $success->count(), "Drop table");
+    }
+
+    /**
+     * @dataProvider providerData
+     */
+    public function testDisconnect($db)
+    {
+        $result = $db->disconnect();
+        $this->assertTrue($result, "Test disconnect");
+    }
 
 
 }

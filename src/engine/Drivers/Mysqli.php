@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -11,21 +13,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
-use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
-/**
- * Esta clase permite conectar e interactuar con una tabla específica
- * en un servidor MySQL.
- *
- * La clase está preparada para realizar las operaciones básicas en una tabla
- * mysql, como insertar registros, actualizarlos, eliminarlos o vaciar una tabla.
- * Permite devolver un array con los nombres de las columnas de la tabla para,
- * por ejemplo, la autoconstrucción de formularios, así como sus claves primarias.
- * Las operaciones se realizan mediante la librería mejorada MySQLi
- *
- * @author Juan Sánchez Lecegui
- * @version 1.1.0
- */
 class Mysqli extends RDBMS implements DbInterface
 {
 
@@ -69,7 +57,7 @@ class Mysqli extends RDBMS implements DbInterface
             ->setName($keys['Field'])
             ->setType(trim($varchar[0]))
             ->setLength(trim($varchar[1] ?? '0'))
-            ->setNullable($keys['Null'])
+            ->setNullable($keys['Null'] != 'NO')
             ->setDefault($keys['Default'])
             ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
         return $field;
@@ -79,7 +67,9 @@ class Mysqli extends RDBMS implements DbInterface
     {
         $cursor = mysqli_query($this->linkIdentifier, $query);
         if (!$cursor) {
-            throw new \Exception(mysqli_error($this->linkIdentifier), mysqli_errno($this->linkIdentifier));
+            $e = new \Exception(mysqli_error($this->linkIdentifier), mysqli_errno($this->linkIdentifier));
+            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            throw $e;
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         if ($action->isIterable()) {

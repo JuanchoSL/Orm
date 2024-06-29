@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -11,27 +13,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
-use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
-/**
- * Esta clase permite conectar e interactuar con una tabla específica
- * en un servidor SQL Server.
- * 
- * La clase está preparada para realizar las operaciones básicas en una tabla 
- * mssql, como insertar registros, actualizarlos, eliminarlos o vaciar una tabla.
- * Permite devolver un array con los nombres de las columnas de la tabla para,
- * por ejemplo, la autoconstrucción de formularios, así como sus claves primarias
- * 
- * Requiere de drivers específicos en el servidor para poder funcionar:
- * @link https://msdn.microsoft.com/en-us/library/cc296170.aspx
- * Librerias dll para agregar a apache y driver odbc. Sólo funciona desde servidores Windows
- * 
- * Para problemas con el login y acceso de cuentas de  usuario
- * @link https://technet.microsoft.com/es-es/library/ms188670(v=sql.105).aspx
- * 
- * @author Juan Sánchez Lecegui
- * @version 1.0.0
- */
 class Sqlserver extends RDBMS implements DbInterface
 {
 
@@ -102,7 +84,9 @@ class Sqlserver extends RDBMS implements DbInterface
         $scroll = $action->isIterable() ? SQLSRV_CURSOR_CLIENT_BUFFERED : SQLSRV_CURSOR_FORWARD;
         $cursor = sqlsrv_query($this->linkIdentifier, $query, array(), array("Scrollable" => $scroll));
         if (!$cursor || !is_null(sqlsrv_errors())) {
-            throw new \Exception(implode(PHP_EOL, current(sqlsrv_errors())));
+            $e = new \Exception(implode(PHP_EOL, current(sqlsrv_errors())));
+            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            throw $e;
         }
         if ($action->isIterable()) {
             $cursor = new SqlsrvCursor($cursor);
@@ -121,7 +105,7 @@ class Sqlserver extends RDBMS implements DbInterface
         return str_replace(["'", '"'], ["''", '""'], $value);
     }
 
-    protected function lastInsertedId(): int
+    protected function lastInsertedId(): string
     {
         //        $res = $this->execute("SELECT @@IDENTITY AS id");
         //$res = $this->execute("SELECT SCOPE_IDENTITY() as id");

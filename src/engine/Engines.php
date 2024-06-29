@@ -1,14 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine;
 
 enum Engines: string
 {
-    /*
-    case TYPE_MYSQL = 'MYSQL';
-    case TYPE_MARIADB = 'MARIADB';
-    case TYPE_MYSQLE = 'MYSQLE';
-    */
+
     case TYPE_MYSQLI = 'MYSQLI';
     case TYPE_SQLITE = 'SQLITE';
     case TYPE_POSTGRE = 'POSTGRE';

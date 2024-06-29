@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -11,20 +13,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
-use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
-/**
- * Esta clase permite conectar e interactuar con una tabla específica
- * en un fichero sqlite mediante SQLsite3.
- *
- * La clase está preparada para realizar las operaciones básicas en una tabla
- * sqlite, como insertar registros, actualizarlos, eliminarlos o vaciar una tabla.
- * Permite devolver un array con los nombres de las columnas de la tabla para,
- * por ejemplo, la autoconstrucción de formularios, así como sus claves primarias.
- *
- * @author Juan Sánchez Lecegui
- * @version 1.0.2
- */
 class Sqlite extends RDBMS implements DbInterface
 {
 
@@ -67,7 +56,7 @@ class Sqlite extends RDBMS implements DbInterface
     {
         return $this->getQuery(QueryBuilder::getInstance()->doAction(QueryActionsEnum::PRAGMA)->table("table_info('" . $sqlBuilder->table . "')"));
     }
-    
+
     protected function getParsedField(array $keys): FieldDescription
     {
         $field = new FieldDescription;
@@ -89,7 +78,9 @@ class Sqlite extends RDBMS implements DbInterface
         //$method = (in_array(substr($query, 0, 6), array('SELECT', 'PRAGMA'))) ? 'query' : 'exec';
         $cursor = $this->linkIdentifier->$method($query);
         if (!$cursor) {
-            throw new \Exception($this->linkIdentifier->lastErrorMsg(), $this->linkIdentifier->lastErrorCode());
+            $e = new \Exception($this->linkIdentifier->lastErrorMsg(), $this->linkIdentifier->lastErrorCode());
+            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            throw $e;
         }
         if ($action->isIterable()) {
             $cursor = new SQLiteCursor($cursor);

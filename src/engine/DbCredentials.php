@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine;
 
 class DbCredentials implements \JsonSerializable

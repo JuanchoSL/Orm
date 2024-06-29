@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -11,21 +13,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
-use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
-/**
- * Esta clase permite conectar e interactuar con una tabla específica
- * en un servidor MySQL.
- * 
- * La clase está preparada para realizar las operaciones básicas en una tabla 
- * mysql, como insertar registros, actualizarlos, eliminarlos o vaciar una tabla.
- * Permite devolver un array con los nombres de las columnas de la tabla para,
- * por ejemplo, la autoconstrucción de formularios, así como sus claves primarias.
- * Las operaciones se realizan mediante la librería mejorada MySQLi
- * 
- * @author Juan Sánchez Lecegui
- * @version 1.1.0
- */
 class Db2 extends RDBMS implements DbInterface
 {
     use SQLBuilderTrait;
@@ -37,7 +25,7 @@ class Db2 extends RDBMS implements DbInterface
         try {
             $this->linkIdentifier = db2_connect("DATABASE={$this->credentials->getDataBase()};HOSTNAME={$this->credentials->getHost()};PORT={$port};PROTOCOL=TCPIP;UID={$this->credentials->getUsername()};PWD={$this->credentials->getPassword()}", '', '')
                 //$this->linkIdentifier = db2_connect($this->credentials->getDataBase(),$this->credentials->getUsername(),$this->credentials->getPassword())
-                or throw new \Exception(db2_conn_errormsg(), db2_conn_error());
+                or throw new \Exception(db2_conn_errormsg());
         } catch (\Exception $exception) {
             $this->log($exception, 'error', [
                 'exception' => $exception,
@@ -115,7 +103,7 @@ class Db2 extends RDBMS implements DbInterface
             ->setLength($keys['COLUMN_SIZE'])
             ->setNullable($keys['NULLABLE'] <> 0)
             ->setDefault('')
-            ->setKey(in_array($keys['COLUMN_NAME'], $this->keys(strtolower($keys['TABLE_NAME']))) ? $this->keys[strtolower($keys['TABLE_NAME'])][$keys['COLUMN_NAME']] : '');
+            ->setKey(in_array($keys['COLUMN_NAME'], $this->keys(strtolower($keys['TABLE_NAME']))));
         return $field;
     }
 
@@ -133,7 +121,9 @@ if (!$cursor || !db2_execute($cursor)) {
 }*/
         $cursor = db2_exec($this->linkIdentifier, $query);
         if (!$cursor) {
-            throw new \Exception(db2_stmt_errormsg($this->linkIdentifier), db2_stmt_error($this->linkIdentifier));
+            $e = new \Exception(db2_stmt_errormsg($this->linkIdentifier));
+            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            throw $e;
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         if ($action->isIterable()) {

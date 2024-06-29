@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -12,19 +14,6 @@ use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
 
-/**
- * Esta clase permite conectar e interactuar con una tabla específica
- * en un servidor MySQL.
- *
- * La clase está preparada para realizar las operaciones básicas en una tabla
- * mysql, como insertar registros, actualizarlos, eliminarlos o vaciar una tabla.
- * Permite devolver un array con los nombres de las columnas de la tabla para,
- * por ejemplo, la autoconstrucción de formularios, así como sus claves primarias.
- * Las operaciones se realizan mediante la librería mejorada MySQLi
- *
- * @author Juan Sánchez Lecegui
- * @version 1.1.0
- */
 class Odbc extends RDBMS implements DbInterface
 {
 
@@ -105,7 +94,9 @@ class Odbc extends RDBMS implements DbInterface
             $cursor = odbc_exec($this->linkIdentifier, $query);
         }
         if (!$cursor) {
-            throw new \Exception(odbc_errormsg($this->linkIdentifier));
+            $e = new \Exception(odbc_errormsg($this->linkIdentifier));
+            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            throw $e;
         }
         if ($action->isIterable()) {
             $cursor = new OdbcCursor($cursor);
@@ -119,7 +110,7 @@ class Odbc extends RDBMS implements DbInterface
         return $cursor;
     }
 
-    protected function lastInsertedId(): int
+    protected function lastInsertedId(): string
     {
         $c = $this->execute('SELECT @@IDENTITY AS ID');
         $lastInsertedId = $c->next(static::RESPONSE_OBJECT)->ID;

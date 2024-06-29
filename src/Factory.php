@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm;
 
 use JuanchoSL\Exceptions\ServiceUnavailableException;
@@ -23,17 +25,6 @@ use JuanchoSL\Orm\engine\Engines;
 use Psr\SimpleCache\CacheInterface;
 use JuanchoSL\SimpleCache\Repositories\SessionCache;
 
-/**
- * Abstracción para la conexión a diferentes SGBD.
- *
- * Permite abstraer las conexiones a bases de datos para limitar las posibles
- * modificaciones en el código fuente en caso de cambiar de sistema de almacenamiento.
- * El método conectar devuelve una instancia de la clase correcta indicada en el
- * parámetro $type. Sería el único cambio a realizar en caso de darse el caso.
- *
- * @author Juan Sánchez Lecegui
- * @version 1.0.2
- */
 class Factory
 {
 

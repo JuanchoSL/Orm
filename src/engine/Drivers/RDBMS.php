@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -11,6 +13,7 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\Types\AbstractQueryBuilder;
+use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 use Psr\Log\LoggerInterface;
 
 abstract class RDBMS implements DbInterface
@@ -182,7 +185,9 @@ abstract class RDBMS implements DbInterface
             if (!isset($this->columns[$table]) or !in_array(strtolower($key), $this->columns[$table])) {
                 unset($camps[$key]);
             } else {
-                $value = $this->escape($value);
+                if (is_string($value)) {
+                    $value = $this->escape($value);
+                }
                 $field = $this->describe[$table][strtolower($key)]->getName();
                 unset($camps[$key]);
                 $camps[$field] = $value;

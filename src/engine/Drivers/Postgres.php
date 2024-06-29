@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\engine\Drivers;
 
 use JuanchoSL\Orm\engine\Cursors\CursorInterface;
@@ -11,7 +13,6 @@ use JuanchoSL\Orm\engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
-use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 
 class Postgres extends RDBMS implements DbInterface
 {
@@ -77,7 +78,9 @@ class Postgres extends RDBMS implements DbInterface
     {
         $cursor = pg_query($this->linkIdentifier, $query);
         if (!$cursor) {
-            throw new \Exception(pg_last_error($this->linkIdentifier));
+            $e = new \Exception(pg_last_error($this->linkIdentifier));
+            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            throw $e;
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         if ($action->isIterable() || stripos($query, "RETURNING") !== false) {
