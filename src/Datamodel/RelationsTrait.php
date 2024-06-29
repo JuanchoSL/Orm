@@ -33,8 +33,11 @@ trait RelationsTrait
         return new BelongsToOne($model, $foreing_field, (string) $this->{$owner_field});
     }
 
-    protected function BelongsToMany(DataModelInterface $model, DataModelInterface $response, string $foreing_field = null, string $owner_field = null): AbstractRelation
+    protected function BelongsToMany(DataModelInterface $model, DataModelInterface $pivot, string $foreing_field = null, string $owner_field = null, string $pivot_foreing_field = null, string $pivot_owner_field = null): AbstractRelation
     {
-        return new BelongsToMany($model, 'id', 'id');
+        $pivot_foreing_field = $pivot_foreing_field ?? strtolower($model->getTableName()) . "_" . $model->getPrimaryKeyName();
+        $pivot_owner_field = $pivot_owner_field ?? strtolower($this->getTableName()) . "_" . $this->getPrimaryKeyName();
+        $foreing_field = $foreing_field ?? $model->getPrimaryKeyName();
+        return new BelongsToMany($model, $foreing_field, $pivot_foreing_field, $pivot, $pivot_owner_field, (string) $this->{$owner_field});
     }
 }

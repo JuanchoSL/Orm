@@ -8,9 +8,10 @@ use JuanchoSL\Orm\Datamodel\DataModelInterface;
 
 class BelongsToMany extends AbstractMultipleRetriever
 {
-    public function __construct(DataModelInterface $model, string $foreign_key, string $id)
+    public function __construct(DataModelInterface $model, string $foreing_field, string $pivot_foreing_field, DataModelInterface $pivot, string $pivot_owner_field, string $owner_value)
     {
-        $this->relation = $model::where([$foreign_key, $id]);
+        $pivot_table = $pivot->getTableName();
+        $this->relation = $model::where([$pivot_owner_field, $owner_value])->join("JOIN " . $pivot_table . " ON " . $pivot_table . "." . $pivot_foreing_field . "=" . $model->getTableName() . "." . $foreing_field);
     }
 
 }
