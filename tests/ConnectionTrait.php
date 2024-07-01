@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace JuanchoSL\Orm\Tests;
 
 use JuanchoSL\Logger\Composers\PlainText;

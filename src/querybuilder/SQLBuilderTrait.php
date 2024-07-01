@@ -127,13 +127,16 @@ trait SQLBuilderTrait
                                     $comparator = (empty($comparation[2])) ? 'IN' : $comparation[2];
                                 }
                                 $where .= $new_field . " " . $comparator . " (" . $this->getQuery($value) . ")";
+                            } elseif (isset($comparation[2]) && is_string($comparation[2]) && strtolower($comparation[2]) == 'like') {
+                                $value = $this->escape($value);
+                                $where .= $new_field . " LIKE '" . $value . "'";
                             } else {
                                 if (isset($comparation[2]) && is_bool($comparation[2])) {
                                     $comparator = ($comparation[2]) ? '=' : '!=';
                                 } else {
                                     $comparator = (empty($comparation[2])) ? '=' : $comparation[2];
                                 }
-                                $where .= $this->mountComparation($new_field . $comparator . $value, $tabla);
+                                $where .= $this->mountComparation($new_field . " " . $comparator . " " . $value, $tabla);
                             }
                         }
                         $where .= " AND ";
