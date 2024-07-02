@@ -53,8 +53,9 @@ class RelationsUnitTest extends TestCase
         $builder = QueryBuilder::getInstance()->select(['test.*'])->from('test')->join(['inner join other on test_id=test.id'])->where(['test.id', 1]);
         $results = $db->execute($builder);
         $this->assertEquals(2, $results->count());
+        $key = current($db->keys('test'));
         while ($res = $results->next()) {
-            $this->assertEquals(1, $res->id);
+            $this->assertEquals(1, $res->{$key});
         }
         $results->free();
     }
@@ -68,8 +69,9 @@ class RelationsUnitTest extends TestCase
         $builder = QueryBuilder::getInstance()->select()->from($this->table_parent)->where(['id', QueryBuilder::getInstance()->select(['test_id'])->from($this->table_child)->where(['test_id', 1]), 'IN']);
         $results = $db->execute($builder);
         $this->assertEquals(1, $results->count());
+        $key = current($db->keys('test'));
         while ($res = $results->next()) {
-            $this->assertEquals(1, $res->id);
+            $this->assertEquals(1, $res->{$key});
         }
         $results->free();
     }

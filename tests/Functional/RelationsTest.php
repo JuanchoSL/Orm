@@ -49,15 +49,6 @@ class RelationsTest extends TestCase
             $test = TestDb::make(array('test' => 'valor', 'dato' => $i));
             $id = $test->save();
             $this->assertTrue(!empty($id), "Recuperación del id de un insert");
-            /*
-            for ($si = 1; $si <= floor($this->loops/2); $si++) {
-                $fk = ($si % 2 == 0) ? 2 : 1;
-                if ($fk == $id && $i < 3) {
-                    $sid = $test->other()->insert(['valor' => "valor_{$si}"]);
-                    $this->assertTrue(!empty($sid), "Recuperación del id de un insert");
-                }
-            }
-            */
         }
         for ($i = 1; $i <= $this->loops; $i++) {
             $fk = ($i % 2 == 0) ? 2 : 1;
@@ -95,9 +86,6 @@ class RelationsTest extends TestCase
         for ($i = 1; $i <= 3; $i++) {
             $others = $obj->other()->limit($i);
             $new_count = $others->count();
-            /*
-            print_r($new_count);exit;
-            */
             $this->assertEquals($i, $new_count);
 
             $others = $others->get();
@@ -150,40 +138,6 @@ class RelationsTest extends TestCase
         $this->assertEquals($obj->id, $parent->id);
     }
 
-    /**
-     * @dataProvider providerData
-     *//*
-    public function testJoin($db)
-    {
-        //$this->markTestSkipped();
-        Model::setConnection($db);
-        $builder = QueryBuilder::getInstance()->select(['test.*'])->from('test')->join(['inner join other on test_id=test.id'])->where(['other.test_id', 1]);
-        $results = $db->execute($builder);
-        $this->assertEquals(3, $results->count());
-        $key = current($db->keys('test'));
-        while ($res = $results->next()) {
-            $this->assertEquals(1, $res->{$key});
-        }
-        $results->free();
-    }*/
-
-    /**
-     * @dataProvider providerData
-     *//*
-    public function testConditionSubquery($db)
-    {
-        //$this->markTestSkipped();
-        Model::setConnection($db);
-        $builder = QueryBuilder::getInstance()->select()->from('test')->where(['id', QueryBuilder::getInstance()->select(['test_id'])->from('other')->where(['test_id', 1]), 'IN']);
-        $results = $db->execute($builder);
-        $this->assertEquals(1, $results->count());
-        $key = current($db->keys('test'));
-        while ($res = $results->next()) {
-            $this->assertEquals(1, $res->{$key});
-        }
-        $results->free();
-    }
-*/
     /**
      * @dataProvider providerData
      */

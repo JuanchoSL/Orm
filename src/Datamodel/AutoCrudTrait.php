@@ -39,7 +39,6 @@ trait AutoCrudTrait
             }
         }
         $pk = $this->getPrimaryKeyName();
-        //unset($save[$pk]);
         try {
             $id = $this->getPrimaryKeyValue();
             $result = static::where([$pk, $id])->update($save)->count() == 1;
@@ -102,27 +101,15 @@ trait AutoCrudTrait
 
     protected function fill(iterable $element)
     {
+        $identifier = null;
+        $this->loaded = true;
         foreach ($element as $name => $var) {
-            if (is_bool($var)) {
-                $var = (bool) $var;
-            } else if (is_double($var)) {
-                $var = (double) $var;
-            } else if (is_float($var)) {
-                $var = (float) $var;
-            } else if (is_bool($var) || is_int($var)) {
-                $var = (int) $var;
-            } else if (is_string($var)) {
-                $encoding = mb_detect_encoding($var);
-                if ($encoding !== 'utf-8') {
-                    $var = mb_convert_encoding($var, 'utf-8', $encoding);
-                }
-            }
-            $this->values->set(strtolower($name), $var);
-            if (empty($this->identifier) && $this->getPrimaryKeyName() == $name) {
-                $this->identifier = $var;
+            $this->__set(strtolower($name), $var);
+            if (empty($identifier) && $this->getPrimaryKeyName() == $name) {
+                $identifier = $var;
             }
         }
-        $this->loaded = true;
+        $this->identifier = $identifier;
         return $this;
     }
     protected function load($id)
