@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Datamodel\Relations\BelongsToMany;
 use JuanchoSL\Orm\Datamodel\Relations\BelongsToOne;
 use JuanchoSL\Orm\Datamodel\Relations\OneToMany;
 use JuanchoSL\Orm\Datamodel\Relations\OneToOne;
-use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
 
 trait AutoCrudTrait
@@ -87,6 +87,12 @@ trait AutoCrudTrait
                         return $var->get();
                     case BelongsToOne::class:
                         return $var->first();
+                }
+            } else {
+                if ($var->limit == 1) {
+                    return $var->first();
+                } else {
+                    return $var->get();
                 }
             }
         } elseif ($this->values->has(strtolower($param))) {

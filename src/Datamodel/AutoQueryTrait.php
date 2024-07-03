@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Datamodel;
 
-use JuanchoSL\Orm\querybuilder\QueryExecuter;
+use JuanchoSL\Orm\Querybuilder\QueryExecuter;
 
 trait AutoQueryTrait
 {
