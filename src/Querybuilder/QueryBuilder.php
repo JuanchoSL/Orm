@@ -6,7 +6,7 @@ namespace JuanchoSL\Orm\Querybuilder;
 
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
 
-class Querybuilder
+class QueryBuilder
 {
 
     public QueryActionsEnum $operation;
@@ -53,8 +53,6 @@ class Querybuilder
 
     public function select(array $camps = array())
     {
-        //return SelectQuerybuilder::getInstance()->select($camps);
-
         $this->doAction(QueryActionsEnum::SELECT);
         $this->setCamps($camps);
         return $this;
