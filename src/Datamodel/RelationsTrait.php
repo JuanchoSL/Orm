@@ -4,39 +4,36 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Datamodel;
 
-use JuanchoSL\Orm\Datamodel\Relations\AbstractRelation;
-use JuanchoSL\Orm\Datamodel\Relations\BelongsToMany;
-use JuanchoSL\Orm\Datamodel\Relations\BelongsToOne;
-use JuanchoSL\Orm\Datamodel\Relations\OneToMany;
-use JuanchoSL\Orm\Datamodel\Relations\OneToOne;
-
 trait RelationsTrait
 {
-    protected function OneToMany(DataModelInterface $model, string $foreing_field = null, string $owner_field = null): AbstractRelation
+
+    protected function OneToMany(DataModelInterface $model, string $foreing_field = null, string $owner_field = null)
     {
-        return new OneToMany($model, $this->createFieldNameChildren($this, $foreing_field), (string) $this->createFieldValue($owner_field));
+        return $model::where([$this->createFieldNameChildren($this, $foreing_field), (string) $this->createFieldValue($owner_field)]);
     }
 
-    protected function OneToOne(DataModelInterface $model, string $foreing_field = null, string $owner_field = null): AbstractRelation
+    protected function OneToOne(DataModelInterface $model, string $foreing_field = null, string $owner_field = null)
     {
-        return new OneToOne($model, $this->createFieldNameChildren($this, $foreing_field), (string) $this->createFieldValue($owner_field));
+        $this->relations[$this->getTableName()][$model->getTableName()] = 'first';
+        return $model::where([$this->createFieldNameChildren($this, $foreing_field), (string) $this->createFieldValue($owner_field)])->limit(1);
     }
 
-    protected function BelongsToOne(DataModelInterface $model, string $foreing_field = null, string $owner_field = null): AbstractRelation
+    protected function BelongsToOne(DataModelInterface $model, string $foreing_field = null, string $owner_field = null)
     {
-        return new BelongsToOne($model, $this->createFieldNameParent($model, $foreing_field), (string) $this->createFieldValue($this->createFieldNameChildren($model, $owner_field)));
+        $this->relations[$this->getTableName()][$model->getTableName()] = 'first';
+        return $model::where([$this->createFieldNameParent($model, $foreing_field), (string) $this->createFieldValue($this->createFieldNameChildren($model, $owner_field))])->limit(1);
     }
 
-    protected function BelongsToMany(DataModelInterface $model, DataModelInterface $pivot, string $foreing_field = null, string $owner_field = null, string $pivot_foreing_field = null, string $pivot_owner_field = null): AbstractRelation
+    protected function BelongsToMany(DataModelInterface $model, DataModelInterface $pivot, string $foreing_field = null, string $owner_field = null, string $pivot_foreing_field = null, string $pivot_owner_field = null)
     {
-        return new BelongsToMany(
-            $model,
-            $this->createFieldNameParent($model, $foreing_field),
-            $this->createFieldNameChildren($model, $pivot_foreing_field),
-            $pivot,
-            $this->createFieldNameChildren($this, $pivot_owner_field),
-            (string) $this->createFieldValue($owner_field)
-        );
+        $foreing_field = $this->createFieldNameParent($model, $foreing_field);
+        $pivot_foreing_field = $this->createFieldNameChildren($model, $pivot_foreing_field);
+
+        $pivot_owner_field = $this->createFieldNameChildren($this, $pivot_owner_field);
+        $owner_value = (string) $this->createFieldValue($owner_field);
+
+        $pivot_table = $pivot->getTableName();
+        return $model::where([$pivot_table . "." . $pivot_owner_field, $owner_value])->join(["JOIN " . $pivot_table . " ON " . $pivot_table . "." . $pivot_foreing_field . "=" . $model->getTableName() . "." . $foreing_field]);
     }
 
     private function createFieldNameParent($model, $field_name = null)
