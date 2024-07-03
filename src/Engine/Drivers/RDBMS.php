@@ -145,7 +145,6 @@ abstract class RDBMS implements DbInterface
             $str = stripslashes($str);
             return (string) str_replace(array('\\', "\0", "\n", "\r", "'", '"', "\x1a"), array('\\\\', '\\0', '\\n', '\\r', "\'", '\\"', '\\Z'), $str);
         }
-        return $str;
     }
 
     public function execute(AbstractQueryBuilder|QueryBuilder|string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
