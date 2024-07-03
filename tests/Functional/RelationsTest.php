@@ -4,8 +4,8 @@ namespace JuanchoSL\Orm\Tests\Functional;
 
 use JuanchoSL\Orm\Collection;
 use JuanchoSL\Orm\Datamodel\Model;
-use JuanchoSL\Orm\engine\Responses\AlterResponse;
-use JuanchoSL\Orm\engine\Structures\FieldDescription;
+use JuanchoSL\Orm\Engine\Responses\AlterResponse;
+use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\querybuilder\QueryBuilder;
 use JuanchoSL\Orm\querybuilder\Types\CreateQueryBuilder;
 use JuanchoSL\Orm\Tests\ConnectionTrait;

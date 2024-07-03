@@ -8,15 +8,15 @@ use JuanchoSL\Logger\Composers\PlainText;
 use JuanchoSL\Logger\Logger;
 use JuanchoSL\Logger\Repositories\FileRepository;
 use JuanchoSL\Orm\Datamodel\Model;
-use JuanchoSL\Orm\engine\DbCredentials;
-use JuanchoSL\Orm\engine\Drivers\Db2;
-use JuanchoSL\Orm\engine\Drivers\Mysqli;
-use JuanchoSL\Orm\engine\Drivers\Odbc;
-use JuanchoSL\Orm\engine\Drivers\Oracle;
-use JuanchoSL\Orm\engine\Drivers\Postgres;
-use JuanchoSL\Orm\engine\Drivers\Sqlite;
-use JuanchoSL\Orm\engine\Drivers\Sqlserver;
-use JuanchoSL\Orm\engine\Engines;
+use JuanchoSL\Orm\Engine\DbCredentials;
+use JuanchoSL\Orm\Engine\Drivers\Db2;
+use JuanchoSL\Orm\Engine\Drivers\Mysqli;
+use JuanchoSL\Orm\Engine\Drivers\Odbc;
+use JuanchoSL\Orm\Engine\Drivers\Oracle;
+use JuanchoSL\Orm\Engine\Drivers\Postgres;
+use JuanchoSL\Orm\Engine\Drivers\Sqlite;
+use JuanchoSL\Orm\Engine\Drivers\Sqlserver;
+use JuanchoSL\Orm\Engine\Engines;
 
 trait ConnectionTrait
 {
@@ -84,6 +84,7 @@ trait ConnectionTrait
 
     public function providerData(): array
     {
+        //return ['Sqlite' => [self::getConnection(Engines::TYPE_ORACLE)]];
         if (static::$git_mode) {
             return ['Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)]];
         }
