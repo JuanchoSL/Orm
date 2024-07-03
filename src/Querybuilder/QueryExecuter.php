@@ -72,14 +72,17 @@ class QueryExecuter
 
     public function get(): Collection
     {
-        $this->query_builder->select();
+        if (empty($this->query_builder->operation)) {
+            $this->query_builder->select();
+        }
         $cursor = $this->cursor();
         $response = new Collection();
         while (!empty($element = $cursor->next())) {
             if (count(get_object_vars($element)) > 1) {
-                $response->insert($this->response_model->make((array) $element));
+                $response->append($this->response_model->make((array) $element));
             } else {
-                $response->insert($this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()}));
+                //$response[$this->response_model->getPrimaryKeyName()] = $this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()});
+                $response->append($this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()}));
             }
         }
         $cursor->free();

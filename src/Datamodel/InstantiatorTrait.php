@@ -32,8 +32,12 @@ trait InstantiatorTrait
 
     public function __sleep(): array
     {
-        $this->save();
+        //$this->save();
         return ['identifier', 'values', 'loaded'];
     }
-
+    
+    public function __clone()
+    {
+        $this->values = clone $this->values;
+    }
 }

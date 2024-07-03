@@ -186,4 +186,14 @@ abstract class RDBMS implements DbInterface
         }
         return $camps;
     }
+
+    public function __sleep()
+    {
+        return ['credentials', 'logger', 'debug'];
+    }
+
+    public function __wakeup()
+    {
+        $this->connect();
+    }
 }
