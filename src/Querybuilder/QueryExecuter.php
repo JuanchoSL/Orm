@@ -19,11 +19,11 @@ class QueryExecuter
 
     private DbInterface $conn;
 
-    private Querybuilder $query_builder;
+    private QueryBuilder $query_builder;
 
     public function __construct(DbInterface $connection, DataModelInterface $response_model)
     {
-        $this->query_builder = new Querybuilder();
+        $this->query_builder = new QueryBuilder();
         $this->query_builder = $this->query_builder->table($response_model->getTableName());
         $this->conn = $connection;
         $this->response_model = $response_model;
