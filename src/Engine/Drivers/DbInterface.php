@@ -6,8 +6,8 @@ use JuanchoSL\Orm\Engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
-use JuanchoSL\Orm\querybuilder\QueryBuilder;
-use JuanchoSL\Orm\querybuilder\Types\AbstractQueryBuilder;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
+use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
 use Psr\Log\LoggerAwareInterface;
 
 /**

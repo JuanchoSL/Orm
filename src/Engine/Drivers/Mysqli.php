@@ -10,9 +10,9 @@ use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
-use JuanchoSL\Orm\querybuilder\QueryActionsEnum;
-use JuanchoSL\Orm\querybuilder\QueryBuilder;
-use JuanchoSL\Orm\querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
+use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
 
 class Mysqli extends RDBMS implements DbInterface
 {
