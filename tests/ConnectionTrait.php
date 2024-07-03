@@ -68,7 +68,7 @@ trait ConnectionTrait
     public function providerData(): array
     {
         if (static::$git_mode) {
-            return ['Sqlite' => [self::getConnection(Engines::TYPE_ODBC)]];
+            return ['Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)]];
         }
 
         return [
