@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\querybuilder;
+namespace JuanchoSL\Orm\Querybuilder;
 
 enum QueryActionsEnum: string
 {

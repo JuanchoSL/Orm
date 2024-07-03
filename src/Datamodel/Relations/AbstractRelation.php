@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace JuanchoSL\Orm\Datamodel\Relations;
 
 use JuanchoSL\Orm\Datamodel\Model;
-use JuanchoSL\Orm\querybuilder\QueryExecuter;
+use JuanchoSL\Orm\Querybuilder\QueryExecuter;
 
 abstract class AbstractRelation
 {

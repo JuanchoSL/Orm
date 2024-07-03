@@ -1,14 +1,16 @@
 <?php
 
-namespace JuanchoSL\Orm\querybuilder;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Querybuilder;
 
 use JuanchoSL\Orm\Collection;
 use JuanchoSL\Orm\Datamodel\DataModelInterface;
-use JuanchoSL\Orm\engine\Cursors\CursorInterface;
-use JuanchoSL\Orm\engine\Drivers\DbInterface;
-use JuanchoSL\Orm\engine\Responses\AlterResponse;
-use JuanchoSL\Orm\engine\Responses\EmptyResponse;
-use JuanchoSL\Orm\engine\Responses\InsertResponse;
+use JuanchoSL\Orm\Engine\Cursors\CursorInterface;
+use JuanchoSL\Orm\Engine\Drivers\DbInterface;
+use JuanchoSL\Orm\Engine\Responses\AlterResponse;
+use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
+use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 
 class QueryExecuter
 {

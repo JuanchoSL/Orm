@@ -1,8 +1,10 @@
 <?php
 
-namespace JuanchoSL\Orm\querybuilder;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Querybuilder;
+
 use JuanchoSL\Orm\engine\Structures\FieldDescription;
-use JuanchoSL\Orm\querybuilder\Types\SelectQueryBuilder;
 
 class QueryBuilder
 {
@@ -51,8 +53,6 @@ class QueryBuilder
 
     public function select(array $camps = array())
     {
-        //return SelectQueryBuilder::getInstance()->select($camps);
-
         $this->doAction(QueryActionsEnum::SELECT);
         $this->setCamps($camps);
         return $this;

@@ -1,9 +1,11 @@
 <?php
 
-namespace JuanchoSL\Orm\querybuilder;
+declare(strict_types=1);
+
+namespace JuanchoSL\Orm\Querybuilder;
 
 use JuanchoSL\Exceptions\PreconditionRequiredException;
-use JuanchoSL\Orm\querybuilder\Types\AbstractQueryBuilder;
+use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
 
 trait SQLBuilderTrait
 {
@@ -109,7 +111,9 @@ trait SQLBuilderTrait
                                 }
                                 //$comparator = ($comparator) ? 'IN' : 'NOT IN';
                                 foreach ($value as $index => $val) {
-                                    $value[$index] = $this->escape($val);
+                                    if (is_string($val)) {
+                                        $value[$index] = $this->escape($val);
+                                    }
                                 }
                                 $where .= $new_field . " " . $comparator . " ('" . implode("','", $value) . "')";
                             } elseif (is_null($value)) {
