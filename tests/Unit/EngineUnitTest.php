@@ -5,7 +5,7 @@ namespace JuanchoSL\Orm\Tests\Unit;
 use JuanchoSL\Orm\Engine\Drivers\DbInterface;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
-use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 use JuanchoSL\Orm\Engine\Engines;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use PHPUnit\Framework\TestCase;
