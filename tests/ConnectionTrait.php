@@ -7,27 +7,15 @@ namespace JuanchoSL\Orm\Tests;
 use JuanchoSL\Logger\Composers\PlainText;
 use JuanchoSL\Logger\Logger;
 use JuanchoSL\Logger\Repositories\FileRepository;
-use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\Engine\DbCredentials;
-use JuanchoSL\Orm\Engine\Drivers\Db2;
-use JuanchoSL\Orm\Engine\Drivers\Mysqli;
-use JuanchoSL\Orm\Engine\Drivers\Odbc;
-use JuanchoSL\Orm\Engine\Drivers\Oracle;
-use JuanchoSL\Orm\Engine\Drivers\Postgres;
-use JuanchoSL\Orm\Engine\Drivers\Sqlite;
-use JuanchoSL\Orm\Engine\Drivers\Sqlserver;
 use JuanchoSL\Orm\Engine\Engines;
+use JuanchoSL\Orm\Factory;
 
 trait ConnectionTrait
 {
     private static array $connections = [];
 
     private static bool $git_mode = true;
-
-    public static function setConnection(Engines $connection_type)
-    {
-        Model::setConnection(static::getConnection($connection_type));
-    }
 
     public static function getConnection(Engines $connection_type)
     {
@@ -38,45 +26,40 @@ trait ConnectionTrait
         switch ($connection_type) {
             case Engines::TYPE_MYSQLI:
                 $credentials = new DbCredentials(getenv('MYSQL_HOST'), getenv('MYSQL_USERNAME'), getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
-                $resource = new Mysqli($credentials);
                 break;
 
             case Engines::TYPE_SQLITE:
                 $path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'var';
                 $credentials = new DbCredentials($path, '', '', 'test.db');
-                $resource = new Sqlite($credentials);
                 break;
 
             case Engines::TYPE_POSTGRE:
                 $credentials = new DbCredentials(getenv('POSTGRES_HOST'), getenv('POSTGRES_USERNAME'), getenv('POSTGRES_PASSWORD'), getenv('POSTGRES_DATABASE'));
-                $resource = new Postgres($credentials);
                 break;
 
             case Engines::TYPE_SQLSRV:
                 $credentials = new DbCredentials(getenv('SQLSRV_HOST'), getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
-                $resource = new Sqlserver($credentials);
                 break;
 
             case Engines::TYPE_ORACLE:
                 $credentials = new DbCredentials(getenv('ORACLE_HOST'), getenv('ORACLE_USERNAME'), getenv('ORACLE_PASSWORD'), getenv('ORACLE_DATABASE'));
-                $resource = new Oracle($credentials);
                 break;
 
             case Engines::TYPE_ODBC:
                 $credentials = new DbCredentials(getenv('SQLSRV_HOST'), getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
-                $resource = new Odbc($credentials);
                 break;
 
             case Engines::TYPE_DB2:
                 $credentials = new DbCredentials(getenv('DB2_HOST'), getenv('DB2_USERNAME'), getenv('DB2_PASSWORD'), getenv('DB2_DATABASE'));
-                $resource = new Db2($credentials);
                 break;
         }
+        $resource = Factory::connection($credentials, $connection_type);
 
         if (!static::$git_mode) {
             $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new PlainText)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
             $logger->log('debug', "Creating {type}", ['function' => __FUNCTION__, 'memory' => memory_get_usage(), 'type' => $connection_type->value]);
-            $resource->setLogger($logger, true);
+            $resource->setLogger($logger);
+            $resource->setDebug(true);
         }
         return self::$connections[$connection_type->value] = $resource;
     }
@@ -84,9 +67,8 @@ trait ConnectionTrait
 
     public function providerData(): array
     {
-        //return ['Sqlite' => [self::getConnection(Engines::TYPE_ORACLE)]];
         if (static::$git_mode) {
-            return ['Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)]];
+            return ['Sqlite' => [self::getConnection(Engines::TYPE_ODBC)]];
         }
 
         return [

@@ -10,14 +10,14 @@ use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
 use Psr\Log\LoggerAwareInterface;
 
-/**
- * Interficie para implementar clases de gestión de tablas en SGBD
- *
- * @author Juan Sánchez Lecegui
- * @version 1.2
- */
 interface DbInterface extends LoggerAwareInterface
 {
+
+    /**
+     * Activa el modo debug, con información extendida en caso de tener el logger activo
+     * @param bool $debug activa o desactiva la info extendida en el logger
+     */
+    public function setDebug(bool $debug = false): void;
 
     /**
      * Conecta al servidor y abre la base de datos
@@ -36,18 +36,6 @@ interface DbInterface extends LoggerAwareInterface
      */
     public function getTables(): array;
 
-    /**
-     * Devuelve el nombre de la tabla sobre la que se está trabajando
-     * @return string Nombre de la tabla
-     */
-    //public function getTable(): string;
-
-    /**
-     * Permite cambiar la tabla sobre la que se va a trabajar
-     * @param string $tabla Nombre de la tabla
-     */
-    //public function setTable(string $tabla): static;
-    
     /**
      * Extracción de los nombres de los campos de la tabla
      * @return array Array con los nombres de los campos

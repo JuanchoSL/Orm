@@ -32,26 +32,19 @@ abstract class RDBMS implements DbInterface
     function __construct(DbCredentials $credentials)
     {
         $this->credentials = $credentials;
-        //$this->typeReturn = $typeReturn;
-        //$this->connect();
-        //$this->sqlBuilder = new QueryBuilder();
-        /*
-        if (extension_loaded($this->requiredModule)) {
-        } else {
-            throw new \Exception($this->requiredModule);
-        }
-        */
     }
-    //abstract protected function mountComparation(string $comparation, string $table): string;
     abstract protected function getQuery(AbstractQueryBuilder|QueryBuilder $queryBuilder): string;
 
     abstract protected function getParsedField(array $keys): FieldDescription;
 
     abstract protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse;
 
-    public function setLogger(LoggerInterface $logger, bool $debug = false): void
+    public function setLogger(LoggerInterface $logger): void
     {
         $this->logger = $logger;
+    }
+    public function setDebug(bool $debug = false): void
+    {
         $this->debug = $debug;
     }
 
@@ -167,7 +160,7 @@ abstract class RDBMS implements DbInterface
         }
         try {
             $cursor = $this->query($query);
-            $this->log('{query}', 'debug', ['query' => $query, 'results' => $cursor->count()]);
+            $this->log('{query}', 'info', ['query' => $query, 'results' => $cursor->count()]);
         } catch (\Exception $exception) {
             $this->log($exception, 'error', ['exception' => $exception, "query" => $query]);
             throw $exception;
