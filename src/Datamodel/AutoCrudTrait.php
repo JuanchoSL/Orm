@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\DataTransfer\Contracts\DataTransferInterface;
+use JuanchoSL\DataTransfer\Repositories\DataContainer;
 use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
@@ -12,7 +13,7 @@ use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
 trait AutoCrudTrait
 {
-    protected DataTransferInterface $values;
+    protected DataContainer $values;
 
     protected array $relations = [];
 

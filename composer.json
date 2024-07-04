@@ -20,7 +20,7 @@
         "php": "^8.1",
         "ext-mbstring": "*",
         "juanchosl/envvars": "1.0.*",
-        "juanchosl/datatransfer": "1.0.*",
+        "juanchosl/datatransfer": "dev-feature/data-container",
         "juanchosl/exceptions": "1.0.*",
         "psr/log": "3.0.*",
         "psr/simple-cache": "3.0.*"

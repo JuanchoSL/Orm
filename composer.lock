@@ -4,29 +4,34 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "969e83ed88bcf30e447ccce3fda76a46",
+    "content-hash": "15471a537ed557ab2a8de8b7b3575f9e",
     "packages": [
         {
             "name": "juanchosl/datatransfer",
-            "version": "1.0.6",
+            "version": "dev-feature/data-container",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "75d83fed33ce2259c700bfcdd8c88e5e2a237f1d"
+                "reference": "5175f07a4b1cf189ba99d21e9dcb656f916c771d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/75d83fed33ce2259c700bfcdd8c88e5e2a237f1d",
-                "reference": "75d83fed33ce2259c700bfcdd8c88e5e2a237f1d",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/5175f07a4b1cf189ba99d21e9dcb656f916c771d",
+                "reference": "5175f07a4b1cf189ba99d21e9dcb656f916c771d",
                 "shasum": ""
             },
             "require": {
+                "ext-json": "*",
+                "ext-mbstring": "*",
                 "juanchosl/exceptions": "^1.0",
                 "php": "^7.1 || ^8.0"
             },
             "require-dev": {
                 "phpstan/phpstan": "1.9.1",
                 "phpunit/phpunit": "9.5.25"
+            },
+            "suggest": {
+                "ext-yaml": "*"
             },
             "type": "library",
             "autoload": {
@@ -49,15 +54,22 @@
             "homepage": "https://github.com/JuanchoSL/DataTransfer",
             "keywords": [
                 "array",
+                "csv",
+                "data converter",
                 "entity",
+                "file contents",
+                "ini",
                 "json",
                 "object",
-                "values"
+                "simplexmlelement",
+                "values",
+                "xml",
+                "yaml"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/DataTransfer/tree/1.0.6"
+                "source": "https://github.com/JuanchoSL/DataTransfer/tree/feature/data-container"
             },
-            "time": "2024-06-19T22:59:59+00:00"
+            "time": "2024-07-04T00:19:28+00:00"
         },
         {
             "name": "juanchosl/envvars",
@@ -2233,6 +2245,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
+        "juanchosl/datatransfer": 20,
         "juanchosl/logger": 20,
         "juanchosl/simplecache": 20
     },
