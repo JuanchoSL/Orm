@@ -14,8 +14,6 @@ class EngineUnitTest extends TestCase
 {
     use ConnectionTrait;
 
-    protected DbInterface $db;
-
     protected $db_type;
 
     private $loops = 3;

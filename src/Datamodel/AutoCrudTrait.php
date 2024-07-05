@@ -5,19 +5,18 @@ declare(strict_types=1);
 namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\DataTransfer\Contracts\DataTransferInterface;
+use JuanchoSL\DataTransfer\Repositories\DataContainer;
 use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
-use JuanchoSL\Orm\Datamodel\Relations\AbstractRelation;
-use JuanchoSL\Orm\Datamodel\Relations\BelongsToMany;
-use JuanchoSL\Orm\Datamodel\Relations\BelongsToOne;
-use JuanchoSL\Orm\Datamodel\Relations\OneToMany;
-use JuanchoSL\Orm\Datamodel\Relations\OneToOne;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
 
 trait AutoCrudTrait
 {
-    protected DataTransferInterface $values;
+    protected DataContainer $values;
+
+    protected array $relations = [];
+
     public function delete(): bool
     {
         return static::where([$this->getPrimaryKeyName(), $this->getPrimaryKeyValue()])->delete()->count() > 0;
@@ -77,24 +76,14 @@ trait AutoCrudTrait
         }
         if (method_exists($this, $param)) {
             $var = call_user_func([$this, $param]);
-            if ($var instanceof AbstractRelation) {
-                switch (get_class($var)) {
-                    case OneToMany::class:
-                        return $var->get();
-                    case OneToOne::class:
-                        return $var->first();
-                    case BelongsToMany::class:
-                        return $var->get();
-                    case BelongsToOne::class:
-                        return $var->first();
-                }
-            } else {
-                if ($var->limit == 1) {
-                    return $var->first();
-                } else {
-                    return $var->get();
+            $return = $var->get();
+            if (isset($return)) {
+                $first = $return->first();
+                if (isset($first, $this->relations[$this->getTableName()][$first->getTableName()])) {
+                    $return = $return->first();
                 }
             }
+            return $return;
         } elseif ($this->values->has(strtolower($param))) {
             $function = "get" . str_replace(" ", "", ucwords(strtolower(str_replace("_", " ", $param))));
             if (method_exists($this, $function)) {

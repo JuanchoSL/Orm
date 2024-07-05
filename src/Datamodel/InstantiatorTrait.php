@@ -5,13 +5,14 @@ declare(strict_types=1);
 namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\DataTransfer\Repositories\ArrayDataTransfer;
+use JuanchoSL\DataTransfer\Repositories\DataContainer;
 
 trait InstantiatorTrait
 {
 
     public function __construct()
     {
-        $this->values = new ArrayDataTransfer([]);
+        $this->values = new DataContainer();
     }
     public static function model(): string
     {
@@ -32,8 +33,12 @@ trait InstantiatorTrait
 
     public function __sleep(): array
     {
-        $this->save();
+        //$this->save();
         return ['identifier', 'values', 'loaded'];
     }
-
+    
+    public function __clone()
+    {
+        $this->values = clone $this->values;
+    }
 }

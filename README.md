@@ -36,7 +36,7 @@ $resource->setLogger($logger);
 ### Create a query using query builder
 
 ```php
-use JuanchoSL\Orm\querybuilder\QueryBuilder;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
 $builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'], ['dato', 2]);//SELECT * FROM table_name WHERE (campo='valor' AND dato=2)
 $builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', 2]);//SELECT * FROM table_name WHERE (campo='valor') AND (dato=2)
@@ -140,7 +140,7 @@ public function parent()
 - remote_table_field_name by default is created as {local_table_name}_{local_primary_key_name}
 - this_table_fiel_name by default is created as {local_primary_key_name}
 ```php
-public function child()
+public function childs()
 {
     return $this->OneToMany(ChildModel::getInstance(), 'remote_table_field_name', 'this_table_field_name');
 }
@@ -161,7 +161,7 @@ $collection = MyModel::findByPk(1)->childs;
 ### For use cache with datamodels, use CacheModel instead Model and set the connection previously created
 
 ```php
-CacheModel::setConnection($resource);
+CachedModel::setConnection($resource);
 CachedModel::setCache(SimpleCacheAdapter::getInstance(new SessionCache('cache_database')));
 
 //for retrieve an entity using primary key
