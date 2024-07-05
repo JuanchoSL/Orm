@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Datamodel;
 
-use JuanchoSL\DataTransfer\Repositories\ArrayDataTransfer;
-use JuanchoSL\DataTransfer\Repositories\DataContainer;
+use JuanchoSL\DataTransfer\DataContainer;
 
 trait InstantiatorTrait
 {

@@ -30,7 +30,7 @@ class ModelTest extends TestCase
             $this->assertEquals($i, $obj->getPrimaryKeyValue(), "Recuperación del id de un insert");
         }
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -39,19 +39,19 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         $cursor = TestDb::where(['test', 'valor'], ['dato', 2]);
         $this->assertEquals(1, $cursor->count(), "Check 1");
-        
+
         $cursor = TestDb::where(['test', 'valor'])->where(['dato', 2]);
         $this->assertEquals(1, $cursor->count(), "Check 2");
 
         $cursor = TestDb::where(['test', 'valor'])->orWhere(['dato', 2]);
         $this->assertEquals($this->loops, $cursor->count(), "Check 3");
-        
+
         $cursor = TestDb::where(['test', ['valor', 'valore']]);
         $this->assertEquals($this->loops, $cursor->count(), "Check 4");
 
         $cursor = TestDb::where(['test="valor"'], ['dato=2']);
         $this->assertEquals(1, $cursor->count(), "Check 5");
-        
+
         $cursor = TestDb::where(['test="valor"'])->where(['dato=2']);
         $this->assertEquals(1, $cursor->count(), "Check 6");
 
@@ -81,9 +81,9 @@ class ModelTest extends TestCase
 
         $cursor = TestDb::where(['dato', null, 'IS NULL']);
         $this->assertEquals(0, $cursor->count(), "Check 15");
-        
+
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -92,12 +92,14 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $cursor = TestDb::where(array('test', 'valor'))->limit($i);
+            $this->assertEquals($i, $cursor->count());
             $values = $cursor->get();
             $this->assertInstanceOf(Collection::class, $values);
+            $this->assertContainsOnlyInstancesOf(TestDb::class, $values);
             $this->assertEquals($i, $values->count());
         }
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -106,7 +108,7 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         $query = TestDb::where(array('test', 'valor'));
         $this->assertEquals($this->loops, $query->count());
-        
+
         $i = $this->loops - 1;
         $query = $query->limit($i); //->cursor();
         $this->assertEquals($i, $query->count());
@@ -115,7 +117,7 @@ class ModelTest extends TestCase
         $this->assertInstanceOf(Collection::class, $values);
         $this->assertEquals($i, $values->count());
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -172,19 +174,13 @@ class ModelTest extends TestCase
     /**
      * @dataProvider providerData
      */
-    public function testSelectByPk($db)
+    public function testSelectAll($db)
     {
         Model::setConnection($db);
         $elements = TestDb::get();
         $this->assertInstanceOf(Collection::class, $elements);
         $this->assertTrue($elements->hasElements(), "Find return elements");
-        foreach ($elements as $element) {
-            //$obj = TestDb::findByPk($element->id);
-            //$this->assertInstanceOf(TestDb::class, $obj);
-            
-            $this->assertInstanceOf(TestDb::class, $element);
-            //$this->assertEquals($element, $obj);
-        }
+        $this->assertContainsOnlyInstancesOf(TestDb::class, $elements);
     }
 
     /**
@@ -241,7 +237,11 @@ class ModelTest extends TestCase
         $this->assertEquals($current, $unserialized);
         $unserialized->test = 'nuevo';
         $unserialized->save();
-        //$this->assertEquals(TestDb::findByPk($unserialized->getPrimaryKeyValue()), $unserialized);
+        $this->assertNotEquals($current, $unserialized);
+        $obj = TestDb::findByPk($unserialized->getPrimaryKeyValue());
+        $obj->id;
+        $this->assertEquals($unserialized, $obj);
+        $this->assertNotEquals($current, $obj);
         $unserialized->test = 'value';
         $unserialized->save();
     }
@@ -263,7 +263,7 @@ class ModelTest extends TestCase
         //        $removeds = $db->delete(array('test' => 'value'));
 //        $this->assertEquals($this->loops, $removeds, "delete {$removeds} results");
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -274,7 +274,7 @@ class ModelTest extends TestCase
         $success = TestDb::truncate();
         $this->assertEquals(1, $success->count(), "Truncate table");
     }
-    
+
     /**
      * @dataProvider providerData
      */

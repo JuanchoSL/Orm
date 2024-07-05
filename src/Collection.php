@@ -2,10 +2,9 @@
 
 namespace JuanchoSL\Orm;
 
-use JuanchoSL\DataTransfer\Repositories\BaseCollectionable;
 use JuanchoSL\Orm\Datamodel\DataModelInterface;
 
-class Collection extends BaseCollectionable
+class Collection extends \JuanchoSL\DataTransfer\Collection
 {
 
     public function insert(DataModelInterface $object): mixed
@@ -55,7 +54,7 @@ class Collection extends BaseCollectionable
         }
         return $arr;
     }
-
+/*
     public function getCollection(): array
     {
         return $this->data;
@@ -67,5 +66,5 @@ class Collection extends BaseCollectionable
         $this->next();
         return $return;
     }
-
+*/
 }

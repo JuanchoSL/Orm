@@ -77,12 +77,21 @@ class QueryExecuter
         }
         $cursor = $this->cursor();
         $response = new Collection();
+        $key = null;
         while (!empty($element = $cursor->next())) {
+            if (!empty($this->response_model->getPrimaryKeyName())) {
+                $key_name = $this->response_model->getPrimaryKeyName();
+                $key = $element->{$key_name};
+            }
             if (count(get_object_vars($element)) > 1) {
-                $response->append($this->response_model->make((array) $element));
+                $data = $this->response_model->make((array) $element);
             } else {
-                //$response[$this->response_model->getPrimaryKeyName()] = $this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()});
-                $response->append($this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()}));
+                $data = $this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()});
+            }
+            if (is_null($key)) {
+                $response->append($data);
+            } else {
+                $response->set($key, $data);
             }
         }
         $cursor->free();

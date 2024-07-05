@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "5175f07a4b1cf189ba99d21e9dcb656f916c771d"
+                "reference": "3fdee52d053dace29b4025ec31761132985f5e0f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/5175f07a4b1cf189ba99d21e9dcb656f916c771d",
-                "reference": "5175f07a4b1cf189ba99d21e9dcb656f916c771d",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/3fdee52d053dace29b4025ec31761132985f5e0f",
+                "reference": "3fdee52d053dace29b4025ec31761132985f5e0f",
                 "shasum": ""
             },
             "require": {
@@ -69,7 +69,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/DataTransfer/tree/feature/data-container"
             },
-            "time": "2024-07-04T00:19:28+00:00"
+            "time": "2024-07-05T22:09:40+00:00"
         },
         {
             "name": "juanchosl/envvars",
