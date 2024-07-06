@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Querybuilder;
 
+use JuanchoSL\Exceptions\PreconditionFailedException;
 use JuanchoSL\Exceptions\PreconditionRequiredException;
 use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
 
@@ -37,13 +38,12 @@ trait SQLBuilderTrait
             case QueryActionsEnum::UPDATE:
                 $response = [];
                 foreach ($queryBuilder->values as $key => $value) {
-                    $response[] = $this->mountComparation("{$key}={$value}", $queryBuilder->table);
+                    $response[] = $this->mountAssignament($queryBuilder->table, $key, $value);
                 }
                 if (empty($response)) {
                     throw new PreconditionRequiredException("No valid data to save");
                 }
                 return $queryBuilder->operation->value . " " . $queryBuilder->table . " SET " . implode(',', $response) . " " . $condition;
-            //return $queryBuilder->operation->value . " " . $queryBuilder->table . " SET " . $this->toString($queryBuilder->values, "'", true) . " " . $condition;
 
             case QueryActionsEnum::TRUNCATE:
             case QueryActionsEnum::DROP:
@@ -91,59 +91,44 @@ trait SQLBuilderTrait
                 foreach ($blocks as $separator => $comparations) {
                     $where .= " {$separator} (";
                     foreach ($comparations as $comparation) {
-                        //if (!isset($comparation[1])) {
                         if (empty($comparation[1]) && !isset($comparation[2])) {
-                            $where .= $this->mountComparation($comparation[0], $tabla);
+                            $where .= $this->mountComparation($comparation[0], $tabla) . " AND ";
                         } else {
                             list($field, $value) = $comparation;
-                            $sub_table = (strpos($field, '.') !== false) ? substr($field, 0, strpos($field, '.')) : $tabla;
-                            $sub_field = (strpos($field, '.') !== false) ? substr($field, strpos($field, '.') + 1) : $field;
-                            if (!in_array(strtolower($sub_field), $this->columns($sub_table))) {
-                                continue;
-                            }
-                            $new_field = $this->describe[$sub_table][strtolower($sub_field)]->getName();
-                            $new_field = ($sub_field != $field) ? $sub_table . '.' . $new_field : $new_field;
-                            if (is_array($value)) {
+                            if (is_null($value)) {
+                                if (isset($comparation[2]) && is_bool($comparation[2])) {
+                                    $comparator = ($comparation[2]) ? 'IS NULL' : 'IS NOT NULL';
+                                } else {
+                                    $comparator = (empty($comparation[2])) ? 'IS NULL' : $comparation[2];
+                                }
+                            } elseif (is_array($value) or $value instanceof QueryBuilder) {
                                 if (isset($comparation[2]) && is_bool($comparation[2])) {
                                     $comparator = ($comparation[2]) ? 'IN' : 'NOT IN';
                                 } else {
                                     $comparator = (empty($comparation[2])) ? 'IN' : $comparation[2];
                                 }
-                                //$comparator = ($comparator) ? 'IN' : 'NOT IN';
-                                foreach ($value as $index => $val) {
-                                    if (is_string($val)) {
-                                        $value[$index] = $this->escape($val);
+                                if (is_array($value)) {
+                                    foreach ($value as $index => $val) {
+                                        if (is_string($val)) {
+                                            $value[$index] = $this->escape($val);
+                                        }
                                     }
-                                }
-                                $where .= $new_field . " " . $comparator . " ('" . implode("','", $value) . "')";
-                            } elseif (is_null($value)) {
-                                if (isset($comparation[2]) && is_bool($comparation[2])) {
-                                    $comparator = ($comparation[2]) ? 'IS NULL ' : 'IS NOT NULL ';
+                                    $value = "('" . implode("','", $value) . "')";
                                 } else {
-                                    $comparator = (empty($comparation[2])) ? 'IS NULL ' : $comparation[2];
+                                    $value = "(" . $this->getQuery($value) . ")";
                                 }
-                                //$comparator = ($comparator) ? 'IS NULL' : 'IS NOT NULL';
-                                $where .= $new_field . " " . $value . " " . $comparator;
-                            } elseif ($value instanceof QueryBuilder) {
-                                if (isset($comparation[2]) && is_bool($comparation[2])) {
-                                    $comparator = ($comparation[2]) ? 'IN' : 'NOT IN';
-                                } else {
-                                    $comparator = (empty($comparation[2])) ? 'IN' : $comparation[2];
-                                }
-                                $where .= $new_field . " " . $comparator . " (" . $this->getQuery($value) . ")";
-                            } elseif (isset($comparation[2]) && is_string($comparation[2]) && strtolower($comparation[2]) == 'like') {
-                                $value = $this->escape($value);
-                                $where .= $new_field . " LIKE '" . $value . "'";
                             } else {
-                                if (isset($comparation[2]) && is_bool($comparation[2])) {
+                                if (!isset($comparation[2])) {
+                                    $comparation[2] = '=';
+                                }
+                                if (is_bool($comparation[2])) {
                                     $comparator = ($comparation[2]) ? '=' : '!=';
                                 } else {
                                     $comparator = (empty($comparation[2])) ? '=' : $comparation[2];
                                 }
-                                $where .= $this->mountComparation($new_field . " " . $comparator . " " . $value, $tabla);
                             }
+                            $where .= $this->mountAssignament($tabla, $field, $value, $comparator) . " AND ";
                         }
-                        $where .= " AND ";
                     }
                     $where = substr($where, 0, -5);
                     $where .= ")";
@@ -159,34 +144,39 @@ trait SQLBuilderTrait
         $string = stripslashes(trim($ostring));
         $last_char = substr($string, -1, 1);
         if (substr_count($string, $last_char) == 2) {
-
             if ($last_char == '"') {
                 $string = str_replace('"', "", $string);
-                //$string = trim($string, $last_char);
             } elseif ($last_char == "'") {
-                //$string = trim($string, $last_char);
                 $string = str_replace("'", "", $string);
             }
         }
         preg_match("/([\w.]+)(\W+)(.*)/", $string, $matches);
-
         list($string, $key, $comparator, $value) = $matches;
         $this->log(__FUNCTION__, 'debug', ['table' => $tabla, 'initial' => $ostring, 'modified' => $string, 'value' => $value, 'matches' => $matches]);
-        $value = $this->escape($value);
+        return $this->mountAssignament($tabla, $key, $value, $comparator);
+    }
+
+    protected function mountAssignament(string $tabla, string $key, string|int|null $value, string $comparator = '='): string|false
+    {
         $key = strtolower($key);
-        $this->log(__FUNCTION__, 'debug', ['table' => $tabla, 'initial' => $ostring, 'modified' => $string, 'value' => $value, 'matches' => $matches]);
+        $this->log(__FUNCTION__, 'debug', ['table' => $tabla, 'key' => $key, 'comparator' => $comparator, 'value' => $value]);
         $sub_table = (strpos($key, '.') !== false) ? substr($key, 0, strpos($key, '.')) : $tabla;
         $sub_key = (strpos($key, '.') !== false) ? substr($key, strpos($key, '.') + 1) : $key;
         if (is_array($this->describe) && array_key_exists($sub_key, $this->describe[$sub_table])) {
-            if (empty($this->describe[$sub_table][$sub_key]->getType()) || stripos($this->describe[$sub_table][$sub_key]->getType(), 'char') !== false || stripos($this->describe[$sub_table][$sub_key]->getType(), 'text') !== false) {
-                //$value = str_replace("\\'", "\'", $value);
-                $value = "'{$value}'";
+            if (!is_null($value) && stripos($comparator, 'NULL') === false && stripos($comparator, 'IN') === false) {
+                if (empty($this->describe[$sub_table][$sub_key]->getType()) || stripos($this->describe[$sub_table][$sub_key]->getType(), 'char') !== false || stripos($this->describe[$sub_table][$sub_key]->getType(), 'text') !== false) {
+                    $value = $this->escape((string) $value);
+                    $value = "'{$value}'";
+                }
             }
             $key_name = $this->describe[$sub_table][$sub_key]->getName();
             $key = ($sub_key != $key) ? $sub_table . '.' . $key_name : $key_name;
+            return "{$key} {$comparator} {$value}";
         }
 
-        return "{$key} {$comparator} {$value}";
+        $e = new PreconditionFailedException("The field {$key} does not exists on the table {$tabla}");
+        $this->log($e, 'error', ['exception' => $e]);
+        throw $e;
     }
 
     protected function mountLimit(int $limit, int $page): string
