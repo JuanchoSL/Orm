@@ -54,17 +54,13 @@ class Collection extends \JuanchoSL\DataTransfer\Collection
         }
         return $arr;
     }
-/*
-    public function getCollection(): array
+    public function getIterator()
     {
-        return $this->data;
+        $iterator = new \JuanchoSL\DataTransfer\Collection();
+        foreach ($this->data as $val) {
+            $iterator->append($val);
+        }
+        return $iterator;
     }
 
-    public function get()
-    {
-        $return = $this->current();
-        $this->next();
-        return $return;
-    }
-*/
 }
