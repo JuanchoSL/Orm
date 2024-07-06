@@ -162,7 +162,7 @@ trait SQLBuilderTrait
         $this->log(__FUNCTION__, 'debug', ['table' => $tabla, 'key' => $key, 'comparator' => $comparator, 'value' => $value]);
         $sub_table = (strpos($key, '.') !== false) ? substr($key, 0, strpos($key, '.')) : $tabla;
         $sub_key = (strpos($key, '.') !== false) ? substr($key, strpos($key, '.') + 1) : $key;
-        if (is_array($this->describe) && array_key_exists($sub_key, $this->describe[$sub_table])) {
+        if (array_key_exists($sub_key, $this->describe($sub_table))) {
             if (!is_null($value) && stripos($comparator, 'NULL') === false && stripos($comparator, 'IN') === false) {
                 if (empty($this->describe[$sub_table][$sub_key]->getType()) || stripos($this->describe[$sub_table][$sub_key]->getType(), 'char') !== false || stripos($this->describe[$sub_table][$sub_key]->getType(), 'text') !== false) {
                     $value = $this->escape((string) $value);
