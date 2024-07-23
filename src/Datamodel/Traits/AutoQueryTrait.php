@@ -2,9 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Datamodel;
+namespace JuanchoSL\Orm\Datamodel\Traits;
 
-use JuanchoSL\Orm\Querybuilder\QueryExecuter;
+use JuanchoSL\Orm\Datamodel\DataModelInterface;
+use JuanchoSL\Orm\Datamodel\QueryExecuter;
 
 trait AutoQueryTrait
 {
@@ -28,7 +29,7 @@ trait AutoQueryTrait
             }
             $fields = "DISTINCT " . implode(",", $distinct);
         } else {
-            $fields = '*';
+            $fields = $instance->getTableName() . '.*';
         }
         $response = static::select($fields)->from($instance->getTableName());
         if (!empty($where)) {

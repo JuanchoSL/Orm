@@ -2,7 +2,7 @@
 
 namespace JuanchoSL\Orm\Tests\Functional;
 
-use JuanchoSL\Orm\Collection;
+use JuanchoSL\Orm\ModelCollection;
 use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
@@ -94,7 +94,7 @@ class ModelTest extends TestCase
             $cursor = TestDb::where(array('test', 'valor'))->limit($i);
             $this->assertEquals($i, $cursor->count());
             $values = $cursor->get();
-            $this->assertInstanceOf(Collection::class, $values);
+            $this->assertInstanceOf(ModelCollection::class, $values);
             $this->assertContainsOnlyInstancesOf(TestDb::class, $values);
             $this->assertEquals($i, $values->count());
         }
@@ -114,7 +114,7 @@ class ModelTest extends TestCase
         $this->assertEquals($i, $query->count());
 
         $values = $query->get();
-        $this->assertInstanceOf(Collection::class, $values);
+        $this->assertInstanceOf(ModelCollection::class, $values);
         $this->assertEquals($i, $values->count());
     }
 
@@ -157,7 +157,7 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $objs = TestDb::get();
-        $this->assertInstanceOf(Collection::class, $objs);
+        $this->assertInstanceOf(ModelCollection::class, $objs);
         $this->assertTrue($objs->hasElements(), "Find return elements");
         foreach ($objs as $obj) {
             $this->assertEquals('valores', $obj->test, "Comprobación del valor original");
@@ -178,7 +178,7 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $elements = TestDb::get();
-        $this->assertInstanceOf(Collection::class, $elements);
+        $this->assertInstanceOf(ModelCollection::class, $elements);
         $this->assertTrue($elements->hasElements(), "Find return elements");
         $this->assertContainsOnlyInstancesOf(TestDb::class, $elements);
     }
@@ -191,7 +191,7 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $objs = TestDb::where(array('test', 'valor'))->limit($i, 0)->get();
-            $this->assertInstanceOf(Collection::class, $objs);
+            $this->assertInstanceOf(ModelCollection::class, $objs);
             $this->assertTrue($objs->hasElements());
             $this->assertContainsOnlyInstancesOf(TestDb::class, $objs);
             $this->assertEquals($i, $objs->count());
@@ -226,8 +226,8 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $var = TestDb::get();
-        $this->assertTrue($var->hasElements(), "Collection have elements");
-        $this->assertContainsOnlyInstancesOf(TestDb::class, $var, "Collection are a few of Test class");
+        $this->assertTrue($var->hasElements(), "ModelCollection have elements");
+        $this->assertContainsOnlyInstancesOf(TestDb::class, $var, "ModelCollection are a few of Test class");
         $var->rewind();
         $current = $var->current();
         $this->assertInstanceOf(TestDb::class, $current, "Class are an instance os Test");

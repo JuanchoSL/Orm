@@ -2,9 +2,10 @@
 
 namespace JuanchoSL\Orm;
 
+use JuanchoSL\DataTransfer\Collection;
 use JuanchoSL\Orm\Datamodel\DataModelInterface;
 
-class Collection extends \JuanchoSL\DataTransfer\Collection
+class ModelCollection extends Collection
 {
 
     public function insert(DataModelInterface $object): mixed
@@ -56,7 +57,7 @@ class Collection extends \JuanchoSL\DataTransfer\Collection
     }
     public function getIterator()
     {
-        $iterator = new \JuanchoSL\DataTransfer\Collection();
+        $iterator = new Collection();
         foreach ($this->data as $val) {
             $iterator->append($val);
         }

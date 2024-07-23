@@ -6,13 +6,14 @@ namespace JuanchoSL\Orm\Engine\Drivers;
 
 use JuanchoSL\Orm\Engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\Engine\Cursors\SqlsrvCursor;
+use JuanchoSL\Orm\Engine\Parsers\SqlserverParser;
 use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Sqlserver extends RDBMS implements DbInterface
 {
@@ -54,30 +55,6 @@ class Sqlserver extends RDBMS implements DbInterface
         return $result ?? true;
     }
 
-    public function getTables(): array
-    {
-        //return parent::extractTables("SELECT table_name from {$this->credentials->getDataBase()}.INFORMATION_SCHEMA.TABLES");
-        return parent::extractTables(QueryBuilder::getInstance()->select(['table_name'])->from($this->credentials->getDataBase() . ".INFORMATION_SCHEMA.TABLES"));
-    }
-
-    protected function parseDescribe(QueryBuilder $sqlBuilder): string
-    {
-        return $this->getQuery(QueryBuilder::getInstance()->doAction(QueryActionsEnum::EXEC)->setCamps(['sp_columns'])->from($sqlBuilder->table));
-    }
-
-    protected function getParsedField(array $keys): FieldDescription
-    {
-        $field = new FieldDescription;
-        $field
-            ->setName($keys['COLUMN_NAME'])
-            ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
-            ->setLength($keys['LENGTH'])
-            ->setNullable($keys['NULLABLE'] == 0)
-            ->setDefault($keys['COLUMN_DEF'])
-            ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
-        return $field;
-    }
-
     protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
@@ -114,6 +91,32 @@ class Sqlserver extends RDBMS implements DbInterface
         $res->free();
         return $lastInsertedId;
     }
+    
+    public function getTables(): array
+    {
+        //return parent::extractTables("SELECT table_name from {$this->credentials->getDataBase()}.INFORMATION_SCHEMA.TABLES");
+        return parent::extractTables(QueryBuilder::getInstance()->select(['table_name'])->from($this->credentials->getDataBase() . ".INFORMATION_SCHEMA.TABLES"));
+    }
+
+    protected function parseDescribe(QueryBuilder $sqlBuilder): string
+    {
+        return $this->getQuery(QueryBuilder::getInstance()->doAction(QueryActionsEnum::EXEC)->setCamps(['sp_columns'])->from($sqlBuilder->table));
+    }
+
+    protected function getParsedField(array $keys): FieldDescription
+    {
+        //return SqlserverParser::parseField($keys);
+        
+        $field = new FieldDescription;
+        $field
+            ->setName($keys['COLUMN_NAME'])
+            ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
+            ->setLength($keys['LENGTH'])
+            ->setNullable($keys['NULLABLE'] == 0)
+            ->setDefault($keys['COLUMN_DEF'])
+            ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
+        return $field;
+    }
 
     protected function parseSelect(QueryBuilder $sqlBuilder): string
     {
@@ -132,7 +135,7 @@ class Sqlserver extends RDBMS implements DbInterface
         }
     }
 
-    protected function parseCreate(QueryBuilder $builder)
+    protected function parseCreate(QueryBuilder $builder):string
     {
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {

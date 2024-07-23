@@ -2,10 +2,12 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Querybuilder;
+namespace JuanchoSL\Orm\Engine\Traits;
 
 use JuanchoSL\Exceptions\PreconditionFailedException;
 use JuanchoSL\Exceptions\PreconditionRequiredException;
+use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
 
 trait SQLBuilderTrait

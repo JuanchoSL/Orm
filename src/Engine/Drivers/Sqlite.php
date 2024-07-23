@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Sqlite extends RDBMS implements DbInterface
 {
@@ -102,8 +102,11 @@ class Sqlite extends RDBMS implements DbInterface
     protected function processTruncate(QueryBuilder $builder): EmptyResponse
     {
         $result = $this->execute(QueryBuilder::getInstance()->delete()->from($builder->table));
-        $this->execute(QueryBuilder::getInstance()->delete()->from('sqlite_sequence')->where(['name', $builder->table]));
-        return new EmptyResponse($result->count() > 0);
+        $result2 = $this->execute(QueryBuilder::getInstance()->delete()->from('sqlite_sequence')->where(['name', $builder->table]));
+        $success = $result->count() > 0;
+        //$result->free();
+        //$result2->free();
+        return new EmptyResponse($success);
     }
 
     protected function parseCreate(QueryBuilder $builder)

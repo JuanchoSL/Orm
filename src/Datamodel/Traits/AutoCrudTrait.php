@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Datamodel;
+namespace JuanchoSL\Orm\Datamodel\Traits;
 
 use JuanchoSL\DataTransfer\DataContainer;
 use JuanchoSL\Exceptions\NotFoundException;
