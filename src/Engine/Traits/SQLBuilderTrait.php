@@ -52,6 +52,9 @@ trait SQLBuilderTrait
                 return $queryBuilder->operation->value . " TABLE " . $queryBuilder->table;
 
             case QueryActionsEnum::DELETE:
+                if(empty($condition)){
+                    //throw new PreconditionRequiredException("WHERE condition is empty");
+                }
                 return $queryBuilder->operation->value . " FROM " . $queryBuilder->table . $condition;
 
             case QueryActionsEnum::DESCRIBE:
@@ -84,17 +87,20 @@ trait SQLBuilderTrait
      */
     protected function mountWhere(array $where_array, string $tabla)
     {
-        $where = " WHERE 1=1";
+        $where = "";
         if (is_string($where_array)) {
             $where_array = [$where_array];
         }
         if (is_array($where_array) && count($where_array) > 0) {
             foreach ($where_array as $blocks) {
                 foreach ($blocks as $separator => $comparations) {
-                    $where .= " {$separator} (";
+                    if (!empty($where)) {
+                        $where .= " {$separator} ";
+                    }
+                    $where .= "(";
                     foreach ($comparations as $comparation) {
                         if (empty($comparation[1]) && !isset($comparation[2])) {
-                            $where .= $this->mountComparation($comparation[0], $tabla) . " AND ";
+                            $mounted = $this->mountComparation($comparation[0], $tabla);
                         } else {
                             list($field, $value) = $comparation;
                             if (is_null($value)) {
@@ -129,14 +135,23 @@ trait SQLBuilderTrait
                                     $comparator = (empty($comparation[2])) ? '=' : $comparation[2];
                                 }
                             }
-                            $where .= $this->mountAssignament($tabla, $field, $value, $comparator) . " AND ";
+                            $mounted = $this->mountAssignament($tabla, $field, $value, $comparator);
+                        }
+                        if (!empty($mounted)) {
+                            $where .= $mounted . " AND ";
                         }
                     }
-                    $where = substr($where, 0, -5);
-                    $where .= ")";
+                    if (substr($where, -1) != '(') {
+                        $where = substr($where, 0, -5);
+                        $where .= ")";
+                    }
                 }
             }
         }
+        if (empty($where)) {
+            $where = '1=1';
+        }
+        $where = " WHERE {$where}";
         $this->log(__FUNCTION__, 'debug', ['table' => $tabla, 'initial' => $where_array, 'final' => $where]);
         return $where;
     }

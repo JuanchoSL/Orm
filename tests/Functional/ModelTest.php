@@ -125,6 +125,7 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $deleted = TestDb::where()->delete();
+        //$deleted = TestDb::where(['id', null, false])->delete();
         $this->assertEquals($this->loops, $deleted->count());
         /*
         $remover = TestDb::find(array());

@@ -2,7 +2,41 @@
 
 ## Description
 
-Little methods collection in order to create SQL queries
+Little methods collection in order to create SQL queries. The library contains 3 inter-connected blocks
+* Engine
+* DataModel
+* QueryBuilder
+
+ 
+### Engine
+Group the distincts compatible drivers and his direct dependencies
+
+* **DbCredentials** An Entity to set the db credentials 
+* **Drivers** The compatible drivers, actually:
+    * SQLite
+    * MySQL
+    * SQLServer
+    * Postgre
+    * Oracle
+    * DB2
+    * ODBC connections (beta)
+* **Cursors** Iterable and countable cursors resulting of a query execution
+* **Responses** Non iterable responses, as InsertResponse, DeleteResponse, UpdateResponse
+* **Traits** Convert any QueryBuilder to the rigth syntax for the selected driver
+
+### Querybuilder 
+Include some tools for use from the other modules
+* QueryBuilder An abstract container with methods to save the query values without system dependency
+
+### Datamodel
+Offer the direct connection, creation and management of table records as Entities
+* Model The entities usage, in order to get and set DB registers
+* QueryExecuter Receiving a Driver connection and a Model instance, offer direct method to perform actions
+
+## Installation
+```bash
+composer require juanchosl/orm
+```
 
 ## How to use
 
@@ -17,14 +51,14 @@ $credentials = new DbCredentials(getenv('DB_HOST'), getenv('DB_USER'), getenv('D
 ### Create connection
 
 ```php
-use JuanchoSL\Orm\engine\Drivers\Mysqli;
+use JuanchoSL\Orm\Engine\Drivers\Mysqli;
 
 $resource = new Mysqli($credentials);
 ```
 
 ### Use a logger
 
-You can inject a logger in order to save queries and errors from drivers
+You can provide a PSR-3 LoggerInterface in order to save queries and errors from drivers
 
 ```php
 use JuanchoSL\Logger\Logger;
@@ -133,7 +167,7 @@ Using relations, you can directly link to parent or childs using a simple method
 ```php
 public function parent()
 {
-    return $this->BelongsToOne(ParentModel::getInstance(), 'remote_table_field_name', 'this_table_field_name');
+    return $this->BelongsToOne(ParentModel::class, 'remote_table_field_name', 'this_table_field_name');
 }
 ```
 
