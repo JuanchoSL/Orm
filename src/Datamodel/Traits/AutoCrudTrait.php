@@ -2,10 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Datamodel;
+namespace JuanchoSL\Orm\Datamodel\Traits;
 
-use JuanchoSL\DataTransfer\Contracts\DataTransferInterface;
-use JuanchoSL\DataTransfer\Repositories\DataContainer;
+use JuanchoSL\DataTransfer\DataContainer;
 use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
@@ -80,7 +79,7 @@ trait AutoCrudTrait
             if (isset($return)) {
                 $first = $return->first();
                 if (isset($first, $this->relations[$this->getTableName()][$first->getTableName()])) {
-                    $return = $return->first();
+                    $return = $first;
                 }
             }
             return $return;

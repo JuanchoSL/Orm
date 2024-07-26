@@ -2,11 +2,10 @@
 
 namespace JuanchoSL\Orm\Tests\Unit;
 
-use JuanchoSL\Orm\Engine\Drivers\DbInterface;
+use JuanchoSL\Orm\Engine\Enums\EngineEnums;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Engine\Engines;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use PHPUnit\Framework\TestCase;
 
@@ -195,7 +194,7 @@ class EngineUnitTest extends TestCase
             $this->assertEquals($i, count($values));
             $this->assertTrue(isset($values[$i - 1]));
             $this->assertTrue($values[$i - 1] instanceof \stdClass);
-            $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($db->keys($this->table))};
+            $id = (in_array($this->db_type, [EngineEnums::TYPE_MONGOCLIENT, EngineEnums::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($db->keys($this->table))};
             $this->assertTrue(!empty($id), "Recuperación del id de un select");
         }
     }
@@ -219,7 +218,7 @@ class EngineUnitTest extends TestCase
         $cursor->free();
         $this->assertTrue(isset($values[$i - 1]));
         $this->assertTrue($values[$i - 1] instanceof \stdClass);
-        $id = (in_array($this->db_type, [Engines::TYPE_MONGOCLIENT, Engines::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($db->keys($this->table))};
+        $id = (in_array($this->db_type, [EngineEnums::TYPE_MONGOCLIENT, EngineEnums::TYPE_MONGO])) ? (string) $values[$i - 1]->_id : $values[$i - 1]->{current($db->keys($this->table))};
         $this->assertTrue(!empty($id), "Recuperación del id de un select");
     }
 

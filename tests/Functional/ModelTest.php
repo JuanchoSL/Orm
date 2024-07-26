@@ -2,7 +2,7 @@
 
 namespace JuanchoSL\Orm\Tests\Functional;
 
-use JuanchoSL\Orm\Collection;
+use JuanchoSL\Orm\ModelCollection;
 use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\Tests\ConnectionTrait;
 use JuanchoSL\Orm\Tests\TestDb;
@@ -30,7 +30,7 @@ class ModelTest extends TestCase
             $this->assertEquals($i, $obj->getPrimaryKeyValue(), "Recuperación del id de un insert");
         }
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -39,19 +39,19 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         $cursor = TestDb::where(['test', 'valor'], ['dato', 2]);
         $this->assertEquals(1, $cursor->count(), "Check 1");
-        
+
         $cursor = TestDb::where(['test', 'valor'])->where(['dato', 2]);
         $this->assertEquals(1, $cursor->count(), "Check 2");
 
         $cursor = TestDb::where(['test', 'valor'])->orWhere(['dato', 2]);
         $this->assertEquals($this->loops, $cursor->count(), "Check 3");
-        
+
         $cursor = TestDb::where(['test', ['valor', 'valore']]);
         $this->assertEquals($this->loops, $cursor->count(), "Check 4");
 
         $cursor = TestDb::where(['test="valor"'], ['dato=2']);
         $this->assertEquals(1, $cursor->count(), "Check 5");
-        
+
         $cursor = TestDb::where(['test="valor"'])->where(['dato=2']);
         $this->assertEquals(1, $cursor->count(), "Check 6");
 
@@ -81,9 +81,9 @@ class ModelTest extends TestCase
 
         $cursor = TestDb::where(['dato', null, 'IS NULL']);
         $this->assertEquals(0, $cursor->count(), "Check 15");
-        
+
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -92,12 +92,14 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $cursor = TestDb::where(array('test', 'valor'))->limit($i);
+            $this->assertEquals($i, $cursor->count());
             $values = $cursor->get();
-            $this->assertInstanceOf(Collection::class, $values);
+            $this->assertInstanceOf(ModelCollection::class, $values);
+            $this->assertContainsOnlyInstancesOf(TestDb::class, $values);
             $this->assertEquals($i, $values->count());
         }
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -106,16 +108,16 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         $query = TestDb::where(array('test', 'valor'));
         $this->assertEquals($this->loops, $query->count());
-        
+
         $i = $this->loops - 1;
         $query = $query->limit($i); //->cursor();
         $this->assertEquals($i, $query->count());
 
         $values = $query->get();
-        $this->assertInstanceOf(Collection::class, $values);
+        $this->assertInstanceOf(ModelCollection::class, $values);
         $this->assertEquals($i, $values->count());
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -123,6 +125,7 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $deleted = TestDb::where()->delete();
+        //$deleted = TestDb::where(['id', null, false])->delete();
         $this->assertEquals($this->loops, $deleted->count());
         /*
         $remover = TestDb::find(array());
@@ -155,7 +158,7 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $objs = TestDb::get();
-        $this->assertInstanceOf(Collection::class, $objs);
+        $this->assertInstanceOf(ModelCollection::class, $objs);
         $this->assertTrue($objs->hasElements(), "Find return elements");
         foreach ($objs as $obj) {
             $this->assertEquals('valores', $obj->test, "Comprobación del valor original");
@@ -172,19 +175,13 @@ class ModelTest extends TestCase
     /**
      * @dataProvider providerData
      */
-    public function testSelectByPk($db)
+    public function testSelectAll($db)
     {
         Model::setConnection($db);
         $elements = TestDb::get();
-        $this->assertInstanceOf(Collection::class, $elements);
+        $this->assertInstanceOf(ModelCollection::class, $elements);
         $this->assertTrue($elements->hasElements(), "Find return elements");
-        foreach ($elements as $element) {
-            //$obj = TestDb::findByPk($element->id);
-            //$this->assertInstanceOf(TestDb::class, $obj);
-            
-            $this->assertInstanceOf(TestDb::class, $element);
-            //$this->assertEquals($element, $obj);
-        }
+        $this->assertContainsOnlyInstancesOf(TestDb::class, $elements);
     }
 
     /**
@@ -195,7 +192,7 @@ class ModelTest extends TestCase
         Model::setConnection($db);
         for ($i = 1; $i <= $this->loops; $i++) {
             $objs = TestDb::where(array('test', 'valor'))->limit($i, 0)->get();
-            $this->assertInstanceOf(Collection::class, $objs);
+            $this->assertInstanceOf(ModelCollection::class, $objs);
             $this->assertTrue($objs->hasElements());
             $this->assertContainsOnlyInstancesOf(TestDb::class, $objs);
             $this->assertEquals($i, $objs->count());
@@ -230,8 +227,8 @@ class ModelTest extends TestCase
     {
         Model::setConnection($db);
         $var = TestDb::get();
-        $this->assertTrue($var->hasElements(), "Collection have elements");
-        $this->assertContainsOnlyInstancesOf(TestDb::class, $var, "Collection are a few of Test class");
+        $this->assertTrue($var->hasElements(), "ModelCollection have elements");
+        $this->assertContainsOnlyInstancesOf(TestDb::class, $var, "ModelCollection are a few of Test class");
         $var->rewind();
         $current = $var->current();
         $this->assertInstanceOf(TestDb::class, $current, "Class are an instance os Test");
@@ -241,7 +238,11 @@ class ModelTest extends TestCase
         $this->assertEquals($current, $unserialized);
         $unserialized->test = 'nuevo';
         $unserialized->save();
-        //$this->assertEquals(TestDb::findByPk($unserialized->getPrimaryKeyValue()), $unserialized);
+        $this->assertNotEquals($current, $unserialized);
+        $obj = TestDb::findByPk($unserialized->getPrimaryKeyValue());
+        $obj->id;
+        $this->assertEquals($unserialized, $obj);
+        $this->assertNotEquals($current, $obj);
         $unserialized->test = 'value';
         $unserialized->save();
     }
@@ -263,7 +264,7 @@ class ModelTest extends TestCase
         //        $removeds = $db->delete(array('test' => 'value'));
 //        $this->assertEquals($this->loops, $removeds, "delete {$removeds} results");
     }
-    
+
     /**
      * @dataProvider providerData
      */
@@ -274,7 +275,7 @@ class ModelTest extends TestCase
         $success = TestDb::truncate();
         $this->assertEquals(1, $success->count(), "Truncate table");
     }
-    
+
     /**
      * @dataProvider providerData
      */

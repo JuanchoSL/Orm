@@ -67,7 +67,7 @@ class OracleCursor extends AbstractCursor implements CursorInterface
     public function free(): bool
     {
         if (!empty ($this->cursor)) {
-            //return @oci_free_statement($this->cursor);
+            return @oci_free_statement($this->cursor);
         }
         return true;
     }

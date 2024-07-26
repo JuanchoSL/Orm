@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Db2 extends RDBMS implements DbInterface
 {

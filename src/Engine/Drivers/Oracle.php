@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Oracle extends RDBMS implements DbInterface
 {
@@ -75,7 +75,7 @@ class Oracle extends RDBMS implements DbInterface
         $cursor = oci_parse($this->linkIdentifier, $query);
         if (!$cursor || !oci_execute($cursor)) {
             $e = new \Exception(oci_error()['message']);
-            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            $this->log($e, 'error', ['exception' => $e, 'query2' => $query]);
             throw $e;
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
@@ -109,6 +109,7 @@ class Oracle extends RDBMS implements DbInterface
             $q = "SELECT * FROM (SELECT t.*, Row_Number() OVER (ORDER BY " . $order . ") MyRow FROM " . strtoupper($sqlBuilder->table) . " t " . $join . " " . $where . ") WHERE MyRow BETWEEN " . $inicio . " AND " . $limit;
             return $q;
         } else {
+            //$sqlBuilder->table(strtoupper($sqlBuilder->table));
             return $this->getQuery($sqlBuilder);
         }
     }

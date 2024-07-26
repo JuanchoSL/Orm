@@ -13,10 +13,11 @@ use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 
 abstract class RDBMS implements DbInterface
 {
+    use LoggerAwareTrait;
 
     const RESPONSE_OBJECT = 'object';
     const RESPONSE_ASSOC = 'assoc';
@@ -27,7 +28,6 @@ abstract class RDBMS implements DbInterface
     protected $columns = [];
     protected $keys = [];
     protected DbCredentials $credentials;
-    protected LoggerInterface $logger;
     protected bool $debug = false;
     function __construct(DbCredentials $credentials)
     {
@@ -39,10 +39,6 @@ abstract class RDBMS implements DbInterface
 
     abstract protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse;
 
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
     public function setDebug(bool $debug = false): void
     {
         $this->debug = $debug;
@@ -158,11 +154,12 @@ abstract class RDBMS implements DbInterface
                 $query = $this->getQuery($query);
             }
         }
+        $micro_time = microtime(true);
         try {
             $cursor = $this->query($query);
-            $this->log('{query}', 'info', ['query' => $query, 'results' => $cursor->count()]);
+            $this->log('{query}', 'info', ['query' => $query, 'results' => $cursor->count(), 'time' => microtime(true) - $micro_time]);
         } catch (\Exception $exception) {
-            $this->log($exception, 'error', ['exception' => $exception, "query" => $query]);
+            $this->log($exception, 'error', ['exception' => $exception, "query1" => $query]);
             throw $exception;
         }
         return $cursor;
