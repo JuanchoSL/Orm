@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "3fdee52d053dace29b4025ec31761132985f5e0f"
+                "reference": "c8abf4d48135ac9127ea07fbcdacbd7c66b9bbc3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/3fdee52d053dace29b4025ec31761132985f5e0f",
-                "reference": "3fdee52d053dace29b4025ec31761132985f5e0f",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/c8abf4d48135ac9127ea07fbcdacbd7c66b9bbc3",
+                "reference": "c8abf4d48135ac9127ea07fbcdacbd7c66b9bbc3",
                 "shasum": ""
             },
             "require": {
@@ -56,6 +56,8 @@
                 "array",
                 "csv",
                 "data converter",
+                "data transfer objects",
+                "dto",
                 "entity",
                 "file contents",
                 "ini",
@@ -69,7 +71,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/DataTransfer/tree/feature/data-container"
             },
-            "time": "2024-07-05T22:09:40+00:00"
+            "time": "2024-08-09T22:11:55+00:00"
         },
         {
             "name": "juanchosl/envvars",
@@ -1130,12 +1132,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "5069bc10418ce0d9697e8b32fdb13cba38dddf29"
+                "reference": "0a965f7fb23a19ece6afe7dc4ad0307c11b04d5b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5069bc10418ce0d9697e8b32fdb13cba38dddf29",
-                "reference": "5069bc10418ce0d9697e8b32fdb13cba38dddf29",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/0a965f7fb23a19ece6afe7dc4ad0307c11b04d5b",
+                "reference": "0a965f7fb23a19ece6afe7dc4ad0307c11b04d5b",
                 "shasum": ""
             },
             "require": {
@@ -1225,7 +1227,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-07-25T14:33:14+00:00"
+            "time": "2024-08-08T11:55:08+00:00"
         },
         {
             "name": "sebastian/cli-parser",
