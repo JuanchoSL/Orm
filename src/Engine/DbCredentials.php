@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\engine;
+namespace JuanchoSL\Orm\Engine;
 
 class DbCredentials implements \JsonSerializable
 {
