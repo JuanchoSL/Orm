@@ -408,12 +408,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Logger.git",
-                "reference": "0aa3b53504395ee1ab76d9b47367745293777f63"
+                "reference": "a21549cd67024995ba8e8b4c0f1d25a91b991954"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/0aa3b53504395ee1ab76d9b47367745293777f63",
-                "reference": "0aa3b53504395ee1ab76d9b47367745293777f63",
+                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/a21549cd67024995ba8e8b4c0f1d25a91b991954",
+                "reference": "a21549cd67024995ba8e8b4c0f1d25a91b991954",
                 "shasum": ""
             },
             "require": {
@@ -452,7 +452,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/Logger/tree/feature/use-handlers"
             },
-            "time": "2024-09-06T15:45:36+00:00"
+            "time": "2024-09-20T20:28:48+00:00"
         },
         {
             "name": "juanchosl/simplecache",
