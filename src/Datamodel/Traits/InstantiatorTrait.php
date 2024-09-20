@@ -14,15 +14,9 @@ trait InstantiatorTrait
     {
         $this->values = new DataContainer();
     }
-    /*
-    public static function model(): string
-    {
-        return get_called_class();
-    }
-*/
+
     public static function getInstance(): DataModelInterface
     {
-        //$class = static::model();
         return new static;//$class;
     }
 
