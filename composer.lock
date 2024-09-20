@@ -12,19 +12,19 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "efeac6968de3c222a3366a9d7233ac6422cac03a"
+                "reference": "e181f1383f8ab3d11e667ff08689f02ae27e0525"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/efeac6968de3c222a3366a9d7233ac6422cac03a",
-                "reference": "efeac6968de3c222a3366a9d7233ac6422cac03a",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/e181f1383f8ab3d11e667ff08689f02ae27e0525",
+                "reference": "e181f1383f8ab3d11e667ff08689f02ae27e0525",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-mbstring": "*",
                 "juanchosl/exceptions": "^1.0",
-                "php": "^7.1 || ^8.0"
+                "php": "^8.1"
             },
             "require-dev": {
                 "phpstan/phpstan": "1.9.1",
@@ -71,7 +71,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/DataTransfer/tree/develop"
             },
-            "time": "2024-09-05T22:13:00+00:00"
+            "time": "2024-09-20T11:25:10+00:00"
         },
         {
             "name": "juanchosl/envvars",
@@ -229,16 +229,16 @@
         },
         {
             "name": "psr/log",
-            "version": "3.0.1",
+            "version": "3.0.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-fig/log.git",
-                "reference": "79dff0b268932c640297f5208d6298f71855c03e"
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-fig/log/zipball/79dff0b268932c640297f5208d6298f71855c03e",
-                "reference": "79dff0b268932c640297f5208d6298f71855c03e",
+                "url": "https://api.github.com/repos/php-fig/log/zipball/f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
+                "reference": "f16e1d5863e37f8d8c2a01719f5b34baa2b714d3",
                 "shasum": ""
             },
             "require": {
@@ -273,9 +273,9 @@
                 "psr-3"
             ],
             "support": {
-                "source": "https://github.com/php-fig/log/tree/3.0.1"
+                "source": "https://github.com/php-fig/log/tree/3.0.2"
             },
-            "time": "2024-08-21T13:31:24+00:00"
+            "time": "2024-09-11T13:17:53+00:00"
         },
         {
             "name": "psr/simple-cache",
@@ -408,12 +408,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Logger.git",
-                "reference": "d9d57ede26f1909d77618a37354c23b78944742e"
+                "reference": "0aa3b53504395ee1ab76d9b47367745293777f63"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/d9d57ede26f1909d77618a37354c23b78944742e",
-                "reference": "d9d57ede26f1909d77618a37354c23b78944742e",
+                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/0aa3b53504395ee1ab76d9b47367745293777f63",
+                "reference": "0aa3b53504395ee1ab76d9b47367745293777f63",
                 "shasum": ""
             },
             "require": {
@@ -452,7 +452,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/Logger/tree/feature/use-handlers"
             },
-            "time": "2024-09-05T20:10:49+00:00"
+            "time": "2024-09-06T15:45:36+00:00"
         },
         {
             "name": "juanchosl/simplecache",
@@ -574,16 +574,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.1.0",
+            "version": "v5.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "683130c2ff8c2739f4822ff7ac5c873ec529abd1"
+                "reference": "23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/683130c2ff8c2739f4822ff7ac5c873ec529abd1",
-                "reference": "683130c2ff8c2739f4822ff7ac5c873ec529abd1",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb",
+                "reference": "23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb",
                 "shasum": ""
             },
             "require": {
@@ -626,9 +626,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.1.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.2.0"
             },
-            "time": "2024-07-01T20:03:41+00:00"
+            "time": "2024-09-15T16:40:33+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -1132,12 +1132,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "e6a204cd0360ecdb88c200384133df8573abcdb5"
+                "reference": "de6abf3b6f8dd955fac3caad3af7a9504e8c2ffa"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/e6a204cd0360ecdb88c200384133df8573abcdb5",
-                "reference": "e6a204cd0360ecdb88c200384133df8573abcdb5",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/de6abf3b6f8dd955fac3caad3af7a9504e8c2ffa",
+                "reference": "de6abf3b6f8dd955fac3caad3af7a9504e8c2ffa",
                 "shasum": ""
             },
             "require": {
@@ -1227,7 +1227,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-04T06:06:52+00:00"
+            "time": "2024-09-19T10:50:18+00:00"
         },
         {
             "name": "sebastian/cli-parser",

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Tests;
 
-use JuanchoSL\Logger\Composers\PlainText;
+use JuanchoSL\Logger\Composers\TextComposer;
 use JuanchoSL\Logger\Logger;
 use JuanchoSL\Logger\Repositories\FileRepository;
 use JuanchoSL\Orm\Engine\DbCredentials;
@@ -61,11 +61,11 @@ trait ConnectionTrait
                             break;
                         case 4:
                             $dsn = "sqlserver-usuario";
-                            $credentials = new DbCredentials($dsn, getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'),null);
+                            $credentials = new DbCredentials($dsn, getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), null);
                             break;
                         case 5:
                             $dsn = "excel";
-                            $credentials = new DbCredentials($dsn, '', '',null);
+                            $credentials = new DbCredentials($dsn, '', '', null);
                             break;
                     }
                     break;
@@ -90,19 +90,14 @@ trait ConnectionTrait
     {
         static $logger;
         if (empty($logger)) {
-            $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new PlainText)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
+            $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new TextComposer)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
         }
         return $logger;
     }
 
     public function providerData(): array
     {
-        if (static::$git_mode) {
-            return ['Sqlite' => [self::getConnection(EngineEnums::TYPE_SQLITE)]];
-            return ['ODBC' => [self::getConnection(EngineEnums::TYPE_ODBC)]];
-        }
-
-        return [
+        $conns = [
             'Sqlite' => [self::getConnection(EngineEnums::TYPE_SQLITE)],
             'Mysql' => [self::getConnection(EngineEnums::TYPE_MYSQLI)],
             'Oracle' => [self::getConnection(EngineEnums::TYPE_ORACLE)],
@@ -110,5 +105,13 @@ trait ConnectionTrait
             'Sqlserver' => [self::getConnection(EngineEnums::TYPE_SQLSRV)],
             'Db2' => [self::getConnection(EngineEnums::TYPE_DB2)]
         ];
+
+        if (static::$git_mode) {
+            $con = 'Sqlite';
+            return [$con => $conns[$con]];
+            //return ['ODBC' => [self::getConnection(EngineEnums::TYPE_ODBC)]];
+        }
+
+        return $conns;
     }
 }

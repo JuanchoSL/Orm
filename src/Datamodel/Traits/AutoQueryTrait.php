@@ -38,7 +38,7 @@ trait AutoQueryTrait
         return $response;
     }
 
-    public static function findByPk($id): DataModelInterface
+    public static function findByPk($id): static
     {
         $instance = self::getInstance();
         $instance->identifier = $id;
