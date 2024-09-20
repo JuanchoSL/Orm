@@ -41,10 +41,9 @@ trait AutoQueryTrait
     {
         $instance = self::getInstance();
         $instance->identifier = $id;
-        if ($instance->lazyLoad === true) {
-            return $instance;
-        } else {
-            return $instance->load($id);
+        if ($instance->lazyLoad === false) {
+            $instance->load($id);
         }
+        return $instance;
     }
 }

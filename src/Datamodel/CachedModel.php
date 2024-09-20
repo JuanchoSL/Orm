@@ -52,6 +52,7 @@ abstract class CachedModel extends Model
         if (array_key_exists($this->connection_name, self::$cache)) {
             self::$cache[$this->connection_name]->set($this->createCacheKey(), $element, 100);
         }
+        return $element;
     }
 
     protected function createCacheKey()

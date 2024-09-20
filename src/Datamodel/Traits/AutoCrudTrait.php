@@ -118,7 +118,7 @@ trait AutoCrudTrait
         } else {
             $this->fill((array) $element);
         }
-        return $this;
+        return $element;
     }
 
 }
