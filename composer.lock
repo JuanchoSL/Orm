@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "9d9767ef93142f201a4b65cfc71e9fd8",
+    "content-hash": "302050d458660ac1b7627c46beae83ce",
     "packages": [
         {
             "name": "juanchosl/datatransfer",
@@ -404,16 +404,16 @@
         },
         {
             "name": "juanchosl/logger",
-            "version": "dev-feature/use-handlers",
+            "version": "dev-develop",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Logger.git",
-                "reference": "a21549cd67024995ba8e8b4c0f1d25a91b991954"
+                "reference": "3b5045ddc64416529bf1d46d1d90ef40ff44d155"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/a21549cd67024995ba8e8b4c0f1d25a91b991954",
-                "reference": "a21549cd67024995ba8e8b4c0f1d25a91b991954",
+                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/3b5045ddc64416529bf1d46d1d90ef40ff44d155",
+                "reference": "3b5045ddc64416529bf1d46d1d90ef40ff44d155",
                 "shasum": ""
             },
             "require": {
@@ -450,9 +450,9 @@
                 "log"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/Logger/tree/feature/use-handlers"
+                "source": "https://github.com/JuanchoSL/Logger/tree/develop"
             },
-            "time": "2024-09-20T20:28:48+00:00"
+            "time": "2024-09-21T01:13:37+00:00"
         },
         {
             "name": "juanchosl/simplecache",
@@ -460,19 +460,22 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/SimpleCache.git",
-                "reference": "b8efb23550c6a48ca482b5c193641cf9346e0aea"
+                "reference": "b02057e87a1edf2744080e70786a58e5372b3f99"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/b8efb23550c6a48ca482b5c193641cf9346e0aea",
-                "reference": "b8efb23550c6a48ca482b5c193641cf9346e0aea",
+                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/b02057e87a1edf2744080e70786a58e5372b3f99",
+                "reference": "b02057e87a1edf2744080e70786a58e5372b3f99",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.2 || ^8.0",
+                "psr/cache": "3.0.*",
+                "psr/log": "3.0.*",
                 "psr/simple-cache": "3.0.*"
             },
             "require-dev": {
+                "juanchosl/logger": "dev-develop",
                 "phpstan/phpstan": "1.10.*",
                 "phpunit/phpunit": "9.*"
             },
@@ -509,7 +512,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/SimpleCache/tree/develop"
             },
-            "time": "2024-06-19T22:48:57+00:00"
+            "time": "2024-09-21T01:57:26+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -1228,6 +1231,59 @@
                 }
             ],
             "time": "2024-09-19T10:50:18+00:00"
+        },
+        {
+            "name": "psr/cache",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/php-fig/cache.git",
+                "reference": "0a7c67d0d1c8167b342eb74339d6f961663826ce"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/php-fig/cache/zipball/0a7c67d0d1c8167b342eb74339d6f961663826ce",
+                "reference": "0a7c67d0d1c8167b342eb74339d6f961663826ce",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0.0"
+            },
+            "suggest": {
+                "fig/cache-util": "Provides some useful PSR-6 utilities"
+            },
+            "default-branch": true,
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "3.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Psr\\Cache\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "PHP-FIG",
+                    "homepage": "https://www.php-fig.org/"
+                }
+            ],
+            "description": "Common interface for caching libraries",
+            "keywords": [
+                "cache",
+                "psr",
+                "psr-6"
+            ],
+            "support": {
+                "source": "https://github.com/php-fig/cache/tree/master"
+            },
+            "time": "2021-02-24T03:25:37+00:00"
         },
         {
             "name": "sebastian/cli-parser",
