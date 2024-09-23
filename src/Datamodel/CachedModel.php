@@ -55,8 +55,22 @@ abstract class CachedModel extends Model
         return $element;
     }
 
-    protected function createCacheKey()
+    public function __get($param)
     {
-        return md5($this->getTableName() . $this->getPrimaryKeyName() . $this->identifier);
+        if (array_key_exists($this->connection_name, self::$cache)) {
+            $element = self::$cache[$this->connection_name]->get($this->createCacheKey($param));
+        }
+        if (empty($element)) {
+            $element = parent::__get($param);
+            if (array_key_exists($this->connection_name, self::$cache)) {
+                self::$cache[$this->connection_name]->set($this->createCacheKey($param), $element, $this->ttl);
+            }
+        }
+        return $element;
+    }
+    
+    protected function createCacheKey(string $mixed_param = '')
+    {
+        return md5($this->getTableName() . $this->getPrimaryKeyName() . $this->identifier . $mixed_param);
     }
 }
