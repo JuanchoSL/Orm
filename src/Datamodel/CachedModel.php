@@ -46,11 +46,11 @@ abstract class CachedModel extends Model
         }
         if (empty($element)) {
             $element = parent::load($id);
+            if (array_key_exists($this->connection_name, self::$cache)) {
+                self::$cache[$this->connection_name]->set($this->createCacheKey(), $element, $this->ttl);
+            }
         } else {
             $this->fill((array) $element);
-        }
-        if (array_key_exists($this->connection_name, self::$cache)) {
-            self::$cache[$this->connection_name]->set($this->createCacheKey(), $element, $this->ttl);
         }
         return $element;
     }
