@@ -460,12 +460,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/SimpleCache.git",
-                "reference": "b02057e87a1edf2744080e70786a58e5372b3f99"
+                "reference": "fa5cdfeee7c0b4e84442d06b3cce74457877d9df"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/b02057e87a1edf2744080e70786a58e5372b3f99",
-                "reference": "b02057e87a1edf2744080e70786a58e5372b3f99",
+                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/fa5cdfeee7c0b4e84442d06b3cce74457877d9df",
+                "reference": "fa5cdfeee7c0b4e84442d06b3cce74457877d9df",
                 "shasum": ""
             },
             "require": {
@@ -512,7 +512,7 @@
             "support": {
                 "source": "https://github.com/JuanchoSL/SimpleCache/tree/develop"
             },
-            "time": "2024-09-21T01:57:26+00:00"
+            "time": "2024-09-23T19:31:07+00:00"
         },
         {
             "name": "myclabs/deep-copy",
