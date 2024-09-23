@@ -157,7 +157,7 @@ abstract class RDBMS implements DbInterface
         $micro_time = microtime(true);
         try {
             $cursor = $this->query($query);
-            $this->log('{query}', 'debug', ['query' => $query, 'results' => $cursor->count(), 'time' => microtime(true) - $micro_time]);
+            $this->log('{query}', 'info', ['query' => $query, 'results' => $cursor->count(), 'time' => microtime(true) - $micro_time]);
         } catch (\Exception $exception) {
             $this->log($exception, 'error', ['exception' => $exception, "query" => $query]);
             throw $exception;
