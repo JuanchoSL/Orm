@@ -67,19 +67,21 @@ abstract class RDBMS implements DbInterface
 
     public function describe(string $tabla): array
     {
-        $describe = [];
-        $fields = [];
-        $result = $this->execute(QueryBuilder::getInstance()->doAction(QueryActionsEnum::DESCRIBE)->table($tabla));
-        while ($keys = $result->next(static::RESPONSE_ASSOC)) {
-            $fields[] = $keys;
-            $field = $this->getParsedField($keys);
-            $describe[strtolower($field->getName())] = $field;
+        if (!array_key_exists($tabla, $this->describe)) {
+            $describe = [];
+            $fields = [];
+            $result = $this->execute(QueryBuilder::getInstance()->doAction(QueryActionsEnum::DESCRIBE)->table($tabla));
+            while ($keys = $result->next(static::RESPONSE_ASSOC)) {
+                $fields[] = $keys;
+                $field = $this->getParsedField($keys);
+                $describe[strtolower($field->getName())] = $field;
+            }
+            $result->free();
+            $this->describe[strtolower($tabla)] = $describe;
+            $this->log("Describe {table}", 'debug', ['table' => $tabla, 'response' => $fields, 'fields' => $describe]);
+            unset($fields);
+            unset($describe);
         }
-        $result->free();
-        $this->describe[strtolower($tabla)] = $describe;
-        $this->log("Describe {table}", 'debug', ['table' => $tabla, 'response' => $fields, 'fields' => $describe]);
-        unset($fields);
-        unset($describe);
         return $this->describe[$tabla];
     }
 
