@@ -13,7 +13,7 @@ class DbCredentials implements \JsonSerializable
     protected $password;
     protected $database;
 
-    public function __construct($host, $username, $password, $dataBase, int $port = null)
+    public function __construct($host, $username, $password, $dataBase, ?int $port = null)
     {
         $this->host = $host;
         $this->port = $port;

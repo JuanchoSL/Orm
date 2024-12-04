@@ -9,27 +9,27 @@ use JuanchoSL\Orm\Datamodel\DataModelInterface;
 trait RelationsTrait
 {
 
-    protected function OneToMany(string|DataModelInterface $model, string $foreing_field = null, string $owner_field = null)
+    protected function OneToMany(string|DataModelInterface $model, ?string $foreing_field = null, ?string $owner_field = null)
     {
         $model = is_string($model) ? new $model : $model;
         return $model::where([$this->createFieldNameChildren($this, $foreing_field), (string) $this->createFieldValue($owner_field)]);
     }
 
-    protected function OneToOne(string|DataModelInterface $model, string $foreing_field = null, string $owner_field = null)
+    protected function OneToOne(string|DataModelInterface $model, ?string $foreing_field = null, ?string $owner_field = null)
     {
         $model = is_string($model) ? new $model : $model;
         $this->relations[$this->getTableName()][$model->getTableName()] = 'first';
         return $model::where([$this->createFieldNameChildren($this, $foreing_field), (string) $this->createFieldValue($owner_field)])->limit(1);
     }
 
-    protected function BelongsToOne(string|DataModelInterface $model, string $foreing_field = null, string $owner_field = null)
+    protected function BelongsToOne(string|DataModelInterface $model, ?string $foreing_field = null, ?string $owner_field = null)
     {
         $model = is_string($model) ? new $model : $model;
         $this->relations[$this->getTableName()][$model->getTableName()] = 'first';
         return $model::where([$this->createFieldNameParent($model, $foreing_field), (string) $this->createFieldValue($this->createFieldNameChildren($model, $owner_field))])->limit(1);
     }
 
-    protected function BelongsToMany(string|DataModelInterface $model, string|DataModelInterface $pivot, string $foreing_field = null, string $owner_field = null, string $pivot_foreing_field = null, string $pivot_owner_field = null)
+    protected function BelongsToMany(string|DataModelInterface $model, string|DataModelInterface $pivot, ?string $foreing_field = null, ?string $owner_field = null, ?string $pivot_foreing_field = null, ?string $pivot_owner_field = null)
     {
         $model = is_string($model) ? new $model : $model;
         $pivot = is_string($pivot) ? new $pivot : $pivot;
