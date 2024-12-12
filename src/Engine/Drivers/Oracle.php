@@ -70,7 +70,7 @@ class Oracle extends RDBMS implements DbInterface
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $cursor = oci_parse($this->linkIdentifier, $query);
         if (!$cursor || !oci_execute($cursor)) {

@@ -4,35 +4,38 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "302050d458660ac1b7627c46beae83ce",
+    "content-hash": "7b6c5f004340bae29976e5604a9dbf0e",
     "packages": [
         {
             "name": "juanchosl/datatransfer",
-            "version": "dev-develop",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/DataTransfer.git",
-                "reference": "e181f1383f8ab3d11e667ff08689f02ae27e0525"
+                "reference": "fa85121093a97f264248bd9e2ce7bd63a15f7a83"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/e181f1383f8ab3d11e667ff08689f02ae27e0525",
-                "reference": "e181f1383f8ab3d11e667ff08689f02ae27e0525",
+                "url": "https://api.github.com/repos/JuanchoSL/DataTransfer/zipball/fa85121093a97f264248bd9e2ce7bd63a15f7a83",
+                "reference": "fa85121093a97f264248bd9e2ce7bd63a15f7a83",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "ext-mbstring": "*",
-                "juanchosl/exceptions": "^1.0",
+                "juanchosl/exceptions": "1.0.*",
+                "juanchosl/validators": "1.0.*",
                 "php": "^8.1"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.9.1",
-                "phpunit/phpunit": "9.5.25"
+                "phpstan/phpstan": "1.12.*",
+                "phpunit/phpunit": "9.6.*"
             },
             "suggest": {
+                "ext-xlswriter": "*",
                 "ext-yaml": "*"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -65,13 +68,14 @@
                 "object",
                 "simplexmlelement",
                 "values",
+                "xlsx",
                 "xml",
                 "yaml"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/DataTransfer/tree/develop"
+                "source": "https://github.com/JuanchoSL/DataTransfer/tree/master"
             },
-            "time": "2024-09-20T11:25:10+00:00"
+            "time": "2024-12-12T21:14:02+00:00"
         },
         {
             "name": "juanchosl/envvars",
@@ -228,6 +232,56 @@
             "time": "2024-03-05T16:28:02+00:00"
         },
         {
+            "name": "juanchosl/validators",
+            "version": "1.0.4",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/JuanchoSL/Validators.git",
+                "reference": "e5522a2f59d531266b7276e12f7429b53cc8fa14"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/JuanchoSL/Validators/zipball/e5522a2f59d531266b7276e12f7429b53cc8fa14",
+                "reference": "e5522a2f59d531266b7276e12f7429b53cc8fa14",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.1 || ^8.0"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "1.12.*",
+                "phpunit/phpunit": "9.6.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "JuanchoSL\\Validators\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Juan Sánchez Lecegui",
+                    "email": "JuanchoSL@hotmail.com",
+                    "homepage": "https://github.com/JuanchoSL/"
+                }
+            ],
+            "description": "Little methods collection in order to validate variables contents",
+            "homepage": "https://github.com/JuanchoSL/Validators",
+            "keywords": [
+                "debug",
+                "log"
+            ],
+            "support": {
+                "source": "https://github.com/JuanchoSL/Validators/tree/1.0.4"
+            },
+            "time": "2024-12-04T19:08:00+00:00"
+        },
+        {
             "name": "psr/log",
             "version": "3.0.2",
             "source": {
@@ -337,12 +391,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/instantiator.git",
-                "reference": "0dfb69d79d0964b8a80bfa92c07f50e3e8d73542"
+                "reference": "a9e64e5ea80184e14a66c262e5bcf3c2cb4a94d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/0dfb69d79d0964b8a80bfa92c07f50e3e8d73542",
-                "reference": "0dfb69d79d0964b8a80bfa92c07f50e3e8d73542",
+                "url": "https://api.github.com/repos/doctrine/instantiator/zipball/a9e64e5ea80184e14a66c262e5bcf3c2cb4a94d7",
+                "reference": "a9e64e5ea80184e14a66c262e5bcf3c2cb4a94d7",
                 "shasum": ""
             },
             "require": {
@@ -355,8 +409,7 @@
                 "phpbench/phpbench": "^1.2",
                 "phpstan/phpstan": "^1.9.4",
                 "phpstan/phpstan-phpunit": "^1.3",
-                "phpunit/phpunit": "^10.5",
-                "vimeo/psalm": "^5.4"
+                "phpunit/phpunit": "^10.5"
             },
             "default-branch": true,
             "type": "library",
@@ -400,20 +453,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-20T19:34:15+00:00"
+            "time": "2024-12-02T21:34:17+00:00"
         },
         {
             "name": "juanchosl/logger",
-            "version": "dev-develop",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Logger.git",
-                "reference": "3b5045ddc64416529bf1d46d1d90ef40ff44d155"
+                "reference": "ed5e563b993b661184b41adf144329948348b673"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/3b5045ddc64416529bf1d46d1d90ef40ff44d155",
-                "reference": "3b5045ddc64416529bf1d46d1d90ef40ff44d155",
+                "url": "https://api.github.com/repos/JuanchoSL/Logger/zipball/ed5e563b993b661184b41adf144329948348b673",
+                "reference": "ed5e563b993b661184b41adf144329948348b673",
                 "shasum": ""
             },
             "require": {
@@ -423,8 +476,7 @@
                 "psr/log": "3.0.*"
             },
             "require-dev": {
-                "phpstan/phpstan": "1.10.*",
-                "phpunit/phpunit": "9.5.25"
+                "phpunit/phpunit": "9.6.*"
             },
             "type": "library",
             "autoload": {
@@ -450,35 +502,38 @@
                 "log"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/Logger/tree/develop"
+                "source": "https://github.com/JuanchoSL/Logger/tree/master"
             },
-            "time": "2024-09-21T01:13:37+00:00"
+            "time": "2024-12-12T20:46:29+00:00"
         },
         {
             "name": "juanchosl/simplecache",
-            "version": "dev-develop",
+            "version": "dev-master",
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/SimpleCache.git",
-                "reference": "837f9aa98410a7652d83868f63bfaa20b78a228c"
+                "reference": "397d548833f86a508f88378173b0b4594f3e94ac"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/837f9aa98410a7652d83868f63bfaa20b78a228c",
-                "reference": "837f9aa98410a7652d83868f63bfaa20b78a228c",
+                "url": "https://api.github.com/repos/JuanchoSL/SimpleCache/zipball/397d548833f86a508f88378173b0b4594f3e94ac",
+                "reference": "397d548833f86a508f88378173b0b4594f3e94ac",
                 "shasum": ""
             },
             "require": {
+                "juanchosl/exceptions": "1.0.*",
+                "juanchosl/validators": "1.0.*",
                 "php": "^7.2 || ^8.0",
                 "psr/cache": "3.0.*",
                 "psr/log": "3.0.*",
                 "psr/simple-cache": "3.0.*"
             },
             "require-dev": {
-                "juanchosl/logger": "dev-develop",
-                "phpstan/phpstan": "1.10.*",
-                "phpunit/phpunit": "9.*"
+                "juanchosl/logger": "1.1.*",
+                "phpstan/phpstan": "1.12.*",
+                "phpunit/phpunit": "9.6.*"
             },
+            "default-branch": true,
             "type": "library",
             "autoload": {
                 "psr-4": {
@@ -510,9 +565,9 @@
                 "simple cache"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/SimpleCache/tree/develop"
+                "source": "https://github.com/JuanchoSL/SimpleCache/tree/master"
             },
-            "time": "2024-09-23T21:58:02+00:00"
+            "time": "2024-12-12T21:17:04+00:00"
         },
         {
             "name": "myclabs/deep-copy",
@@ -520,12 +575,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/myclabs/DeepCopy.git",
-                "reference": "3a6b9a42cd8f8771bd4295d13e1423fa7f3d942c"
+                "reference": "4764e040f8743e92b86c36f488f32d0265dd1dae"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/3a6b9a42cd8f8771bd4295d13e1423fa7f3d942c",
-                "reference": "3a6b9a42cd8f8771bd4295d13e1423fa7f3d942c",
+                "url": "https://api.github.com/repos/myclabs/DeepCopy/zipball/4764e040f8743e92b86c36f488f32d0265dd1dae",
+                "reference": "4764e040f8743e92b86c36f488f32d0265dd1dae",
                 "shasum": ""
             },
             "require": {
@@ -565,7 +620,7 @@
             ],
             "support": {
                 "issues": "https://github.com/myclabs/DeepCopy/issues",
-                "source": "https://github.com/myclabs/DeepCopy/tree/1.12.0"
+                "source": "https://github.com/myclabs/DeepCopy/tree/1.x"
             },
             "funding": [
                 {
@@ -573,20 +628,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-06-12T14:39:25+00:00"
+            "time": "2024-11-26T13:04:49+00:00"
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.2.0",
+            "version": "v5.3.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb"
+                "reference": "8eea230464783aa9671db8eea6f8c6ac5285794b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb",
-                "reference": "23c79fbbfb725fb92af9bcf41065c8e9a0d49ddb",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/8eea230464783aa9671db8eea6f8c6ac5285794b",
+                "reference": "8eea230464783aa9671db8eea6f8c6ac5285794b",
                 "shasum": ""
             },
             "require": {
@@ -629,9 +684,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.2.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.3.1"
             },
-            "time": "2024-09-15T16:40:33+00:00"
+            "time": "2024-10-08T18:51:32+00:00"
         },
         {
             "name": "phar-io/manifest",
@@ -754,16 +809,16 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "1.10.x-dev",
+            "version": "1.12.x-dev",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpstan/phpstan.git",
-                "reference": "c7e6244591c2094fa2a489145e8ba44a60882830"
+                "reference": "ecdd6c6201169dad5d0ec659be9752446fbfeb58"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/c7e6244591c2094fa2a489145e8ba44a60882830",
-                "reference": "c7e6244591c2094fa2a489145e8ba44a60882830",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/ecdd6c6201169dad5d0ec659be9752446fbfeb58",
+                "reference": "ecdd6c6201169dad5d0ec659be9752446fbfeb58",
                 "shasum": ""
             },
             "require": {
@@ -808,7 +863,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-05-03T08:43:36+00:00"
+            "time": "2024-12-11T10:44:19+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
@@ -816,12 +871,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "85402a822d1ecf1db1096959413d35e1c37cf1a5"
+                "reference": "0448d60087a382392a1b2a1abe434466e03dcc87"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/85402a822d1ecf1db1096959413d35e1c37cf1a5",
-                "reference": "85402a822d1ecf1db1096959413d35e1c37cf1a5",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/0448d60087a382392a1b2a1abe434466e03dcc87",
+                "reference": "0448d60087a382392a1b2a1abe434466e03dcc87",
                 "shasum": ""
             },
             "require": {
@@ -878,7 +933,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
                 "security": "https://github.com/sebastianbergmann/php-code-coverage/security/policy",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2.32"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/9.2"
             },
             "funding": [
                 {
@@ -886,7 +941,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2024-08-22T04:23:01+00:00"
+            "time": "2024-10-31T05:58:25+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -1135,12 +1190,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "de6abf3b6f8dd955fac3caad3af7a9504e8c2ffa"
+                "reference": "f80235cb4d3caa59ae09be3adf1ded27521d1a9c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/de6abf3b6f8dd955fac3caad3af7a9504e8c2ffa",
-                "reference": "de6abf3b6f8dd955fac3caad3af7a9504e8c2ffa",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/f80235cb4d3caa59ae09be3adf1ded27521d1a9c",
+                "reference": "f80235cb4d3caa59ae09be3adf1ded27521d1a9c",
                 "shasum": ""
             },
             "require": {
@@ -1151,7 +1206,7 @@
                 "ext-mbstring": "*",
                 "ext-xml": "*",
                 "ext-xmlwriter": "*",
-                "myclabs/deep-copy": "^1.12.0",
+                "myclabs/deep-copy": "^1.12.1",
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=7.3",
@@ -1230,7 +1285,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2024-09-19T10:50:18+00:00"
+            "time": "2024-12-05T13:48:26+00:00"
         },
         {
             "name": "psr/cache",
@@ -2313,6 +2368,6 @@
         "php": "^8.1",
         "ext-mbstring": "*"
     },
-    "platform-dev": [],
-    "plugin-api-version": "2.3.0"
+    "platform-dev": {},
+    "plugin-api-version": "2.6.0"
 }

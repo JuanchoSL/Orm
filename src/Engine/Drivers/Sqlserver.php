@@ -55,7 +55,7 @@ class Sqlserver extends RDBMS implements DbInterface
         return $result ?? true;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         $scroll = $action->isIterable() ? SQLSRV_CURSOR_CLIENT_BUFFERED : SQLSRV_CURSOR_FORWARD;

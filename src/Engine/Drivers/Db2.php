@@ -107,7 +107,7 @@ class Db2 extends RDBMS implements DbInterface
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         //        $cursor = db2_query($this->linkIdentifier, $query);
 //        if (db2_errno($this->linkIdentifier) > 0) {

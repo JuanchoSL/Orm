@@ -58,7 +58,7 @@ class Odbc extends RDBMS implements DbInterface
                     $this->driver = $ds['description'];
                 }
             }
-            $this->log('datasource', 'info', ['ds' => $dss]);
+            $this->log('datasource', 'debug', ['ds' => $dss]);
         }
 
     }
@@ -138,7 +138,7 @@ class Odbc extends RDBMS implements DbInterface
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
         if ($action->isInsertable()) {

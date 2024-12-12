@@ -3,37 +3,43 @@
 ## Description
 
 Little methods collection in order to create SQL queries. The library contains 3 inter-connected blocks
-* Engine
-* DataModel
-* QueryBuilder
 
- 
+- Engine
+- DataModel
+- QueryBuilder
+
 ### Engine
+
 Group the distincts compatible drivers and his direct dependencies
 
-* **DbCredentials** An Entity to set the db credentials 
-* **Drivers** The compatible drivers, actually:
-    * SQLite
-    * MySQL
-    * SQLServer
-    * Postgre
-    * Oracle
-    * DB2
-    * ODBC connections (beta)
-* **Cursors** Iterable and countable cursors resulting of a query execution
-* **Responses** Non iterable responses, as InsertResponse, DeleteResponse, UpdateResponse
-* **Traits** Convert any QueryBuilder to the rigth syntax for the selected driver
+- **DbCredentials** An Entity to set the db credentials
+- **Drivers** The compatible drivers, actually:
+  - SQLite
+  - MySQL
+  - SQLServer
+  - Postgre
+  - Oracle
+  - DB2
+  - ODBC connections (beta)
+- **Cursors** Iterable and countable cursors resulting of a query execution
+- **Responses** Non iterable responses, as InsertResponse, DeleteResponse, UpdateResponse
+- **Traits** Convert any QueryBuilder to the rigth syntax for the selected driver
 
-### Querybuilder 
+### Querybuilder
+
 Include some tools for use from the other modules
-* QueryBuilder An abstract container with methods to save the query values without system dependency
+
+- QueryBuilder An abstract container with methods to save the query values without system dependency
 
 ### Datamodel
+
 Offer the direct connection, creation and management of table records as Entities
-* Model The entities usage, in order to get and set DB registers
-* QueryExecuter Receiving a Driver connection and a Model instance, offer direct method to perform actions
+
+- Model The entities usage, in order to get and set DB registers
+- QueryExecuter Receiving a Driver connection and a Model instance, offer direct method to perform actions
 
 ## Installation
+
 ```bash
 composer require juanchosl/orm
 ```
@@ -43,9 +49,14 @@ composer require juanchosl/orm
 ### Create credential for connection
 
 ```php
-use JuanchoSL\Orm\engine\DbCredentials;
+use JuanchoSL\Orm\Engine\DbCredentials;
 
-$credentials = new DbCredentials(getenv('DB_HOST'), getenv('DB_USER'), getenv('DB_PASS'), getenv('DB_DATABASE'));
+$credentials = new DbCredentials(
+    getenv('DB_HOST'),
+    getenv('DB_USER'),
+    getenv('DB_PASS'),
+    getenv('DB_DATABASE')
+);
 ```
 
 ### Create connection
@@ -72,13 +83,26 @@ $resource->setLogger($logger);
 ```php
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'], ['dato', 2]);//SELECT * FROM table_name WHERE (campo='valor' AND dato=2)
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', 2]);//SELECT * FROM table_name WHERE (campo='valor') AND (dato=2)
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', 2, '>']);//SELECT * FROM table_name WHERE (campo='valor') AND (dato > 2)
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', [2], true]);//SELECT * FROM table_name WHERE (campo='valor') AND (dato IN (2))
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', [2], false]);//SELECT * FROM table_name WHERE (campo='valor') AND (dato NOT IN (2))
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', null, true]);//SELECT * FROM table_name WHERE (campo='valor') AND (dato IS NULL))
-$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', null, false]);//SELECT * FROM table_name WHERE (campo='valor') AND (dato IS NOT NULL))
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'], ['dato', 2]);
+//SELECT * FROM table_name WHERE (campo='valor' AND dato=2)
+
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', 2]);
+//SELECT * FROM table_name WHERE (campo='valor') AND (dato=2)
+
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', 2, '>']);
+//SELECT * FROM table_name WHERE (campo='valor') AND (dato > 2)
+
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', [2], true]);
+//SELECT * FROM table_name WHERE (campo='valor') AND (dato IN (2))
+
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', [2], false]);
+//SELECT * FROM table_name WHERE (campo='valor') AND (dato NOT IN (2))
+
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', null, true]);
+//SELECT * FROM table_name WHERE (campo='valor') AND (dato IS NULL))
+
+$builder = QueryBuilder::getInstance()->select()->from('table_name')->where(['campo', 'valor'])->where(['dato', null, false]);
+//SELECT * FROM table_name WHERE (campo='valor') AND (dato IS NOT NULL))
 $cursor = $resource->execute($builder);
 
 $num_results = $cursor->count();
@@ -162,8 +186,10 @@ Using relations, you can directly link to parent or childs using a simple method
 - BelongsToMany (The first point to a pivot table than point to the seconds)
 
 #### Examples
+
 - remote_table_field_name by default is created as {remote_primary_key_name}
-- this_table_fiel_name by default is created as {remote_table_name}_{remote_primary_key_name}
+- this*table_fiel_name by default is created as {remote_table_name}*{remote_primary_key_name}
+
 ```php
 public function parent()
 {
@@ -171,8 +197,9 @@ public function parent()
 }
 ```
 
-- remote_table_field_name by default is created as {local_table_name}_{local_primary_key_name}
+- remote*table_field_name by default is created as {local_table_name}*{local_primary_key_name}
 - this_table_fiel_name by default is created as {local_primary_key_name}
+
 ```php
 public function childs()
 {
@@ -181,16 +208,19 @@ public function childs()
 ```
 
 #### Using
+
 When you call a relation, using method, return a querybuilder in order to apply filters to remote objects.
 XXXToMany relations, return a collection, XXXToOne return an instance of ModelInterface
+
 ```php
 $collection = MyModel::findByPk(1)->childs()->where(['field','value','='])->limit(5)->get();
 ```
+
 If you call as parameter, the get method is called directly without filters
+
 ```php
 $collection = MyModel::findByPk(1)->childs;
 ```
-
 
 ### For use cache with datamodels, use CacheModel instead Model and set the connection previously created
 

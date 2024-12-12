@@ -74,7 +74,7 @@ class Postgres extends RDBMS implements DbInterface
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $cursor = pg_query($this->linkIdentifier, $query);
         if (!$cursor) {

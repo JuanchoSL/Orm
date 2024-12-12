@@ -37,7 +37,7 @@ abstract class RDBMS implements DbInterface
 
     abstract protected function getParsedField(array $keys): FieldDescription;
 
-    abstract protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse;
+    abstract protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse;
 
     public function setDebug(bool $debug = false): void
     {
@@ -138,6 +138,16 @@ abstract class RDBMS implements DbInterface
         }
     }
 
+    
+    public function query(AbstractQueryBuilder|QueryBuilder $queryBuilder): string
+    {
+        if (method_exists($this, 'parse' . ucfirst(strtolower($queryBuilder->operation->value)))) {
+            return call_user_func(array($this, 'parse' . ucfirst(strtolower($queryBuilder->operation->value))), $queryBuilder);
+        }else{
+            return $this->getQuery($queryBuilder);
+        }
+    }
+
     public function execute(AbstractQueryBuilder|QueryBuilder|string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         if (!$this->linkIdentifier) {
@@ -148,18 +158,18 @@ abstract class RDBMS implements DbInterface
             if (!is_null($query->operation)) {
                 if (method_exists($this, 'process' . ucfirst(strtolower($query->operation->value)))) {
                     return call_user_func(array($this, 'process' . ucfirst(strtolower($query->operation->value))), $query);
-                } elseif (!is_null($query->operation) && method_exists($this, 'parse' . ucfirst(strtolower($query->operation->value)))) {
+                } elseif (false && !is_null($query->operation) && method_exists($this, 'parse' . ucfirst(strtolower($query->operation->value)))) {
                     $query = call_user_func(array($this, 'parse' . ucfirst(strtolower($query->operation->value))), $query);
                 }
             }
             if (is_object($query)) {
-                $query = $this->getQuery($query);
+                $query = $this->query($query);
             }
         }
         $micro_time = microtime(true);
         try {
-            $cursor = $this->query($query);
-            $this->log('{query}', 'info', ['query' => $query, 'results' => $cursor->count(), 'time' => microtime(true) - $micro_time]);
+            $cursor = $this->run($query);
+            $this->log('{query}', 'debug', ['query' => $query, 'results' => $cursor->count(), 'time' => microtime(true) - $micro_time]);
         } catch (\Exception $exception) {
             $this->log($exception, 'error', ['exception' => $exception, "query" => $query]);
             throw $exception;
