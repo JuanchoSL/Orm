@@ -42,7 +42,7 @@ class CreateTablesCommand extends Command
             $connection->setLogger($this->logger);
             $connection->setDebug($this->debug);
         }
-        $tables_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'create_tables'.date("YmdHis").'.tar';
+        $tables_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'create_tables_'.date("YmdHis").'.tar';
         $this->log("Set file global destiny: '{destiny}'", 'debug', ['destiny' => $tables_backup]);
 
         $tar = new TarEngine();
