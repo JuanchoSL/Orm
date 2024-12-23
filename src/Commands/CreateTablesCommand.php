@@ -69,7 +69,7 @@ class CreateTablesCommand extends Command
         }
         $tar->close();
         unlink($tables_backup);
-        $this->log("Deleted temporal backup file '{tables_backup}'", ['tables_backup' => $tables_backup]);
+        $this->log("Deleted temporal backup file '{tables_backup}'", 'debug', ['tables_backup' => $tables_backup]);
         return 0;
     }
 }
