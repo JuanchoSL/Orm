@@ -53,7 +53,7 @@ class Mysqli extends RDBMS implements DbInterface
     protected function getParsedField(array $keys): FieldDescription
     {
         //return MysqliParser::parseField($keys);
-        
+
         $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
         $field = new FieldDescription;
         $field
@@ -62,6 +62,7 @@ class Mysqli extends RDBMS implements DbInterface
             ->setLength(trim($varchar[1] ?? '0'))
             ->setNullable($keys['Null'] != 'NO')
             ->setDefault($keys['Default'])
+            ->setDescription($keys['Description'] ?? '')
             ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
         return $field;
     }
@@ -102,6 +103,9 @@ class Mysqli extends RDBMS implements DbInterface
             }
             if ($field->isKey()) {
                 $sql .= " PRIMARY KEY AUTO_INCREMENT";
+            }
+            if (!empty($field->getDescription())) {
+                $sql .= sprintf(" COMMENT '%s'", $field->getDescription());
             }
             $sql .= ",";
         }

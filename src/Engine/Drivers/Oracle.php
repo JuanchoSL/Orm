@@ -66,7 +66,8 @@ class Oracle extends RDBMS implements DbInterface
             ->setLength($keys['Length'])
             ->setNullable($keys['Null'] != 'N')
             ->setDefault($keys['Default'])
-            ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'));
+            ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'))
+            ->setDescription($keys['Description'] ?? '');
         return $field;
     }
 
@@ -93,7 +94,10 @@ class Oracle extends RDBMS implements DbInterface
 
     protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        return "SELECT column_name \"Field\", nullable \"Null\", concat(concat(concat(data_type,'('),data_length),')') \"Type\", data_default \"Default\" FROM user_tab_columns WHERE table_name='" . strtoupper($sqlBuilder->table) . "'";
+        return "SELECT c.column_name \"Field\", nullable \"Null\", concat(concat(concat(data_type,'('),data_length),')') \"Type\", data_default \"Default\" , comments \"Description\"
+        FROM user_tab_columns c
+        LEFT JOIN user_col_comments m ON c.column_name = m.column_name AND c.table_name=m.table_name
+        WHERE c.table_name='" . strtoupper($sqlBuilder->table) . "'";
     }
 
     protected function parseSelect(QueryBuilder $sqlBuilder): string
@@ -146,6 +150,7 @@ class Oracle extends RDBMS implements DbInterface
 
     protected function processCreate(QueryBuilder $builder)
     {
+        $comments = [];
         $sequence = '';
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {
@@ -162,11 +167,55 @@ class Oracle extends RDBMS implements DbInterface
                 $sequence = "{$builder->table}_" . strtolower($field->getName()) . "_seq";
                 $sql .= " DEFAULT {$sequence}.NEXTVAL PRIMARY KEY";
             }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("COMMENT ON COLUMN %s.%s IS '%s';", strtoupper($builder->table), strtoupper($field->getName()), $field->getDescription());
+            }
             $sql .= ", ";
         }
         $sql = rtrim($sql, ', ');
-        $sql .= ")";
+        $sql .= ") TABLESPACE USERS";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
         $this->execute(sprintf("CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1", $sequence));
         return $this->execute(sprintf($sql, strtoupper($builder->table)));
+    }
+    protected function parseCreate(QueryBuilder $builder): string
+    {
+        $comments = [];
+        $sequence = '';
+        $sql = "CREATE TABLE %s (";
+        foreach ($builder->values as $field) {
+            $sql .= "{$field->getName()} " . strtoupper($field->getType());
+            if (!$field->isKey()) {
+                $sql .= "({$field->getLength()})";
+                if (!$field->isNullable()) {
+                    $sql .= " NOT NULL";
+                }
+                if (!empty($field->getDefault())) {
+                    $sql .= " DEFAULT {$field->getDefault()}";
+                }
+            } else {
+                $sequence = "{$builder->table}_" . strtolower($field->getName()) . "_seq";
+                $sql .= " DEFAULT {$sequence}.NEXTVAL PRIMARY KEY";
+            }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("COMMENT ON COLUMN %s.%s IS '%s';", strtoupper($builder->table), strtoupper($field->getName()), $field->getDescription());
+            }
+            $sql .= ", ";
+        }
+        $sql = rtrim($sql, ', ');
+        $sql .= ") TABLESPACE USERS";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
+
+        return sprintf("CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1;", $sequence) . sprintf($sql, strtoupper($builder->table)) . ';';
     }
 }

@@ -14,7 +14,7 @@ use JuanchoSL\Terminal\Contracts\InputInterface;
 use JuanchoSL\Terminal\Enums\InputArgument;
 use JuanchoSL\Terminal\Enums\InputOption;
 
-class ExportDataCommand extends Command
+class CreateTablesCommand extends Command
 {
 
     public function getName(): string
@@ -42,7 +42,7 @@ class ExportDataCommand extends Command
             $connection->setLogger($this->logger);
             $connection->setDebug($this->debug);
         }
-        $tables_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'datas.tar';
+        $tables_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'create_tables.tar';
         $this->log("Set file global destiny: '{destiny}'", 'debug', ['destiny' => $tables_backup]);
 
         $tar = new TarEngine();
@@ -58,14 +58,11 @@ class ExportDataCommand extends Command
             } else {
                 $this->log("Included table '{table}'", 'debug', ['table' => $table]);
             }
-            $table_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'data_' . $table . '.sql';
+            $table_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'table_' . $table . '.sql';
             $this->log("Set file table destiny: '{destiny}'", 'debug', ['destiny' => $table_backup]);
             $file = fopen($table_backup, 'w+');
-            $cursor = $connection->execute(QueryBuilder::getInstance()->select()->from($table));
-            while (!empty($element = $cursor->next())) {
-                fwrite($file, $connection->query(QueryBuilder::getInstance()->insert((array) $element)->into($table)) . ';' . PHP_EOL);
-            }
-            $cursor->free();
+            $description = $connection->describe($table);
+            fwrite($file, $connection->query(QueryBuilder::getInstance()->create(...$description)->table($table)));
             fclose($file);
             $tar->addFile($table_backup, $table . '.sql');
             unlink($table_backup);

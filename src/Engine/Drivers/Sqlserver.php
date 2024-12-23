@@ -91,11 +91,25 @@ class Sqlserver extends RDBMS implements DbInterface
         $res->free();
         return $lastInsertedId;
     }
-    
+
     public function getTables(): array
     {
         //return parent::extractTables("SELECT table_name from {$this->credentials->getDataBase()}.INFORMATION_SCHEMA.TABLES");
         return parent::extractTables(QueryBuilder::getInstance()->select(['table_name'])->from($this->credentials->getDataBase() . ".INFORMATION_SCHEMA.TABLES"));
+    }
+
+    public function describe(string $table): array
+    {
+        if (!array_key_exists($table, $this->describe)) {
+            parent::describe($table);
+            foreach ($this->describe[$table] as $key => $field) {
+                $cursor = $this->execute("SELECT value FROM ::fn_listextendedproperty (NULL, 'user','dbo','table','{$table}','column', '" . $field->getName() . "')");
+                $value = $cursor->next(static::RESPONSE_ASSOC);
+                $this->describe[$table][$key]->setDescription($value['value'] ?? '');
+                $cursor->free();
+            }
+        }
+        return $this->describe[$table];
     }
 
     protected function parseDescribe(QueryBuilder $sqlBuilder): string
@@ -105,15 +119,14 @@ class Sqlserver extends RDBMS implements DbInterface
 
     protected function getParsedField(array $keys): FieldDescription
     {
-        //return SqlserverParser::parseField($keys);
-        
         $field = new FieldDescription;
         $field
             ->setName($keys['COLUMN_NAME'])
             ->setType((string) str_replace(" identity", "", $keys['TYPE_NAME']))
             ->setLength($keys['LENGTH'])
-            ->setNullable($keys['NULLABLE'] == 0)
+            ->setNullable($keys['NULLABLE'] == 1)
             ->setDefault($keys['COLUMN_DEF'])
+            ->setDescription($keys['REMARKS'] ?? '')
             ->setKey((strpos($keys['TYPE_NAME'], 'identity') > 0));
         return $field;
     }
@@ -135,8 +148,9 @@ class Sqlserver extends RDBMS implements DbInterface
         }
     }
 
-    protected function parseCreate(QueryBuilder $builder):string
+    protected function parseCreate(QueryBuilder $builder): string
     {
+        $comments = [];
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} {$field->getType()}";
@@ -148,10 +162,19 @@ class Sqlserver extends RDBMS implements DbInterface
             if (!$field->isNullable()) {
                 $sql .= " NOT NULL";
             }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("EXEC sp_addextendedproperty N'MS_Description', '%s', N'user', N'dbo', N'table', N'%s', N'column', N'%s';", $field->getDescription(), $builder->table, $field->getName());
+            }
             $sql .= ",";
         }
         $sql = rtrim($sql, ',');
         $sql .= ")";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
         return sprintf($sql, $builder->table);
     }
 }

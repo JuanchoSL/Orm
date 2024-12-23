@@ -59,6 +59,13 @@ class Sqlite extends RDBMS implements DbInterface
 
     protected function getParsedField(array $keys): FieldDescription
     {
+        if (empty($keys['length'])) {
+            preg_match('/([a-zA-Z]+)\((\d*)\)/', $keys['type'], $matches);
+            if (count($matches) >= 2) {
+                $keys['type'] = $matches[1];
+                $keys['length'] = $matches[2];
+            }
+        }
         $field = new FieldDescription;
         $field
             ->setName($keys['name'])
@@ -66,6 +73,7 @@ class Sqlite extends RDBMS implements DbInterface
             ->setLength($keys['length'] ?? null)
             ->setNullable($keys['notnull'] == 0)
             ->setDefault($keys['dflt_value'])
+            ->setDescription('')
             ->setKey($keys['pk'] == 1);
         return $field;
     }
@@ -122,7 +130,13 @@ class Sqlite extends RDBMS implements DbInterface
             if (!$field->isNullable()) {
                 $sql .= " NOT NULL";
             }
+            if (!empty($field->getDefault())) {
+                $sql .= sprintf(" DEFAULT '%s'", $field->getDefault());
+            }
             $sql .= ",";
+            if (!empty($field->getDescription())) {
+                $sql .= sprintf(" -- %s", $field->getDescription());
+            }
         }
         $sql = rtrim($sql, ',');
         $sql .= ")";
