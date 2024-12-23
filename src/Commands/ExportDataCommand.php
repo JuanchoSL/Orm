@@ -42,6 +42,10 @@ class ExportDataCommand extends Command
     {
         $credentials = new DbCredentials($input->getArgument('host'), $input->getArgument('user'), $input->getArgument('pass'), $input->getArgument('database'));
         $connection = Factory::connection($credentials, EngineEnums::tryFrom($input->getArgument('type')));
+        if(!empty($this->logger)){
+            $connection->setLogger($this->logger);
+            $connection->setDebug($this->debug);
+        }
         $tar = new TarEngine();
         $tar->setDestiny($input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'datas.tar');
         $tables = $input->getArgument('tables');
