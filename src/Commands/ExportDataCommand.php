@@ -43,10 +43,10 @@ class ExportDataCommand extends Command
         $credentials = new DbCredentials($input->getArgument('host'), $input->getArgument('user'), $input->getArgument('pass'), $input->getArgument('database'));
         $connection = Factory::connection($credentials, EngineEnums::tryFrom($input->getArgument('type')));
         $tar = new TarEngine();
-        $tar->setDestiny($this->getArgument('destiny') . DIRECTORY_SEPARATOR . 'datas.tar');
+        $tar->setDestiny($input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'datas.tar');
         $tables = $input->getArgument('tables');
         foreach ($tables as $table) {
-            $table_backup = $this->getArgument('destiny') . DIRECTORY_SEPARATOR . 'data_' . $table . '.sql';
+            $table_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'data_' . $table . '.sql';
             $file = fopen($table_backup, 'w+');
             $cursor = $connection->execute(QueryBuilder::getInstance()->select()->from($table));
             while (!empty($element = $cursor->next())) {
