@@ -21,16 +21,6 @@
             "homepage": "https://github.com/JuanchoSL/"
         }
     ],
-    "repositories": [
-        {
-            "type": "vcs",
-            "url": "https://github.com/juanchosl/terminal"
-        },
-        {
-            "type": "vcs",
-            "url": "https://github.com/juanchosl/backups"
-        }
-    ],
     "require": {
         "php": "^8.1",
         "ext-mbstring": "*",

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "4aa1d2c2a5e0fdefafa03212860596cb",
+    "content-hash": "e978a4f0b2c76c3c2afaecebe4da4ff2",
     "packages": [
         {
             "name": "juanchosl/backups",
@@ -12,12 +12,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Backups.git",
-                "reference": "68f3748ae3dd0e8ad5684d5464f189c10a59fb03"
+                "reference": "d3ca3f21dac523a7c3860e614ae3398268b817b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Backups/zipball/68f3748ae3dd0e8ad5684d5464f189c10a59fb03",
-                "reference": "68f3748ae3dd0e8ad5684d5464f189c10a59fb03",
+                "url": "https://api.github.com/repos/JuanchoSL/Backups/zipball/d3ca3f21dac523a7c3860e614ae3398268b817b6",
+                "reference": "d3ca3f21dac523a7c3860e614ae3398268b817b6",
                 "shasum": ""
             },
             "require": {
@@ -32,6 +32,7 @@
                 "phpunit/phpunit": "9.6.*"
             },
             "suggest": {
+                "ext-bz2": "*",
                 "ext-zip": "*"
             },
             "default-branch": true,
@@ -41,19 +42,7 @@
                     "JuanchoSL\\Backups\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "JuanchoSL\\Backups\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "tests": [
-                    "vendor/bin/phpunit --configuration phpunit.xml tests"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse -c phpstan.neon"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -71,10 +60,10 @@
                 "zip"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/Backups/tree/master",
-                "issues": "https://github.com/JuanchoSL/Backups/issues"
+                "issues": "https://github.com/JuanchoSL/Backups/issues",
+                "source": "https://github.com/JuanchoSL/Backups/tree/master"
             },
-            "time": "2024-12-22T22:47:52+00:00"
+            "time": "2024-12-23T20:48:17+00:00"
         },
         {
             "name": "juanchosl/datatransfer",
@@ -306,12 +295,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/JuanchoSL/Terminal.git",
-                "reference": "221db65402f94fef44c1b33f8670ae93d3da6b7d"
+                "reference": "3431072a6e425fd7d435801e65ee961f13af9341"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/JuanchoSL/Terminal/zipball/221db65402f94fef44c1b33f8670ae93d3da6b7d",
-                "reference": "221db65402f94fef44c1b33f8670ae93d3da6b7d",
+                "url": "https://api.github.com/repos/JuanchoSL/Terminal/zipball/3431072a6e425fd7d435801e65ee961f13af9341",
+                "reference": "3431072a6e425fd7d435801e65ee961f13af9341",
                 "shasum": ""
             },
             "require": {
@@ -333,19 +322,7 @@
                     "JuanchoSL\\Terminal\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "JuanchoSL\\Terminal\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "tests": [
-                    "vendor/bin/phpunit --configuration phpunit.xml tests"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse -c phpstan.neon"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -363,10 +340,10 @@
                 "terminal"
             ],
             "support": {
-                "source": "https://github.com/JuanchoSL/Terminal/tree/master",
-                "issues": "https://github.com/JuanchoSL/Terminal/issues"
+                "issues": "https://github.com/JuanchoSL/Terminal/issues",
+                "source": "https://github.com/JuanchoSL/Terminal/tree/master"
             },
-            "time": "2024-12-22T22:38:05+00:00"
+            "time": "2024-12-23T20:46:12+00:00"
         },
         {
             "name": "juanchosl/validators",
