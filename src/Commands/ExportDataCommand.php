@@ -7,6 +7,7 @@ namespace JuanchoSL\Orm\Commands;
 use JuanchoSL\Backups\Engines\Packagers\ZipEngine;
 use JuanchoSL\Backups\Strategies\BackupDated;
 use JuanchoSL\Backups\Strategies\BackupUnique;
+use JuanchoSL\Orm\Commands\Traits\FunctionsTrait;
 use JuanchoSL\Orm\Engine\DbCredentials;
 use JuanchoSL\Orm\Engine\Enums\EngineEnums;
 use JuanchoSL\Orm\Engine\Factory;
@@ -18,6 +19,8 @@ use JuanchoSL\Terminal\Enums\InputOption;
 
 class ExportDataCommand extends Command
 {
+
+    use FunctionsTrait;
 
     public function getName(): string
     {
@@ -52,7 +55,9 @@ class ExportDataCommand extends Command
 
         $destiny = $input->getArgument('destiny');
         $tmp = $destiny . DIRECTORY_SEPARATOR . 'tmp';
-        mkdir($tmp, 0777, true);
+        if (!file_exists($tmp)) {
+            mkdir($tmp, 0777, true);
+        }
         foreach ($tables as $table) {
             if ($input->hasArgument('exclude') && in_array($table, $input->getArgument('exclude'))) {
                 $this->log("Excluded table '{table}'", 'debug', ['table' => $table]);
@@ -79,6 +84,7 @@ class ExportDataCommand extends Command
         }
         $basename = $input->hasArgument('basename') ? $input->getArgument('basename') : 'datas';
         $obj->pack($tmp, $basename);
+        $this->deleteDirRecursive($tmp);
         return 0;
     }
 }
