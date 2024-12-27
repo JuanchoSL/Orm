@@ -75,7 +75,6 @@ class CreateTablesCommand extends Command
         }
         $basename = $input->hasArgument('basename') ? $input->getArgument('basename') : 'tables';
         $obj->pack($tmp, $basename);
-        rmdir($tmp);
         return 0;
     }
 }
