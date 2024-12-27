@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Commands;
 
-use JuanchoSL\Backups\Engines\Packagers\TarEngine;
 use JuanchoSL\Backups\Engines\Packagers\ZipEngine;
+use JuanchoSL\Backups\Strategies\BackupDated;
+use JuanchoSL\Backups\Strategies\BackupUnique;
 use JuanchoSL\Orm\Engine\DbCredentials;
 use JuanchoSL\Orm\Engine\Enums\EngineEnums;
 use JuanchoSL\Orm\Engine\Factory;
@@ -33,6 +34,8 @@ class ExportDataCommand extends Command
         $this->addArgument('tables', InputArgument::OPTIONAL, InputOption::MULTI);
         $this->addArgument('exclude', InputArgument::OPTIONAL, InputOption::MULTI);
         $this->addArgument('destiny', InputArgument::REQUIRED, InputOption::SINGLE);
+        $this->addArgument('copies', InputArgument::OPTIONAL, InputOption::SINGLE);
+        $this->addArgument('basename', InputArgument::OPTIONAL, InputOption::SINGLE);
     }
 
     protected function execute(InputInterface $input): int
@@ -44,14 +47,12 @@ class ExportDataCommand extends Command
             $connection->setDebug($this->debug);
         }
 
-        $pack = new ZipEngine();
-        $tables_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'datas_' . date("YmdHis") . '.' . $pack->getExtension();
-        $pack->setDestiny($tables_backup);
-        $this->log("Set file global destiny: '{destiny}'", 'debug', ['destiny' => $tables_backup]);
-
         $tables = $input->hasArgument('tables') ? $input->getArgument('tables') : $connection->getTables();
         $this->log("Extract tables to process", 'debug', ['tables' => $tables]);
 
+        $destiny = $input->getArgument('destiny');
+        $tmp = $destiny . DIRECTORY_SEPARATOR . 'tmp';
+        mkdir($tmp, 0777, true);
         foreach ($tables as $table) {
             if ($input->hasArgument('exclude') && in_array($table, $input->getArgument('exclude'))) {
                 $this->log("Excluded table '{table}'", 'debug', ['table' => $table]);
@@ -68,10 +69,18 @@ class ExportDataCommand extends Command
             }
             $cursor->free();
             fclose($file);
-            $pack->addFile($table_backup, $table . '.sql');
-            unlink($table_backup);
         }
-        $pack->close();
+
+        $obj = ($input->hasArgument('copies')) ? new BackupDated : new BackupUnique;
+        $obj->setEngine(new ZipEngine());
+        $obj->setDestinationFolder($destiny);
+        if ($input->hasArgument('copies')) {
+            $obj->setNumBackups((int) $input->getArgument('copies'));
+        }
+        $basename = $input->hasArgument('basename') ? $input->getArgument('basename') : 'datas';
+        $obj->pack($tmp, $basename);
+        rmdir($tmp);
+
         return 0;
     }
 }

@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace JuanchoSL\Orm\Commands;
 
 use JuanchoSL\Backups\Engines\Packagers\ZipEngine;
+use JuanchoSL\Backups\Strategies\BackupDated;
+use JuanchoSL\Backups\Strategies\BackupUnique;
 use JuanchoSL\Orm\Engine\DbCredentials;
 use JuanchoSL\Orm\Engine\Enums\EngineEnums;
 use JuanchoSL\Orm\Engine\Factory;
@@ -32,6 +34,8 @@ class CreateTablesCommand extends Command
         $this->addArgument('tables', InputArgument::OPTIONAL, InputOption::MULTI);
         $this->addArgument('exclude', InputArgument::OPTIONAL, InputOption::MULTI);
         $this->addArgument('destiny', InputArgument::REQUIRED, InputOption::SINGLE);
+        $this->addArgument('copies', InputArgument::OPTIONAL, InputOption::SINGLE);
+        $this->addArgument('basename', InputArgument::OPTIONAL, InputOption::SINGLE);
     }
 
     protected function execute(InputInterface $input): int
@@ -42,15 +46,12 @@ class CreateTablesCommand extends Command
             $connection->setLogger($this->logger);
             $connection->setDebug($this->debug);
         }
-
-        $pack = new ZipEngine();
-        $tables_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'tables_' . date("YmdHis") . '.' . $pack->getExtension();
-        $pack->setDestiny($tables_backup);
-        $this->log("Set file global destiny: '{destiny}'", 'debug', ['destiny' => $tables_backup]);
-
         $tables = $input->hasArgument('tables') ? $input->getArgument('tables') : $connection->getTables();
         $this->log("Extract tables to process", 'debug', ['tables' => $tables]);
 
+        $destiny = $input->getArgument('destiny');
+        $tmp = $destiny . DIRECTORY_SEPARATOR . 'tmp';
+        mkdir($tmp, 0777, true);
         foreach ($tables as $table) {
             if ($input->hasArgument('exclude') && in_array($table, $input->getArgument('exclude'))) {
                 $this->log("Excluded table '{table}'", 'debug', ['table' => $table]);
@@ -58,16 +59,23 @@ class CreateTablesCommand extends Command
             } else {
                 $this->log("Included table '{table}'", 'debug', ['table' => $table]);
             }
-            $table_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'table_' . $table . '.sql';
+            $table_backup = $tmp . DIRECTORY_SEPARATOR . 'table_' . $table . '.sql';
             $this->log("Set file table destiny: '{destiny}'", 'debug', ['destiny' => $table_backup]);
             $file = fopen($table_backup, 'w+');
             $description = $connection->describe($table);
             fwrite($file, $connection->query(QueryBuilder::getInstance()->create(...$description)->table($table)));
             fclose($file);
-            $pack->addFile($table_backup, $table . '.sql');
-            unlink($table_backup);
         }
-        $pack->close();
+
+        $obj = ($input->hasArgument('copies')) ? new BackupDated : new BackupUnique;
+        $obj->setEngine(new ZipEngine());
+        $obj->setDestinationFolder($destiny);
+        if ($input->hasArgument('copies')) {
+            $obj->setNumBackups((int) $input->getArgument('copies'));
+        }
+        $basename = $input->hasArgument('basename') ? $input->getArgument('basename') : 'tables';
+        $obj->pack($tmp, $basename);
+        rmdir($tmp);
         return 0;
     }
 }
