@@ -59,7 +59,7 @@ class ExportDataCommand extends Command
             } else {
                 $this->log("Included table '{table}'", 'debug', ['table' => $table]);
             }
-            $table_backup = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'data_' . $table . '.sql';
+            $table_backup = $input->getArgument('destiny') . DIRECTORY_SEPARATOR . 'data_' . $table . '.sql';
             $this->log("Set file table destiny: '{destiny}'", 'debug', ['destiny' => $table_backup]);
             $file = fopen($table_backup, 'w+');
             $cursor = $connection->execute(QueryBuilder::getInstance()->select()->from($table));
