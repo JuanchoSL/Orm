@@ -10,6 +10,7 @@ use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
@@ -17,7 +18,7 @@ use Psr\Log\LoggerAwareTrait;
 
 abstract class RDBMS implements DbInterface
 {
-    use LoggerAwareTrait;
+    use LoggerAwareTrait, SQLBuilderTrait;
 
     const RESPONSE_OBJECT = 'object';
     const RESPONSE_ASSOC = 'assoc';
@@ -195,7 +196,25 @@ abstract class RDBMS implements DbInterface
         }
         return $camps;
     }
-
+/*    
+    protected function parseSelect(QueryBuilder $sqlBuilder): string
+    {
+        if (!empty($sqlBuilder->limit)) {
+            $where = $this->mountWhere($sqlBuilder->condition, $sqlBuilder->table);
+            $join = (count($sqlBuilder->join ?? []) > 0) ? implode(" ", $sqlBuilder->join) : "";
+            $inicio = ($sqlBuilder->limit[1] * $sqlBuilder->limit[0]);
+            $limit = $sqlBuilder->limit[0];
+            $limit += $inicio;
+            $inicio++;
+            $order = empty($sqlBuilder->order) ? current($this->keys($sqlBuilder->table)) : $sqlBuilder->order;
+            $query = "SELECT " . implode(', ', $sqlBuilder->camps) . " FROM (SELECT t.*, ROW_NUMBER() OVER (ORDER BY " . $order . ") AS MyRow FROM " . $sqlBuilder->table . " t " . $join . " " . $where . ") AS totalNoPagination WHERE MyRow BETWEEN " . $inicio . " AND " . $limit;
+            $this->log($query,'debug');
+            return $query;
+        } else {
+            return $this->getQuery($sqlBuilder);
+        }
+    }
+*/
     public function __sleep()
     {
         return ['credentials', 'logger', 'debug'];

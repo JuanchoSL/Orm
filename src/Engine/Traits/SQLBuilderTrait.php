@@ -24,11 +24,12 @@ trait SQLBuilderTrait
 
         switch ($queryBuilder->operation) {
             case QueryActionsEnum::SELECT:
+                $group = (isset($queryBuilder->group) && is_string($queryBuilder->group)) ? " GROUP BY " . $queryBuilder->group : "";
                 $order = (isset($queryBuilder->order) && is_string($queryBuilder->order)) ? " ORDER BY " . $queryBuilder->order : "";
                 $limit = (!empty($queryBuilder->limit)) ? $this->mountLimit($queryBuilder->limit[0], $queryBuilder->limit[1]) : '';
                 $camps = (isset($queryBuilder->camps) && is_array($queryBuilder->camps) && count($queryBuilder->camps) > 0) ? implode(',', $queryBuilder->camps) : '*';
                 $table = (!empty($queryBuilder->table)) ? "FROM " . $queryBuilder->table : '';
-                $a = "{$queryBuilder->operation->value} {$camps} " . $table . $join . $condition . $order . $limit . $queryBuilder->extraQuery;
+                $a = "{$queryBuilder->operation->value} {$camps} " . $table . $join . $condition . $group . $order . $limit . $queryBuilder->extraQuery;
                 return $a;
 
             case QueryActionsEnum::INSERT:
@@ -52,7 +53,7 @@ trait SQLBuilderTrait
                 return $queryBuilder->operation->value . " TABLE " . $queryBuilder->table;
 
             case QueryActionsEnum::DELETE:
-                if(empty($condition)){
+                if (empty($condition)) {
                     //throw new PreconditionRequiredException("WHERE condition is empty");
                 }
                 return $queryBuilder->operation->value . " FROM " . $queryBuilder->table . $condition;
@@ -175,18 +176,24 @@ trait SQLBuilderTrait
 
     protected function mountAssignament(string $tabla, string $key, string|int|null $value, string $comparator = '='): string|false
     {
-        $key = strtolower($key);
+        if ($strict = substr_count($key, '(') == 0 || substr_count($key, '(') != substr_count($key, ')')) {
+            $key = strtolower($key);
+        }
+
         $this->log(__FUNCTION__, 'debug', ['table' => $tabla, 'key' => $key, 'comparator' => $comparator, 'value' => $value]);
         $sub_table = (strpos($key, '.') !== false) ? substr($key, 0, strpos($key, '.')) : $tabla;
         $sub_key = (strpos($key, '.') !== false) ? substr($key, strpos($key, '.') + 1) : $key;
-        if (array_key_exists($sub_key, $this->describe($sub_table))) {
+        if (!$strict || array_key_exists($sub_key, $this->describe($sub_table))) {
             if (!is_null($value) && stripos($comparator, 'NULL') === false && stripos($comparator, 'IN') === false) {
-                if (empty($this->describe[$sub_table][$sub_key]->getType()) || stripos($this->describe[$sub_table][$sub_key]->getType(), 'char') !== false || stripos($this->describe[$sub_table][$sub_key]->getType(), 'text') !== false) {
-                    $value = $this->escape((string) $value);
-                    $value = "'{$value}'";
+                if (!$strict || empty($this->describe[$sub_table][$sub_key]->getType()) || (isset($this->describe[$sub_table][$sub_key]) && (stripos($this->describe[$sub_table][$sub_key]->getType(), 'char') !== false || stripos($this->describe[$sub_table][$sub_key]->getType(), 'text') !== false))) {
+                    $value = (string) $value;
+                    if (substr_count($value, '(') == 0 || substr_count($value, '(') != substr_count($value, ')')) {
+                        $value = $this->escape($value);
+                        $value = "'{$value}'";
+                    }
                 }
             }
-            $key_name = $this->describe[$sub_table][$sub_key]->getName();
+            $key_name = (isset($this->describe[$sub_table][$sub_key])) ? $this->describe[$sub_table][$sub_key]->getName() : $sub_key;
             $key = ($sub_key != $key) ? $sub_table . '.' . $key_name : $key_name;
             return "{$key} {$comparator} {$value}";
         }
@@ -198,6 +205,10 @@ trait SQLBuilderTrait
 
     protected function mountLimit(int $limit, int $page): string
     {
+        return " LIMIT " . $limit . " OFFSET " . (intval($page) * $limit);
         return " LIMIT " . (intval($page) * $limit) . "," . $limit;
+        return "SELECT * FROM (SELECT t.*, ROW_NUMBER() OVER (ORDER BY " . $order . ") AS MyRow FROM " . $sqlBuilder->table . " t " . $join . " " . $where . ") AS totalNoPagination WHERE MyRow BETWEEN " . $inicio . " AND " . $limit;
+        return "SELECT * FROM (SELECT t.*, ROW_NUMBER() OVER (ORDER BY " . $order . ") AS MyRow FROM " . $sqlBuilder->table . " t " . $join . " " . $where . ") AS totalNoPagination WHERE MyRow BETWEEN " . $inicio . " AND " . $limit;
+        return "SELECT * FROM (SELECT t.*, Row_Number() OVER (ORDER BY " . $order . ") MyRow FROM " . strtoupper($sqlBuilder->table) . " t " . $join . " " . $where . ") WHERE MyRow BETWEEN " . $inicio . " AND " . $limit;
     }
 }
