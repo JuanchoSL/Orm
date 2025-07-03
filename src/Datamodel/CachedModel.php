@@ -10,7 +10,7 @@ abstract class CachedModel extends Model
 {
 
     protected $lazyLoad = true;
-
+    protected $ttl = 120;
     static $cache = [];
 
     public static function setCache(CacheInterface $cache, string $conection_name = 'default')
@@ -26,7 +26,7 @@ abstract class CachedModel extends Model
     {
         $result = parent::save();
         if ($result && array_key_exists($this->connection_name, self::$cache)) {
-            self::$cache[$this->connection_name]->set($this->createCacheKey(), json_decode(json_encode($this->values), true), 100);
+            self::$cache[$this->connection_name]->set($this->createCacheKey(), json_decode(json_encode($this->values), true), $this->ttl);
         }
         return $result;
     }
@@ -44,18 +44,33 @@ abstract class CachedModel extends Model
         if (array_key_exists($this->connection_name, self::$cache)) {
             $element = self::$cache[$this->connection_name]->get($this->createCacheKey());
         }
-        if (empty ($element)) {
+        if (empty($element)) {
             $element = parent::load($id);
+            if (array_key_exists($this->connection_name, self::$cache)) {
+                self::$cache[$this->connection_name]->set($this->createCacheKey(), $element, $this->ttl);
+            }
         } else {
             $this->fill((array) $element);
         }
-        if (array_key_exists($this->connection_name, self::$cache)) {
-            self::$cache[$this->connection_name]->set($this->createCacheKey(), $element, 100);
-        }
+        return $element;
     }
 
-    protected function createCacheKey()
+    public function __get($param)
     {
-        return md5($this->getTableName() . $this->getPrimaryKeyName() . $this->identifier);
+        if (array_key_exists($this->connection_name, self::$cache)) {
+            $element = self::$cache[$this->connection_name]->get($this->createCacheKey($param));
+        }
+        if (empty($element)) {
+            $element = parent::__get($param);
+            if (array_key_exists($this->connection_name, self::$cache)) {
+                self::$cache[$this->connection_name]->set($this->createCacheKey($param), $element, $this->ttl);
+            }
+        }
+        return $element;
+    }
+    
+    protected function createCacheKey(string $mixed_param = '')
+    {
+        return md5($this->getTableName() . $this->getPrimaryKeyName() . $this->identifier . $mixed_param);
     }
 }

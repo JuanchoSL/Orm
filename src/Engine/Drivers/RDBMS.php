@@ -13,10 +13,11 @@ use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 use JuanchoSL\Orm\Querybuilder\Types\AbstractQueryBuilder;
-use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerAwareTrait;
 
 abstract class RDBMS implements DbInterface
 {
+    use LoggerAwareTrait;
 
     const RESPONSE_OBJECT = 'object';
     const RESPONSE_ASSOC = 'assoc';
@@ -27,7 +28,6 @@ abstract class RDBMS implements DbInterface
     protected $columns = [];
     protected $keys = [];
     protected DbCredentials $credentials;
-    protected LoggerInterface $logger;
     protected bool $debug = false;
     function __construct(DbCredentials $credentials)
     {
@@ -37,12 +37,8 @@ abstract class RDBMS implements DbInterface
 
     abstract protected function getParsedField(array $keys): FieldDescription;
 
-    abstract protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse;
+    abstract protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse;
 
-    public function setLogger(LoggerInterface $logger): void
-    {
-        $this->logger = $logger;
-    }
     public function setDebug(bool $debug = false): void
     {
         $this->debug = $debug;
@@ -71,19 +67,21 @@ abstract class RDBMS implements DbInterface
 
     public function describe(string $tabla): array
     {
-        $describe = [];
-        $fields = [];
-        $result = $this->execute(QueryBuilder::getInstance()->doAction(QueryActionsEnum::DESCRIBE)->table($tabla));
-        while ($keys = $result->next(static::RESPONSE_ASSOC)) {
-            $fields[] = $keys;
-            $field = $this->getParsedField($keys);
-            $describe[strtolower($field->getName())] = $field;
+        if (!array_key_exists($tabla, $this->describe)) {
+            $describe = [];
+            $fields = [];
+            $result = $this->execute(QueryBuilder::getInstance()->doAction(QueryActionsEnum::DESCRIBE)->table($tabla));
+            while ($keys = $result->next(static::RESPONSE_ASSOC)) {
+                $fields[] = $keys;
+                $field = $this->getParsedField($keys);
+                $describe[strtolower($field->getName())] = $field;
+            }
+            $result->free();
+            $this->describe[strtolower($tabla)] = $describe;
+            $this->log("Describe {table}", 'debug', ['table' => $tabla, 'response' => $fields, 'fields' => $describe]);
+            unset($fields);
+            unset($describe);
         }
-        $result->free();
-        $this->describe[strtolower($tabla)] = $describe;
-        $this->log("Describe {table}", 'debug', ['table' => $tabla, 'response' => $fields, 'fields' => $describe]);
-        unset($fields);
-        unset($describe);
         return $this->describe[$tabla];
     }
 
@@ -140,6 +138,16 @@ abstract class RDBMS implements DbInterface
         }
     }
 
+    
+    public function query(AbstractQueryBuilder|QueryBuilder $queryBuilder): string
+    {
+        if (method_exists($this, 'parse' . ucfirst(strtolower($queryBuilder->operation->value)))) {
+            return call_user_func(array($this, 'parse' . ucfirst(strtolower($queryBuilder->operation->value))), $queryBuilder);
+        }else{
+            return $this->getQuery($queryBuilder);
+        }
+    }
+
     public function execute(AbstractQueryBuilder|QueryBuilder|string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         if (!$this->linkIdentifier) {
@@ -150,17 +158,18 @@ abstract class RDBMS implements DbInterface
             if (!is_null($query->operation)) {
                 if (method_exists($this, 'process' . ucfirst(strtolower($query->operation->value)))) {
                     return call_user_func(array($this, 'process' . ucfirst(strtolower($query->operation->value))), $query);
-                } elseif (!is_null($query->operation) && method_exists($this, 'parse' . ucfirst(strtolower($query->operation->value)))) {
+                } elseif (false && !is_null($query->operation) && method_exists($this, 'parse' . ucfirst(strtolower($query->operation->value)))) {
                     $query = call_user_func(array($this, 'parse' . ucfirst(strtolower($query->operation->value))), $query);
                 }
             }
             if (is_object($query)) {
-                $query = $this->getQuery($query);
+                $query = $this->query($query);
             }
         }
+        $micro_time = microtime(true);
         try {
-            $cursor = $this->query($query);
-            $this->log('{query}', 'info', ['query' => $query, 'results' => $cursor->count()]);
+            $cursor = $this->run($query);
+            $this->log('{query}', 'debug', ['query' => $query, 'results' => $cursor->count(), 'time' => microtime(true) - $micro_time]);
         } catch (\Exception $exception) {
             $this->log($exception, 'error', ['exception' => $exception, "query" => $query]);
             throw $exception;

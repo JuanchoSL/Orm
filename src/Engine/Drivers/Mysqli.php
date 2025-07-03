@@ -6,13 +6,14 @@ namespace JuanchoSL\Orm\Engine\Drivers;
 
 use JuanchoSL\Orm\Engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\Engine\Cursors\MysqlCursor;
+use JuanchoSL\Orm\Engine\Parsers\MysqliParser;
 use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Mysqli extends RDBMS implements DbInterface
 {
@@ -51,6 +52,8 @@ class Mysqli extends RDBMS implements DbInterface
 
     protected function getParsedField(array $keys): FieldDescription
     {
+        //return MysqliParser::parseField($keys);
+
         $varchar = explode(' ', (string) str_replace(['(', ')'], ' ', $keys['Type']));
         $field = new FieldDescription;
         $field
@@ -59,11 +62,12 @@ class Mysqli extends RDBMS implements DbInterface
             ->setLength(trim($varchar[1] ?? '0'))
             ->setNullable($keys['Null'] != 'NO')
             ->setDefault($keys['Default'])
+            ->setDescription($keys['Description'] ?? '')
             ->setKey(!empty($keys['Key']) && strtoupper($keys['Key']) == 'PRI');
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $cursor = mysqli_query($this->linkIdentifier, $query);
         if (!$cursor) {
@@ -99,6 +103,9 @@ class Mysqli extends RDBMS implements DbInterface
             }
             if ($field->isKey()) {
                 $sql .= " PRIMARY KEY AUTO_INCREMENT";
+            }
+            if (!empty($field->getDescription())) {
+                $sql .= sprintf(" COMMENT '%s'", $field->getDescription());
             }
             $sql .= ",";
         }

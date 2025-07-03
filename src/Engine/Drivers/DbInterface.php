@@ -62,7 +62,14 @@ interface DbInterface extends LoggerAwareInterface
      * @param string|QueryBuilder|AbstractQueryBuilder $query Consulta a ejecutar
      * @return \JuanchoSL\Orm\Engine\Cursors\CursorInterface|\JuanchoSL\Orm\Engine\Responses\AlterResponse|\JuanchoSL\Orm\Engine\Responses\InsertResponse|\JuanchoSL\Orm\Engine\Responses\EmptyResponse Resultado de la operación
      */
+
     public function execute(string|QueryBuilder|AbstractQueryBuilder $query): CursorInterface|AlterResponse|InsertResponse|EmptyResponse;
+    /**
+     * Crea una consulta sql en base al servidor conectado
+     * @param QueryBuilder|AbstractQueryBuilder $query Consulta a ejecutar
+     * @return string Consulta resultante
+     */
+    public function query(QueryBuilder|AbstractQueryBuilder $query): string;
 
     /**
      * Escapa valores introducidos en campos de texto para incluir en consultas

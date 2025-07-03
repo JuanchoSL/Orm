@@ -11,6 +11,6 @@ class Other extends CachedModel
 
     public function test()
     {
-        return $this->BelongsToOne(TestDb::getInstance());
+        return $this->BelongsToOne(TestDb::class);
     }
 }

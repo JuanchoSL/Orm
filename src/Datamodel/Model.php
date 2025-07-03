@@ -5,7 +5,11 @@ declare(strict_types=1);
 namespace JuanchoSL\Orm\Datamodel;
 
 use JuanchoSL\Exceptions\UnprocessableEntityException;
-use JuanchoSL\Orm\engine\Drivers\DbInterface;
+use JuanchoSL\Orm\Datamodel\Traits\AutoCrudTrait;
+use JuanchoSL\Orm\Datamodel\Traits\AutoQueryTrait;
+use JuanchoSL\Orm\Datamodel\Traits\InstantiatorTrait;
+use JuanchoSL\Orm\Datamodel\Traits\RelationsTrait;
+use JuanchoSL\Orm\Engine\Drivers\DbInterface;
 
 /**
  * Description of Model

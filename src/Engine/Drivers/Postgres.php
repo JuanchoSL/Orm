@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Postgres extends RDBMS implements DbInterface
 {
@@ -51,7 +51,7 @@ class Postgres extends RDBMS implements DbInterface
 
     protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        return "select is_identity as key, column_name as field, udt_name as type, character_maximum_length as length, column_default as default, is_nullable as null from INFORMATION_SCHEMA.COLUMNS where table_name = '" . $sqlBuilder->table . "'";
+        return "select is_identity as key, column_name as field, udt_name as type, character_maximum_length as length, column_default as default, is_nullable as null, pg_catalog.col_description(format('%s.%s',isc.table_schema,isc.table_name)::regclass::oid,isc.ordinal_position) as description from INFORMATION_SCHEMA.COLUMNS isc where table_name = '" . $sqlBuilder->table . "'";
     }
 
     protected function getParsedField(array $keys): FieldDescription
@@ -70,11 +70,12 @@ class Postgres extends RDBMS implements DbInterface
             ->setLength($keys['length'] ?? null)
             ->setNullable($keys['null'] == 'YES')
             ->setDefault($keys['default'])
+            ->setDescription($keys['description'] ?? '')
             ->setKey($keys['key'] == 'YES');
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $cursor = pg_query($this->linkIdentifier, $query);
         if (!$cursor) {
@@ -130,6 +131,7 @@ class Postgres extends RDBMS implements DbInterface
 
     protected function parseCreate(QueryBuilder $builder)
     {
+        $comments = [];
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} {$field->getType()}";
@@ -141,10 +143,19 @@ class Postgres extends RDBMS implements DbInterface
             if (!$field->isNullable()) {
                 $sql .= " NOT NULL";
             }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("comment on column %s.%s is '%s';", $builder->table, $field->getName(), $field->getDescription());
+            }
             $sql .= ",";
         }
         $sql = rtrim($sql, ',');
         $sql .= ")";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
         return sprintf($sql, $builder->table);
     }
 }

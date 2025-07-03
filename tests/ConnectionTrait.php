@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace JuanchoSL\Orm\Tests;
 
-use JuanchoSL\Logger\Composers\PlainText;
+use JuanchoSL\Logger\Composers\TextComposer;
 use JuanchoSL\Logger\Logger;
 use JuanchoSL\Logger\Repositories\FileRepository;
 use JuanchoSL\Orm\Engine\DbCredentials;
-use JuanchoSL\Orm\Engine\Engines;
-use JuanchoSL\Orm\Factory;
+use JuanchoSL\Orm\Engine\Enums\EngineEnums;
+use JuanchoSL\Orm\Engine\Factory;
 use Psr\Log\LoggerInterface;
 
 trait ConnectionTrait
@@ -18,37 +18,58 @@ trait ConnectionTrait
 
     private static bool $git_mode = true;
 
-    public static function getConnection(Engines $connection_type)
+    public static function getConnection(EngineEnums $connection_type)
     {
         if (!array_key_exists($connection_type->value, static::$connections)) {
 
             switch ($connection_type) {
-                case Engines::TYPE_MYSQLI:
+                case EngineEnums::TYPE_MYSQLI:
                     $credentials = new DbCredentials(getenv('MYSQL_HOST'), getenv('MYSQL_USERNAME'), getenv('MYSQL_PASSWORD'), getenv('MYSQL_DATABASE'));
                     break;
 
-                case Engines::TYPE_SQLITE:
+                case EngineEnums::TYPE_SQLITE:
                     $path = dirname(__DIR__, 1) . DIRECTORY_SEPARATOR . 'var';
                     $credentials = new DbCredentials($path, '', '', 'test.db');
                     break;
 
-                case Engines::TYPE_POSTGRE:
+                case EngineEnums::TYPE_POSTGRE:
                     $credentials = new DbCredentials(getenv('POSTGRES_HOST'), getenv('POSTGRES_USERNAME'), getenv('POSTGRES_PASSWORD'), getenv('POSTGRES_DATABASE'));
                     break;
 
-                case Engines::TYPE_SQLSRV:
+                case EngineEnums::TYPE_SQLSRV:
                     $credentials = new DbCredentials(getenv('SQLSRV_HOST'), getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
                     break;
 
-                case Engines::TYPE_ORACLE:
+                case EngineEnums::TYPE_ORACLE:
                     $credentials = new DbCredentials(getenv('ORACLE_HOST'), getenv('ORACLE_USERNAME'), getenv('ORACLE_PASSWORD'), getenv('ORACLE_DATABASE'));
                     break;
 
-                case Engines::TYPE_ODBC:
-                    $credentials = new DbCredentials(getenv('SQLSRV_HOST'), getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
+                case EngineEnums::TYPE_ODBC:
+                    switch (5) {
+                        case 1:
+                            //$dsn = "DRIVER={IBM DB2 ODBC DRIVER - DB2COPY1};SERVER=" . getenv('DB2_HOST') . ";";
+                            $dsn = "docker";
+                            $credentials = new DbCredentials($dsn, getenv('DB2_USERNAME'), getenv('DB2_PASSWORD'), '');
+                            break;
+                        case 2:
+                            $dsn = "mysql";
+                            $credentials = new DbCredentials($dsn, getenv('MYSQL_USERNAME'), getenv('MYSQL_PASSWORD'), '');
+                            break;
+                        case 3:
+                            $dsn = "DRIVER={SQL Server};SERVER=" . getenv('SQLSRV_HOST') . ";";
+                            $credentials = new DbCredentials($dsn, getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), getenv('SQLSRV_DATABASE'));
+                            break;
+                        case 4:
+                            $dsn = "sqlserver-usuario";
+                            $credentials = new DbCredentials($dsn, getenv('SQLSRV_USERNAME'), getenv('SQLSRV_PASSWORD'), null);
+                            break;
+                        case 5:
+                            $dsn = "excel";
+                            $credentials = new DbCredentials($dsn, '', '', null);
+                            break;
+                    }
                     break;
-
-                case Engines::TYPE_DB2:
+                case EngineEnums::TYPE_DB2:
                     $credentials = new DbCredentials(getenv('DB2_HOST'), getenv('DB2_USERNAME'), getenv('DB2_PASSWORD'), getenv('DB2_DATABASE'));
                     break;
             }
@@ -69,24 +90,28 @@ trait ConnectionTrait
     {
         static $logger;
         if (empty($logger)) {
-            $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new PlainText)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
+            $logger = new Logger((new FileRepository(getenv('LOG_FILEPATH')))->setComposer((new TextComposer)->setTimeFormat(getenv('LOG_TIMEFORMAT'))));
         }
         return $logger;
     }
 
     public function providerData(): array
     {
+        $conns = [
+            'Sqlite' => [self::getConnection(EngineEnums::TYPE_SQLITE)],
+            'Mysql' => [self::getConnection(EngineEnums::TYPE_MYSQLI)],
+            'Oracle' => [self::getConnection(EngineEnums::TYPE_ORACLE)],
+            'Postgres' => [self::getConnection(EngineEnums::TYPE_POSTGRE)],
+            'Sqlserver' => [self::getConnection(EngineEnums::TYPE_SQLSRV)],
+            'Db2' => [self::getConnection(EngineEnums::TYPE_DB2)]
+        ];
+
         if (static::$git_mode) {
-            return ['Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)]];
+            $con = 'Sqlite';
+            return [$con => $conns[$con]];
+            //return ['ODBC' => [self::getConnection(EngineEnums::TYPE_ODBC)]];
         }
 
-        return [
-            'Sqlite' => [self::getConnection(Engines::TYPE_SQLITE)],
-            'Mysql' => [self::getConnection(Engines::TYPE_MYSQLI)],
-            'Oracle' => [self::getConnection(Engines::TYPE_ORACLE)],
-            'Postgres' => [self::getConnection(Engines::TYPE_POSTGRE)],
-            'Sqlserver' => [self::getConnection(Engines::TYPE_SQLSRV)],
-            'Db2' => [self::getConnection(Engines::TYPE_DB2)]
-        ];
+        return $conns;
     }
 }

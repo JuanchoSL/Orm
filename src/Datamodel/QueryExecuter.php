@@ -2,15 +2,16 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Querybuilder;
+namespace JuanchoSL\Orm\Datamodel;
 
-use JuanchoSL\Orm\Collection;
 use JuanchoSL\Orm\Datamodel\DataModelInterface;
 use JuanchoSL\Orm\Engine\Cursors\CursorInterface;
 use JuanchoSL\Orm\Engine\Drivers\DbInterface;
 use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Responses\EmptyResponse;
 use JuanchoSL\Orm\Engine\Responses\InsertResponse;
+use JuanchoSL\Orm\ModelCollection;
+use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
 class QueryExecuter
 {
@@ -70,19 +71,28 @@ class QueryExecuter
         return $this->get()->last();
     }
 
-    public function get(): Collection
+    public function get(): ModelCollection
     {
         if (empty($this->query_builder->operation)) {
             $this->query_builder->select();
         }
         $cursor = $this->cursor();
-        $response = new Collection();
+        $response = new ModelCollection();
+        $key = null;
         while (!empty($element = $cursor->next())) {
+            if (!empty($this->response_model->getPrimaryKeyName())) {
+                $key_name = $this->response_model->getPrimaryKeyName();
+                $key = $element->{$key_name};
+            }
             if (count(get_object_vars($element)) > 1) {
-                $response->append($this->response_model->make((array) $element));
+                $data = $this->response_model->make((array) $element);
             } else {
-                //$response[$this->response_model->getPrimaryKeyName()] = $this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()});
-                $response->append($this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()}));
+                $data = $this->response_model->findByPk($element->{$this->response_model->getPrimaryKeyName()});
+            }
+            if (is_null($key)) {
+                $response->append($data);
+            } else {
+                $response->set($key, $data);
             }
         }
         $cursor->free();

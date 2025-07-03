@@ -41,8 +41,12 @@ class SQLiteCursor extends AbstractCursor implements CursorInterface
 
     public function free(): bool
     {
+        try {
+            return $this->cursor->finalize();
+        } catch (\Exception $e) {
+        }
+
         return true;
         //@call_user_func([$this->cursor, 'finalize']);
-        //            $this->cursor->finalize();
     }
 }

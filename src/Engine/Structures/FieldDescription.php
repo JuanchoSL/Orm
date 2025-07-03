@@ -16,6 +16,7 @@ class FieldDescription implements \JsonSerializable
     private $field_nullable;
     private $field_default;
     private $field_is_key;
+    private $field_description;
 
     public function getName(): string
     {
@@ -71,6 +72,15 @@ class FieldDescription implements \JsonSerializable
         $this->field_is_key = $field_key;
         return $this;
     }
+    public function getDescription(): ?string
+    {
+        return $this->field_description;
+    }
+    public function setDescription(string $description): static
+    {
+        $this->field_description = $description;
+        return $this;
+    }
 
     public function isKey(): bool
     {
@@ -91,6 +101,7 @@ class FieldDescription implements \JsonSerializable
             'field_nullable' => $this->getNullable(),
             'field_default' => $this->getDefault(),
             'field_is_key' => $this->getKey(),
+            'field_description' => $this->getDescription(),
         ];
     }
 }

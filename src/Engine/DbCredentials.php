@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\engine;
+namespace JuanchoSL\Orm\Engine;
 
 class DbCredentials implements \JsonSerializable
 {
@@ -13,7 +13,7 @@ class DbCredentials implements \JsonSerializable
     protected $password;
     protected $database;
 
-    public function __construct($host, $username, $password, $dataBase, int $port = null)
+    public function __construct($host, $username, $password, $dataBase, ?int $port = null)
     {
         $this->host = $host;
         $this->port = $port;

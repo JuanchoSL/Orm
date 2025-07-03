@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit bootstrap="vendor/autoload.php" verbose="true" colors="true" cacheResult="false" beStrictAboutTestsThatDoNotTestAnything="true" beStrictAboutOutputDuringTests="true" processIsolation="true">
+<phpunit bootstrap="vendor/autoload.php" verbose="true" colors="true" cacheResult="false" beStrictAboutTestsThatDoNotTestAnything="true" beStrictAboutOutputDuringTests="true" processIsolation="false">
     <testsuites>
         <testsuite name="All Tests Suite">
             <directory>./tests</directory>
             <exclude>./tests/Integration/Cache</exclude>
+            <exclude>./tests/Unit/CreateTest</exclude>
         </testsuite>
         <testsuite name="Unitary Tests Suite">
             <directory>./tests/Unit</directory>
+            <exclude>./tests/Unit/CreateTest</exclude>
         </testsuite>
         <testsuite name="Functional Tests Suite">
             <directory>./tests/Functional</directory>

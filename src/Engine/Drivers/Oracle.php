@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Oracle extends RDBMS implements DbInterface
 {
@@ -66,16 +66,17 @@ class Oracle extends RDBMS implements DbInterface
             ->setLength($keys['Length'])
             ->setNullable($keys['Null'] != 'N')
             ->setDefault($keys['Default'])
-            ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'));
+            ->setKey(!empty($keys['Default']) && stripos($keys['Default'], 'NEXTVAL'))
+            ->setDescription($keys['Description'] ?? '');
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         $cursor = oci_parse($this->linkIdentifier, $query);
         if (!$cursor || !oci_execute($cursor)) {
             $e = new \Exception(oci_error()['message']);
-            $this->log($e, 'error', ['exception' => $e, 'query' => $query]);
+            $this->log($e, 'error', ['exception' => $e, 'query2' => $query]);
             throw $e;
         }
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
@@ -93,7 +94,10 @@ class Oracle extends RDBMS implements DbInterface
 
     protected function parseDescribe(QueryBuilder $sqlBuilder): string
     {
-        return "SELECT column_name \"Field\", nullable \"Null\", concat(concat(concat(data_type,'('),data_length),')') \"Type\", data_default \"Default\" FROM user_tab_columns WHERE table_name='" . strtoupper($sqlBuilder->table) . "'";
+        return "SELECT c.column_name \"Field\", nullable \"Null\", concat(concat(concat(data_type,'('),data_length),')') \"Type\", data_default \"Default\" , comments \"Description\"
+        FROM user_tab_columns c
+        LEFT JOIN user_col_comments m ON c.column_name = m.column_name AND c.table_name=m.table_name
+        WHERE c.table_name='" . strtoupper($sqlBuilder->table) . "'";
     }
 
     protected function parseSelect(QueryBuilder $sqlBuilder): string
@@ -109,6 +113,7 @@ class Oracle extends RDBMS implements DbInterface
             $q = "SELECT * FROM (SELECT t.*, Row_Number() OVER (ORDER BY " . $order . ") MyRow FROM " . strtoupper($sqlBuilder->table) . " t " . $join . " " . $where . ") WHERE MyRow BETWEEN " . $inicio . " AND " . $limit;
             return $q;
         } else {
+            //$sqlBuilder->table(strtoupper($sqlBuilder->table));
             return $this->getQuery($sqlBuilder);
         }
     }
@@ -145,6 +150,7 @@ class Oracle extends RDBMS implements DbInterface
 
     protected function processCreate(QueryBuilder $builder)
     {
+        $comments = [];
         $sequence = '';
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {
@@ -161,11 +167,55 @@ class Oracle extends RDBMS implements DbInterface
                 $sequence = "{$builder->table}_" . strtolower($field->getName()) . "_seq";
                 $sql .= " DEFAULT {$sequence}.NEXTVAL PRIMARY KEY";
             }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("COMMENT ON COLUMN %s.%s IS '%s';", strtoupper($builder->table), strtoupper($field->getName()), $field->getDescription());
+            }
             $sql .= ", ";
         }
         $sql = rtrim($sql, ', ');
-        $sql .= ")";
+        $sql .= ") TABLESPACE USERS";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
         $this->execute(sprintf("CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1", $sequence));
         return $this->execute(sprintf($sql, strtoupper($builder->table)));
+    }
+    protected function parseCreate(QueryBuilder $builder): string
+    {
+        $comments = [];
+        $sequence = '';
+        $sql = "CREATE TABLE %s (";
+        foreach ($builder->values as $field) {
+            $sql .= "{$field->getName()} " . strtoupper($field->getType());
+            if (!$field->isKey()) {
+                $sql .= "({$field->getLength()})";
+                if (!$field->isNullable()) {
+                    $sql .= " NOT NULL";
+                }
+                if (!empty($field->getDefault())) {
+                    $sql .= " DEFAULT {$field->getDefault()}";
+                }
+            } else {
+                $sequence = "{$builder->table}_" . strtolower($field->getName()) . "_seq";
+                $sql .= " DEFAULT {$sequence}.NEXTVAL PRIMARY KEY";
+            }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("COMMENT ON COLUMN %s.%s IS '%s';", strtoupper($builder->table), strtoupper($field->getName()), $field->getDescription());
+            }
+            $sql .= ", ";
+        }
+        $sql = rtrim($sql, ', ');
+        $sql .= ") TABLESPACE USERS";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
+
+        return sprintf("CREATE SEQUENCE %s START WITH 1 INCREMENT BY 1;", $sequence) . sprintf($sql, strtoupper($builder->table)) . ';';
     }
 }

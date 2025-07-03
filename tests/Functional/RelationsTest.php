@@ -2,7 +2,7 @@
 
 namespace JuanchoSL\Orm\Tests\Functional;
 
-use JuanchoSL\Orm\Collection;
+use JuanchoSL\Orm\ModelCollection;
 use JuanchoSL\Orm\Datamodel\Model;
 use JuanchoSL\Orm\Engine\Responses\AlterResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
@@ -67,7 +67,7 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(TestDb::class, $obj);
 
         $others = $obj->other;
-        $this->assertInstanceOf(Collection::class, $others);
+        $this->assertInstanceOf(ModelCollection::class, $others);
         $this->assertTrue($others->hasElements());
         $this->assertContainsOnlyInstancesOf(Other::class, $others);
 
@@ -90,7 +90,7 @@ class RelationsTest extends TestCase
             $others = $others->get();
             $new_count = $others->count();
             $this->assertEquals($i, $new_count);
-            $this->assertInstanceOf(Collection::class, $others);
+            $this->assertInstanceOf(ModelCollection::class, $others);
             $this->assertTrue($others->hasElements());
             $this->assertContainsOnlyInstancesOf(Other::class, $others);
         }
@@ -128,7 +128,7 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(TestDb::class, $obj);
 
         $others = $obj->other;
-        $this->assertInstanceOf(Collection::class, $others);
+        $this->assertInstanceOf(ModelCollection::class, $others);
         $this->assertTrue($others->hasElements());
         $this->assertContainsOnlyInstancesOf(Other::class, $others);
 
@@ -166,7 +166,7 @@ class RelationsTest extends TestCase
         $this->assertInstanceOf(TestDb::class, $obj);
 
         $others = $obj->other;
-        $this->assertInstanceOf(Collection::class, $others);
+        $this->assertInstanceOf(ModelCollection::class, $others);
         $this->assertTrue($others->hasElements());
         $old_count = $others->count();
 
@@ -175,7 +175,7 @@ class RelationsTest extends TestCase
         $this->assertEquals($old_count, $deleted->count());
 
         $others = $obj->other;
-        $this->assertInstanceOf(Collection::class, $others);
+        $this->assertInstanceOf(ModelCollection::class, $others);
         $this->assertFalse($others->hasElements());
         $new_count = $others->count();
         $this->assertLessThan($old_count, $new_count);

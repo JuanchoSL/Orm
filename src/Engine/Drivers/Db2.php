@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Db2 extends RDBMS implements DbInterface
 {
@@ -102,12 +102,13 @@ class Db2 extends RDBMS implements DbInterface
             ->setType($keys['TYPE_NAME'])
             ->setLength($keys['COLUMN_SIZE'])
             ->setNullable($keys['NULLABLE'] <> 0)
-            ->setDefault('')
+            ->setDefault($keys['COLUMN_DEF'] ?? '')
+            ->setDescription($keys['REMARKS'] ?? '')
             ->setKey(in_array($keys['COLUMN_NAME'], $this->keys(strtolower($keys['TABLE_NAME']))));
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         //        $cursor = db2_query($this->linkIdentifier, $query);
 //        if (db2_errno($this->linkIdentifier) > 0) {
@@ -157,6 +158,7 @@ if (!$cursor || !db2_execute($cursor)) {
 
     protected function parseCreate(QueryBuilder $builder)
     {
+        $comments = [];
         $pk = '';
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {
@@ -173,6 +175,9 @@ if (!$cursor || !db2_execute($cursor)) {
             } elseif (!empty($field->getDefault())) {
                 $sql .= " DEFAULT {$field->getDefault()}";
             }
+            if (!empty($field->getDescription())) {
+                $comments[] = sprintf("COMMENT ON COLUMN %s.%s IS '%s';", $builder->table, $field->getName(), $field->getDescription());
+            }
             $sql .= ", ";
         }
         if (!empty($pk)) {
@@ -180,6 +185,12 @@ if (!$cursor || !db2_execute($cursor)) {
         }
         $sql = rtrim($sql, ', ');
         $sql .= ")";
+        if (!empty($comments)) {
+            $sql .= ";" . PHP_EOL;
+            foreach ($comments as $comment) {
+                $sql .= $comment . PHP_EOL;
+            }
+        }
         return sprintf($sql, strtoupper($builder->table));
     }
 }

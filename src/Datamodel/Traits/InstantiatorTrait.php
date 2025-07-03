@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Datamodel;
+namespace JuanchoSL\Orm\Datamodel\Traits;
 
-use JuanchoSL\DataTransfer\Repositories\ArrayDataTransfer;
-use JuanchoSL\DataTransfer\Repositories\DataContainer;
+use JuanchoSL\DataTransfer\DataContainer;
+use JuanchoSL\Orm\Datamodel\DataModelInterface;
 
 trait InstantiatorTrait
 {
@@ -14,15 +14,10 @@ trait InstantiatorTrait
     {
         $this->values = new DataContainer();
     }
-    public static function model(): string
-    {
-        return get_called_class();
-    }
 
     public static function getInstance(): DataModelInterface
     {
-        $class = static::model();
-        return new $class;
+        return new static;//$class;
     }
 
     public static function make(iterable $values): DataModelInterface

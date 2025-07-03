@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\engine;
+namespace JuanchoSL\Orm\Engine\Enums;
 
-enum Engines: string
+enum EngineEnums: string
 {
 
     case TYPE_MYSQLI = 'MYSQLI';

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace JuanchoSL\Orm\Datamodel;
+namespace JuanchoSL\Orm\Datamodel\Traits;
 
-use JuanchoSL\Orm\Querybuilder\QueryExecuter;
+use JuanchoSL\Orm\Datamodel\QueryExecuter;
 
 trait AutoQueryTrait
 {
@@ -28,7 +28,7 @@ trait AutoQueryTrait
             }
             $fields = "DISTINCT " . implode(",", $distinct);
         } else {
-            $fields = '*';
+            $fields = $instance->getTableName() . '.*';
         }
         $response = static::select($fields)->from($instance->getTableName());
         if (!empty($where)) {
@@ -37,14 +37,13 @@ trait AutoQueryTrait
         return $response;
     }
 
-    public static function findByPk($id): DataModelInterface
+    public static function findByPk($id): static
     {
         $instance = self::getInstance();
         $instance->identifier = $id;
-        if ($instance->lazyLoad === true) {
-            return $instance;
-        } else {
-            return $instance->load($id);
+        if ($instance->lazyLoad === false) {
+            $instance->load($id);
         }
+        return $instance;
     }
 }

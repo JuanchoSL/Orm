@@ -12,7 +12,7 @@ use JuanchoSL\Orm\Engine\Responses\InsertResponse;
 use JuanchoSL\Orm\Engine\Structures\FieldDescription;
 use JuanchoSL\Orm\Querybuilder\QueryActionsEnum;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
-use JuanchoSL\Orm\Querybuilder\SQLBuilderTrait;
+use JuanchoSL\Orm\Engine\Traits\SQLBuilderTrait;
 
 class Sqlite extends RDBMS implements DbInterface
 {
@@ -59,6 +59,13 @@ class Sqlite extends RDBMS implements DbInterface
 
     protected function getParsedField(array $keys): FieldDescription
     {
+        if (empty($keys['length'])) {
+            preg_match('/([a-zA-Z]+)\((\d*)\)/', $keys['type'], $matches);
+            if (count($matches) >= 2) {
+                $keys['type'] = $matches[1];
+                $keys['length'] = $matches[2];
+            }
+        }
         $field = new FieldDescription;
         $field
             ->setName($keys['name'])
@@ -66,11 +73,12 @@ class Sqlite extends RDBMS implements DbInterface
             ->setLength($keys['length'] ?? null)
             ->setNullable($keys['notnull'] == 0)
             ->setDefault($keys['dflt_value'])
+            ->setDescription('')
             ->setKey($keys['pk'] == 1);
         return $field;
     }
 
-    protected function query(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
+    protected function run(string $query): CursorInterface|InsertResponse|AlterResponse|EmptyResponse
     {
         //Las consultas que devuelven resultados se deben hacer por query, el resto por exec
         $action = QueryActionsEnum::make(strtoupper(substr($query, 0, strpos($query, ' '))));
@@ -102,8 +110,11 @@ class Sqlite extends RDBMS implements DbInterface
     protected function processTruncate(QueryBuilder $builder): EmptyResponse
     {
         $result = $this->execute(QueryBuilder::getInstance()->delete()->from($builder->table));
-        $this->execute(QueryBuilder::getInstance()->delete()->from('sqlite_sequence')->where(['name', $builder->table]));
-        return new EmptyResponse($result->count() > 0);
+        $result2 = $this->execute(QueryBuilder::getInstance()->delete()->from('sqlite_sequence')->where(['name', $builder->table]));
+        $success = $result->count() > 0;
+        //$result->free();
+        //$result2->free();
+        return new EmptyResponse($success);
     }
 
     protected function parseCreate(QueryBuilder $builder)
@@ -119,7 +130,13 @@ class Sqlite extends RDBMS implements DbInterface
             if (!$field->isNullable()) {
                 $sql .= " NOT NULL";
             }
+            if (!empty($field->getDefault())) {
+                $sql .= sprintf(" DEFAULT '%s'", $field->getDefault());
+            }
             $sql .= ",";
+            if (!empty($field->getDescription())) {
+                $sql .= sprintf(" -- %s", $field->getDescription());
+            }
         }
         $sql = rtrim($sql, ',');
         $sql .= ")";
