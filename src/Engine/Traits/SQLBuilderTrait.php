@@ -29,7 +29,8 @@ trait SQLBuilderTrait
                 $limit = (!empty($queryBuilder->limit)) ? $this->mountLimit($queryBuilder->limit[0], $queryBuilder->limit[1]) : '';
                 $camps = (isset($queryBuilder->camps) && is_array($queryBuilder->camps) && count($queryBuilder->camps) > 0) ? implode(',', $queryBuilder->camps) : '*';
                 $table = (!empty($queryBuilder->table)) ? "FROM " . $queryBuilder->table : '';
-                $a = "{$queryBuilder->operation->value} {$camps} " . $table . $join . $condition . $group . $order . $limit . $queryBuilder->extraQuery;
+                $having = (!empty($queryBuilder->having)) ? "HAVING " . $queryBuilder->having : '';
+                $a = "{$queryBuilder->operation->value} {$camps} " . $table . $join . $condition . $group . $having . $order . $limit . $queryBuilder->extraQuery;
                 return $a;
 
             case QueryActionsEnum::INSERT:
