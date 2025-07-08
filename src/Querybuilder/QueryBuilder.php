@@ -51,7 +51,7 @@ class QueryBuilder
         return $this;
     }
 
-    public function select(array $camps = array())
+    public function select(array $camps = array('*'))
     {
         $this->doAction(QueryActionsEnum::SELECT);
         $this->setCamps($camps);

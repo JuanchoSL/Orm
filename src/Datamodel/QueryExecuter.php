@@ -104,7 +104,7 @@ class QueryExecuter
         return $this->cursor()->count();
     }
 
-    protected function cursor(): CursorInterface|AlterResponse|InsertResponse|EmptyResponse
+    public function cursor(): CursorInterface|AlterResponse|InsertResponse|EmptyResponse
     {
         return $this->conn->execute($this->query_builder);
     }
