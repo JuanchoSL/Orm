@@ -60,15 +60,15 @@ class QueryExecuter
         return $this->cursor();
     }
 
-    public function first(): DataModelInterface
+    public function first(): ?DataModelInterface
     {
         $this->query_builder->limit(1);
-        return $this->get()->current();
+        return $this->get()?->current();
     }
 
-    public function last(): DataModelInterface
+    public function last(): ?DataModelInterface
     {
-        return $this->get()->last();
+        return $this->get()?->last();
     }
 
     public function get(): ModelCollection
@@ -104,7 +104,7 @@ class QueryExecuter
         return $this->cursor()->count();
     }
 
-    protected function cursor(): CursorInterface|AlterResponse|InsertResponse|EmptyResponse
+    public function cursor(): CursorInterface|AlterResponse|InsertResponse|EmptyResponse
     {
         return $this->conn->execute($this->query_builder);
     }

@@ -7,6 +7,7 @@ namespace JuanchoSL\Orm\Datamodel\Traits;
 use JuanchoSL\DataTransfer\DataContainer;
 use JuanchoSL\Exceptions\NotFoundException;
 use JuanchoSL\Exceptions\UnprocessableEntityException;
+use JuanchoSL\Orm\Datamodel\QueryExecuter;
 use JuanchoSL\Orm\Querybuilder\QueryBuilder;
 
 
@@ -74,12 +75,14 @@ trait AutoCrudTrait
             $this->load($this->identifier);
         }
         if (method_exists($this, $param)) {
-            $var = call_user_func([$this, $param]);
-            $return = $var->get();
-            if (isset($return)) {
-                $first = $return->first();
-                if (isset($first, $this->relations[$this->getTableName()][$first->getTableName()])) {
-                    $return = $first;
+            $return = call_user_func([$this, $param]);
+            if ($return instanceof QueryExecuter) {
+                $return = $return->get();
+                if (isset($return)) {
+                    $first = $return->first();
+                    if (isset($first, $this->relations[$this->getTableName()][$first->getTableName()])) {
+                        $return = $first;
+                    }
                 }
             }
             return $return;

@@ -4,7 +4,6 @@
     "type": "library",
     "license": "MIT",
     "homepage": "https://github.com/JuanchoSL/Orm",
-    "minimum-stability": "dev",
     "keywords": [
         "orm",
         "database",

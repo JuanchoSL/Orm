@@ -123,12 +123,12 @@ class Postgres extends RDBMS implements DbInterface
         $this->execute("ALTER SEQUENCE {$table}_id_seq RESTART WITH 1");
         return $result;
     }
-
+/*
     protected function mountLimit(int $limit, int $page): string
     {
         return " LIMIT " . $limit . " OFFSET " . (intval($page) * $limit);
     }
-
+*/
     protected function parseCreate(QueryBuilder $builder)
     {
         $comments = [];
