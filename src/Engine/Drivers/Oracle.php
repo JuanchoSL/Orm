@@ -156,7 +156,9 @@ class Oracle extends RDBMS implements DbInterface
         foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
             if (!$field->isKey()) {
-                $sql .= "({$field->getLength()})";
+                if ($field->getType() != 'integer') {
+                    $sql .= "({$field->getLength()})";
+                }
                 if (!$field->isNullable()) {
                     $sql .= " NOT NULL";
                 }
@@ -191,7 +193,9 @@ class Oracle extends RDBMS implements DbInterface
         foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
             if (!$field->isKey()) {
-                $sql .= "({$field->getLength()})";
+                if ($field->getType() != 'integer') {
+                    $sql .= "({$field->getLength()})";
+                }
                 if (!$field->isNullable()) {
                     $sql .= " NOT NULL";
                 }

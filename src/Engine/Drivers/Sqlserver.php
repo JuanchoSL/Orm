@@ -156,7 +156,7 @@ class Sqlserver extends RDBMS implements DbInterface
             $sql .= "{$field->getName()} {$field->getType()}";
             if ($field->isKey()) {
                 $sql .= " IDENTITY(1,1) PRIMARY KEY";
-            } else {
+            } elseif ($field->getType() != 'integer') {
                 $sql .= "({$field->getLength()})";
             }
             if (!$field->isNullable()) {

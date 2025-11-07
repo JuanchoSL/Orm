@@ -163,7 +163,7 @@ if (!$cursor || !db2_execute($cursor)) {
         $sql = "CREATE TABLE %s (";
         foreach ($builder->values as $field) {
             $sql .= "{$field->getName()} " . strtoupper($field->getType());
-            if (!$field->isKey()) {
+            if (!$field->isKey() && $field->getType() != 'integer') {
                 $sql .= "({$field->getLength()})";
             }
             if (!$field->isNullable()) {
