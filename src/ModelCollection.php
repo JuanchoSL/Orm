@@ -39,7 +39,7 @@ class ModelCollection extends Collection
                 if (is_bool($var)) {
                     $var = (bool) $var;
                 } else if (is_double($var)) {
-                    $var = (double) $var;
+                    $var = (float) $var;
                 } else if (is_float($var)) {
                     $var = (float) $var;
                 } else if (is_bool($var) || is_numeric($var)) {
