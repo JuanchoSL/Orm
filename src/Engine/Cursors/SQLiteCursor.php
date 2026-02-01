@@ -31,7 +31,7 @@ class SQLiteCursor extends AbstractCursor implements CursorInterface
     {
         $nResults = 0;
         if (is_object($this->cursor)) {
-            while ($this->next() !== false) {
+            while ($this->next(RDBMS::RESPONSE_ROWS) !== false) {
                 $nResults++;
             }
             $this->cursor->reset();
